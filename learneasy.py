@@ -18,7 +18,7 @@ def get_creds():
     body += "=" * (-len(body) % 4)
     body = "\n".join([body[i:i+64] for i in range(0, len(body), 64)])
     creds_dict["private_key"] = "-----BEGIN PRIVATE KEY-----\n" + body + "\n-----END PRIVATE KEY-----\n"
-    return Credentials.from_service_account_info(creds_dict, scopes=["https://www.googleapis.com/auth/spreadsheets"])
+    return Credentials.from_service_account_info(creds_dict, scopes=["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"])
 
 def get_worksheet():
     client = gspread.authorize(get_creds())
