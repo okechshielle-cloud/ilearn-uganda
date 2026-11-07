@@ -15,6 +15,7 @@ def save_to_sheet(name, school, score, percentage, grade):
         pk = pk.replace("\\n", "\n").replace("\r", "")
         body = pk.replace("-----BEGIN PRIVATE KEY-----", "").replace("-----END PRIVATE KEY-----", "").replace("\n", "").replace(" ", "").replace("\\n", "").strip()
         body = "".join([c for c in body if c in "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/="])
+        body += "=" * (-len(body) % 4)
         body = "\n".join([body[i:i+64] for i in range(0, len(body), 64)])
         creds_dict["private_key"] = f"-----BEGIN PRIVATE KEY-----\n{body}\n-----END PRIVATE KEY-----\n"
         creds_dict["private_key"] = f"-----BEGIN PRIVATE KEY-----\n{body}\n-----END PRIVATE KEY-----\n"
