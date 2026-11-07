@@ -1,5 +1,24 @@
 import streamlit as st
+import gspread
+from google.oauth2.service_account import Credentials
 
+SHEET_ID = "14xwMoPTvxoOQfK_R5bqqnADSjaIby080WuGNkpO59qU"
+
+def save_to_sheet(name, school, score, percentage, grade):
+    try:
+        if "gcp_service_account" in st.secrets:
+            creds_dict = dict(st.secrets["gcp_service_account"])
+        else:
+            creds_dict = dict(st.secrets)
+        creds = Credentials.from_service_account_info(
+            creds_dict,
+            scopes=["https://www.googleapis.com/auth/spreadsheets"]
+        )
+        client = gspread.authorize(creds)
+        sheet = client.open_by_key(SHEET_ID).worksheet("Sheet1")
+        sheet.append_row([name, school, score, f"{percentage:.0f}%", grade])
+    except Exception as e:
+        st.warning(f"Could not save to Sheet: {e}")
 
 # --- 1. UNEB GRADING (for P.5 we use same D1 - F9) ---
 def get_uneb_grade(mark):
@@ -129,6 +148,7 @@ if st.button("Submit Quiz - See My Results", type="primary"):
 
         percentage = score / len(QUESTIONS) * 100
         grade = get_uneb_grade(percentage)
+		save_to_sheet(name, school, score, percentage, grade)
 
         st.success(f"### 🎉 Well done, {name}!")
         st.write(f"**Score:** {score} out of 10")
