@@ -99,6 +99,8 @@ if page == "Teacher Dashboard":
             ws = get_worksheet()
             data = ws.get_all_records()
             df = pd.DataFrame(data)
+            df["Score"] = pd.to_numeric(df["Score"], errors="coerce")
+            df["Percentage"] = pd.to_numeric(df["Percentage"], errors="coerce")
             if len(df) == 0:
                 st.info("No results yet.")
             else:
