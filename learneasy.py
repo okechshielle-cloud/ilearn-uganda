@@ -3,7 +3,7 @@ import gspread
 import pandas as pd
 from google.oauth2.service_account import Credentials
 
-SHEET_ID = "1G2PdfSMPXXIZCnumPYpAPkylU84JrJ9wq97SHI0FoFg"
+SHEET_ID = "1G2PdfSMPXXlZCnumPYpAPkyIU84JrJ9wq97SHI0FoFg"
 
 def get_creds():
     if "gcp_service_account" in st.secrets:
@@ -22,7 +22,7 @@ def get_creds():
 
 def get_worksheet():
     client = gspread.authorize(get_creds())
-    return client.open_by_key(SHEET_ID).sheet1
+    return client.open("learneasy-scores2").sheet1
 
 def save_to_sheet(name, school, score, percentage, grade):
     try:
