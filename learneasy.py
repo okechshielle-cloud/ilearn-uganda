@@ -1,190 +1,117 @@
 import streamlit as st
 import gspread
+import pandas as pd
 from google.oauth2.service_account import Credentials
 
-SHEET_ID = "1G2PdfSMPXXlZCnumPYpAPkyIU84JrJ9wq97SHI0FoFg"
+SHEET_ID = "1G2PdfSMPXXIZCnumPYpAPkylU84JrJ9wq97SHI0FoFg"
+
+def get_creds():
+    if "gcp_service_account" in st.secrets:
+        creds_dict = dict(st.secrets["gcp_service_account"])
+    else:
+        creds_dict = dict(st.secrets)
+    # --- FIX BROKEN PRIVATE KEY ---
+    pk = creds_dict["private_key"]
+    pk = pk.replace("\\n", "\n").replace("\r", "")
+    body = pk.replace("-----BEGIN PRIVATE KEY-----", "").replace("-----END PRIVATE KEY-----", "").replace("\n", "").replace(" ", "")
+    body = "".join([c for c in body if c in "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/="])
+    body += "=" * (-len(body) % 4)
+    body = "\n".join([body[i:i+64] for i in range(0, len(body), 64)])
+    creds_dict["private_key"] = "-----BEGIN PRIVATE KEY-----\n" + body + "\n-----END PRIVATE KEY-----\n"
+    return Credentials.from_service_account_info(creds_dict, scopes=["https://www.googleapis.com/auth/spreadsheets"])
+
+def get_worksheet():
+    client = gspread.authorize(get_creds())
+    return client.open_by_key(SHEET_ID).sheet1
 
 def save_to_sheet(name, school, score, percentage, grade):
     try:
-        if "gcp_service_account" in st.secrets:
-            creds_dict = dict(st.secrets["gcp_service_account"])
-        else:
-            creds_dict = dict(st.secrets)
-            # --- FIX BROKEN PRIVATE KEY ---
-        pk = creds_dict["private_key"]
-        pk = pk.replace("\\n", "\n").replace("\r", "")
-        body = pk.replace("-----BEGIN PRIVATE KEY-----", "").replace("-----END PRIVATE KEY-----", "").replace("\n", "").replace(" ", "").replace("\\n", "").strip()
-        body = "".join([c for c in body if c in "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/="])
-        body += "=" * (-len(body) % 4)
-        body = "\n".join([body[i:i+64] for i in range(0, len(body), 64)])
-        creds_dict["private_key"] = f"-----BEGIN PRIVATE KEY-----\n{body}\n-----END PRIVATE KEY-----\n"
-        creds_dict["private_key"] = f"-----BEGIN PRIVATE KEY-----\n{body}\n-----END PRIVATE KEY-----\n"
-        creds = Credentials.from_service_account_info(
-            creds_dict,
-            scopes=["https://www.googleapis.com/auth/spreadsheets"]
-        )
-        client = gspread.authorize(creds)
-        sheet = client.open_by_key(SHEET_ID).worksheet("Sheet1")
-        sheet.append_row([name, school, score, f"{percentage:.0f}%", grade])
+        ws = get_worksheet()
+        ws.append_row([name, school, score, percentage, grade])
+        return True
     except Exception as e:
-        st.warning(f"Could not save to Sheet: {e}")
+        st.error(f"Could not save: {e}")
+        return False
 
-# --- 1. UNEB GRADING (for P.5 we use same D1 - F9) ---
-def get_uneb_grade(mark):
-    if mark >= 80:
-        return "D1"
-    elif mark >= 70:
-        return "D2"
-    elif mark >= 65:
-        return "C3"
-    elif mark >= 60:
-        return "C4"
-    elif mark >= 55:
-        return "C5"
-    elif mark >= 50:
-        return "C6"
-    elif mark >= 45:
-        return "P7"
-    elif mark >= 40:
-        return "P8"
-    else:
-        return "F9"
+# --- MENU ---
+st.sidebar.title("Menu")
+page = st.sidebar.radio("Go to:", ["Take Quiz", "Teacher Dashboard"])
 
+# ================= TAKE QUIZ =================
+if page == "Take Quiz":
+    st.title("LearnEasy Quiz")
+    st.write("Welcome! Answer all questions.")
 
-# --- 2. P.5 QUESTIONS ---
-QUESTIONS = [
-    # MATHS - P.5
-    {
-        "subject": "Maths",
-        "question": "What is the place value of 5 in 5,432?",
-        "options": ["5", "50", "500", "Thousands / 5000"],
-        "answer": "Thousands / 5000",
-        "explanation": "In 5,432, the 5 is in the thousands place. So its value is 5 x 1000 = 5000."
-    },
-    {
-        "subject": "Maths",
-        "question": "What is 1/2 + 1/4?",
-        "options": ["2/6", "3/4", "1/6", "2/4"],
-        "answer": "3/4",
-        "explanation": "Change 1/2 to 2/4. Then 2/4 + 1/4 = 3/4. You add the top numbers, the bottom stays the same."
-    },
-    {
-        "subject": "Maths",
-        "question": "A book costs Shs. 2,500. How much do 4 books cost?",
-        "options": ["Shs. 5,000", "Shs. 7,500", "Shs. 10,000", "Shs. 8,000"],
-        "answer": "Shs. 10,000",
-        "explanation": "2,500 x 4 = 10,000. 25 x 4 = 100, so 2,500 x 4 = 10,000."
-    },
-    # ENGLISH - P.5
-    {
-        "subject": "English",
-        "question": "Choose the correct sentence:",
-        "options": ["The boys is playing", "The boys are playing", "The boys am playing", "The boys plays"],
-        "answer": "The boys are playing",
-        "explanation": "'Boys' is many (plural). We use 'are' for many people. We use 'is' for one person."
-    },
-    {
-        "subject": "English",
-        "question": "What is the opposite of 'early'?",
-        "options": ["Fast", "Late", "Quick", "Soon"],
-        "answer": "Late",
-        "explanation": "Opposite means the reverse. If you come early, you are before time. If you come late, you are after time."
-    },
-    {
-        "subject": "English",
-        "question": "Which word is a verb? (a doing word)",
-        "options": ["Happy", "Run", "Big", "Table"],
-        "answer": "Run",
-        "explanation": "A verb is a doing word. You can RUN. Happy, Big and Table are not actions."
-    },
-    # SCIENCE - P.5
-    {
-        "subject": "Science",
-        "question": "Which part of the plant makes food?",
-        "options": ["Root", "Stem", "Leaf", "Flower"],
-        "answer": "Leaf",
-        "explanation": "The leaf makes food for the plant using sunlight, water and air. This is called photosynthesis."
-    },
-    {
-        "subject": "Science",
-        "question": "Which of these is a living thing?",
-        "options": ["Stone", "Chair", "Dog", "Water"],
-        "answer": "Dog",
-        "explanation": "A dog can breathe, eat, grow and move on its own. Stone, chair and water cannot do all these."
-    },
-    # SST - P.5
-    {
-        "subject": "SST",
-        "question": "Which district is the capital city of Uganda found in?",
-        "options": ["Wakiso", "Mukono", "Kampala", "Jinja"],
-        "answer": "Kampala",
-        "explanation": "Kampala is both a city and a district. The capital city Kampala is found in Kampala District."
-    },
-    {
-        "subject": "SST",
-        "question": "Who is the head of a family at home?",
-        "options": ["Teacher", "Father / Mother", "LC1 Chairman", "President"],
-        "answer": "Father / Mother",
-        "explanation": "At home, the parents (father and mother) are the heads of the family. The President is head of the country."
-    },
-]
+    name = st.text_input("Your Name")
+    school = st.text_input("Your School")
 
-# --- 3. THE APP ---
-st.set_page_config(page_title="P.5 Learning Platform", page_icon="📚")
-st.title("📚 P.5 Learning Platform")
-st.write("Answer all 10 questions. Then click Submit to see your marks, grade and explanations.")
+    questions = [
+        ("Who is the head of a family?", ["Father / Mother", "Teacher", "LC1 Chairman", "President"], "Father / Mother"),
+        ("Who teaches learners at school?", ["Teacher", "Doctor", "Farmer", "Driver"], "Teacher"),
+        ("Who is the chairman of a village?", ["LC1 Chairman", "President", "Teacher", "Doctor"], "LC1 Chairman"),
+        ("Who is the head of Uganda?", ["President", "Teacher", "LC1 Chairman", "Father"], "President"),
+        ("What is 2 + 3?", ["5", "4", "6", "3"], "5"),
+        ("What is 10 - 4?", ["6", "5", "7", "4"], "6"),
+        ("Which is the capital of Uganda?", ["Kampala", "Jinja", "Mbarara", "Gulu"], "Kampala"),
+        ("How many days are in a week?", ["7", "5", "6", "10"], "7"),
+        ("Which colour is the Ugandan flag NOT?", ["Blue", "Black", "Yellow", "Red"], "Blue"),
+        ("What do plants need to grow?", ["Sunlight and water", "Soap", "Plastic", "Stone"], "Sunlight and water"),
+    ]
 
-name = st.text_input("Enter your name:")
-school = st.text_input("Enter your school (optional):")
+    answers = []
+    for i, (q, options, correct) in enumerate(questions):
+        ans = st.radio(f"Q{i+1}. {q}", options, key=f"q{i}")
+        answers.append(ans)
 
-answers = {}
-for i, q in enumerate(QUESTIONS):
-    st.subheader(f"Q{i + 1}. [{q['subject']}] {q['question']}")
-    answers[i] = st.radio("Choose your answer:", q["options"], key=f"p5_q{i}", index=None)
-
-st.divider()
-
-if st.button("Submit Quiz - See My Results", type="primary"):
-    if not name:
-        st.warning("Please enter your name first!")
-    elif None in answers.values():
-        st.warning("Please answer ALL 10 questions before submitting.")
-    else:
-        score = 0
-        for i, q in enumerate(QUESTIONS):
-            if answers[i] == q["answer"]:
-                score += 1
-
-        percentage = score / len(QUESTIONS) * 100
-        grade = get_uneb_grade(percentage)
-        save_to_sheet(name, school, score, percentage, grade)
-
-        st.success(f"### 🎉 Well done, {name}!")
-        st.write(f"**Score:** {score} out of 10")
-        st.write(f"**Percentage:** {percentage:.0f}%")
-        st.write(f"**Grade:** {grade}")
-
-        if grade in ["D1", "D2"]:
-            st.balloons()
-            st.write("Comment: Excellent! Keep it up!")
-        elif grade in ["C3", "C4", "C5", "C6"]:
-            st.write("Comment: Good! Read the explanations below to get D1 next time.")
+    if st.button("Submit Quiz - See My Results"):
+        if not name or not school:
+            st.warning("Please enter your Name and School first.")
         else:
-            st.write("Comment: Don't give up! Read all explanations below carefully.")
-
-        st.divider()
-        st.header("📖 Review - Learn from your answers")
-
-        for i, q in enumerate(QUESTIONS):
-            user_ans = answers[i]
-            is_correct = user_ans == q["answer"]
-
-            if is_correct:
-                st.success(f"Q{i + 1}. {q['question']} ✅ Correct")
+            score = sum(1 for (q, opts, corr), ans in zip(questions, answers) if ans == corr)
+            percentage = (score / len(questions)) * 100
+            if percentage >= 90:
+                grade, comment = "D1", "Excellent! Keep it up!"
+            elif percentage >= 75:
+                grade, comment = "D2", "Very good!"
+            elif percentage >= 60:
+                grade, comment = "C3", "Good, keep working!"
+            elif percentage >= 50:
+                grade, comment = "C4", "Fair, you can improve!"
             else:
-                st.error(f"Q{i + 1}. {q['question']} ❌ Wrong")
+                grade, comment = "F9", "Don't give up, try again!"
 
-            st.write(f"**Your answer:** {user_ans}")
-            st.write(f"**Correct answer:** {q['answer']}")
-            st.info(f"**Explanation:** {q['explanation']}")
-            st.write("---")
+            st.success(f"🎉 Well done, {name}!")
+            st.write(f"Score: {score} out of {len(questions)}")
+            st.write(f"Percentage: {percentage:.0f}%")
+            st.write(f"Grade: {grade}")
+            st.write(f"Comment: {comment}")
+
+            if save_to_sheet(name, school, score, percentage, grade):
+                st.info("✅ Your result has been saved!")
+
+# ================= TEACHER DASHBOARD =================
+if page == "Teacher Dashboard":
+    st.title("📊 Teacher Dashboard - LearnEasy")
+    password = st.text_input("Enter Teacher Password", type="password")
+    if password == "teacher123":
+        st.success("Welcome Teacher!")
+        try:
+            ws = get_worksheet()
+            data = ws.get_all_records()
+            df = pd.DataFrame(data)
+            if len(df) == 0:
+                st.info("No results yet.")
+            else:
+                col1, col2 = st.columns(2)
+                col1.metric("Total Learners", len(df))
+                col2.metric("Average Score", f"{df['Percentage'].mean():.1f}%")
+                st.write("Search by name:")
+                search = st.text_input("Type name...")
+                if search:
+                    df = df[df['Name'].astype(str).str.contains(search, case=False)]
+                st.dataframe(df)
+                st.download_button("Download Results", df.to_csv(index=False), "learneasy-results.csv")
+        except Exception as e:
+            st.error(f"Could not load results: {e}")
+    elif password != "":
+        st.error("Wrong password")
