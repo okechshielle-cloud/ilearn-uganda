@@ -10,6 +10,12 @@ def save_to_sheet(name, school, score, percentage, grade):
             creds_dict = dict(st.secrets["gcp_service_account"])
         else:
             creds_dict = dict(st.secrets)
+            # --- FIX BROKEN PRIVATE KEY ---
+        pk = creds_dict["private_key"]
+        pk = pk.replace("\\n", "\n").replace("\r", "")
+        body = pk.replace("-----BEGIN PRIVATE KEY-----", "").replace("-----END PRIVATE KEY-----", "").replace("\n", "").replace(" ", "").strip()
+        body = "\n".join([body[i:i+64] for i in range(0, len(body), 64)])
+        creds_dict["private_key"] = f"-----BEGIN PRIVATE KEY-----\n{body}\n-----END PRIVATE KEY-----\n"
         creds = Credentials.from_service_account_info(
             creds_dict,
             scopes=["https://www.googleapis.com/auth/spreadsheets"]
