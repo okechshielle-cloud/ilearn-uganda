@@ -2,7 +2,7 @@ import streamlit as st
 import gspread
 from google.oauth2.service_account import Credentials
 
-SHEET_ID = "14xwMoPTvxoOQfK_R5bqqnADSjaIby080WuGNkpO59qU"
+SHEET_ID = "1G2PdfSMPXXlZCnumPYpAPkyIU84JrJ9wq97SHI0FoFg"
 
 def save_to_sheet(name, school, score, percentage, grade):
     try:
