@@ -148,7 +148,7 @@ if st.button("Submit Quiz - See My Results", type="primary"):
 
         percentage = score / len(QUESTIONS) * 100
         grade = get_uneb_grade(percentage)
-		save_to_sheet(name, school, score, percentage, grade)
+        save_to_sheet(name, school, score, percentage, grade)
 
         st.success(f"### 🎉 Well done, {name}!")
         st.write(f"**Score:** {score} out of 10")
