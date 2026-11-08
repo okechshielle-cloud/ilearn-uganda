@@ -109,8 +109,11 @@ if page == "Teacher Dashboard":
                     col1, col2 = st.columns(2)
                     col1.metric("Total Learners", len(df))
                     col2.metric("Average Score", f"{df['Percentage'].mean():.1f}%")
-                    top = df.sort_values(by="Percentage", ascending=False).iloc[0]
-                    st.success(f"🏆 Top Performer: {top['Name']} — {top['Score']} / 10 ({top['Percentage']:.0f}%)")
+                    top3 = df.sort_values(by="Percentage", ascending=False).head(3)
+                    st.subheader("🏆 Top 3 Performers")
+                    medals = ["🥇", "🥈", "🥉"]
+                    for i, (idx, row) in enumerate(top3.iterrows()):
+                        st.success(f"{medals[i]} {row['Name']} — {row['Score']} / 10 ({row['Percentage']:.0f}%)")
                     st.balloons()
                     st.write("Search by name:")
                     search = st.text_input("Type name...")
