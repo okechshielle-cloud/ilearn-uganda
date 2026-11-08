@@ -1,7 +1,7 @@
 import streamlit as st
 import gspread
 import pandas as pd
-import ioF
+import io
 from google.oauth2.service_account import Credentials
 
 SHEET_ID = "1G2PdfSMPXXlZCnumPYpAPkyIU84JrJ9wq97SHI0FoFg"
