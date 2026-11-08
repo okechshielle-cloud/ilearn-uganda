@@ -117,7 +117,7 @@ if page == "Take Quiz":
     ]
 answers = []
 for i, (q, options, correct) in enumerate(questions):
-        ans = st.radio(q, options, key=f"q{i}")
+        ans = st.radio(q, options, key=f"q{i}", index=None)
         answers.append(ans)
 
 if st.button("Submit Quiz - See My Results"):
