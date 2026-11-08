@@ -122,7 +122,7 @@ if page == "Teacher Dashboard":
                     st.subheader("🏆 Top 3 Performers")
                     medals = ["🥇", "🥈", "🥉"]
                     for i, (idx, row) in enumerate(top3.iterrows()):
-                        st.success(f"{medals[i]} {row['Name']} — {row['Score']} / 10 ({row['Percentage']:.0f}%)")
+                        st.success(f"{name} - {score} / {len(questions)} ({score/len(questions)*100:.0f}%)")
                     st.balloons()
                     st.write("Search by name:")
                     search = st.text_input("Type name...")
