@@ -96,8 +96,8 @@ if page == "Teacher Dashboard":
     password = st.text_input("Enter Teacher Password", type="password")
     if password == "teacher123":
         st.success("Welcome Teacher!")
-        try:
-            ws = get_worksheet()
+    try:
+        ws = get_worksheet()
             data = ws.get_all_records()
             df = pd.DataFrame(data)
             df.columns = [str(c).strip().capitalize() for c in df.columns]
@@ -117,7 +117,7 @@ if page == "Teacher Dashboard":
                 # Download Button
                 st.download_button("📥 Download Results", df.to_csv(index=False).encode("utf-8"), "LearnEasy_Results.csv", "text/csv")
         
-         except Exception as e:
-         st.error(f"Could not load results: {e}")
+    except Exception as e:
+        st.error(f"Could not load results: {e}")
     elif password != "":
         st.error("Wrong password")
