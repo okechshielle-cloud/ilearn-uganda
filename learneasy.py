@@ -112,7 +112,7 @@ try:
                             st.write("Search by name:")
                             search = st.text_input("Type name...")
                             if search:
-                    df = df[df['Name'].astype(str).str.contains(search, case=False)]
+                                df = df[df['Name'].astype(str).str.contains(search, case=False)]
                             st.dataframe(df)
     st.download_button("📥 Download Results", df.to_csv(index=False).encode("utf-8"), "LearnEasy_Results.csv", "text/csv")
     except Exception as e:
