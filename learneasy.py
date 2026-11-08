@@ -69,8 +69,8 @@ if page == "Take Quiz":
 ]
     if st.button("🔄 New Pupil - Start Fresh Quiz"): [st.session_state.pop(k) for k in list(st.session_state.keys()) if k.startswith("q")]; st.rerun()
     answers = []
-    for i, t in enumerate(questions): q, options, correct, exp = (t + ("",) * 4)[:4]
-        st.info(f"Explanation: {exp}")
+    for i, (q, options, correct, exp) in enumerate(questions):
+    st.info(f"Explanation: {exp}")
         ans = st.radio(f"{q}", options, key=f"q{i}", index=None)
         answers.append(ans)
 
