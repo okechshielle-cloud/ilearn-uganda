@@ -67,6 +67,12 @@ if page == "Take Quiz":
     ("Q19. [CRE] 'I AM WHO I AM.' To whom was the statement made?", ["Moses", "Abraham", "Jacob", "David"], "Moses"),
     ("Q20. [English] One of the following words means elephant in Kiswahili.", ["Tembo", "Tendo", "Rembo", "Pembo"], "Tembo"),
 ]
+    if st.button("🔄 New Pupil - Start Fresh Quiz"):
+    for key in list(st.session_state.keys()):
+        if key.startswith("q"):
+            del st.session_state[key]
+    st.rerun()
+
     answers = []
     for i, (q, options, correct) in enumerate(questions):
         ans = st.radio(f"{q}", options, key=f"q{i}")
