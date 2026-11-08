@@ -67,8 +67,9 @@ if page == "Take Quiz":
     ("Q19. [CRE] 'I AM WHO I AM.' To whom was the statement made?", ["Moses", "Abraham", "Jacob", "David"], "Moses"),
     ("Q20. [English] One of the following words means elephant in Kiswahili.", ["Tembo", "Tendo", "Rembo", "Pembo"], "Tembo"),
 ]
+    answers = []
     for i, (q, options, correct) in enumerate(questions):
-        ans = st.radio(f"Q{i+1}. {q}", options, key=f"q{i}")
+        ans = st.radio(f"{q}", options, key=f"q{i}")
         answers.append(ans)
 
     if st.button("Submit Quiz - See My Results"):
