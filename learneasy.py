@@ -120,7 +120,7 @@ for i, (q, options, correct) in enumerate(questions):
         ans = st.radio(q, options, key=f"q{i}")
         answers.append(ans)
 
-    if st.button("Submit Quiz - See My Results"):
+if st.button("Submit Quiz - See My Results"):
         if not name or not school:
             st.warning("Please enter Your Name and Your School first.")
         else:
