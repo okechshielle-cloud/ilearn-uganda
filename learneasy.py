@@ -1,7 +1,12 @@
 import streamlit as st
 import pandas as pd
+from datetime import datetime
 
 st.set_page_config(page_title="LearnEasy", layout="wide")
+
+# --- SAVE RESULTS HERE ---
+if "results" not in st.session_state:
+    st.session_state.results = []
 
 page = st.sidebar.radio("Go to:", ["Take Quiz", "Teacher Dashboard"])
 
@@ -123,6 +128,17 @@ if page == "Take Quiz":
             else:
                 grade = "Needs Practice"
             st.success(f"Well done {name}! You scored {score}/{len(questions)} = {percentage:.0f}% - {grade}")
+            st.info("Your result has been SAVED. Your teacher can see it in Teacher Dashboard.")
+            # SAVE IT
+            new_result = {
+                "Date & Time": datetime.now().strftime("%d %b %Y, %I:%M %p"),
+                "Name": name,
+                "School": school,
+                "Score": f"{score}/{len(questions)}",
+                "Percentage": round(percentage),
+                "Grade": grade,
+            }
+            st.session_state.results.append(new_result)
             st.subheader("See Your Answers + Explanations")
             st.write("Read this to learn from your mistakes. This is how you improve!")
             for i, (q, options, correct, explain) in enumerate(questions):
@@ -144,6 +160,17 @@ elif page == "Teacher Dashboard":
         for outcome in learning_outcomes[subject_choice2]:
             st.write(f"- {outcome}")
         st.subheader("Student Results")
-        st.info("Students see their score right after Submit. Connect your Google Sheet here to see all results in one table.")
+        if len(st.session_state.results) == 0:
+            st.info("No results yet. Ask pupils to take the quiz and click Submit.")
+        else:
+            df = pd.DataFrame(st.session_state.results)
+            st.write(f"Total pupils who have done the quiz: {len(df)}")
+            st.write(f"Class Average: {df['Percentage'].mean():.0f}%")
+            st.dataframe(df, use_container_width=True)
+            csv = df.to_csv(index=False).encode("utf-8")
+            st.download_button("Download Results as Excel / CSV", data=csv, file_name="learneasy_results.csv", mime="text/csv")
+            if st.button("Clear All Results"):
+                st.session_state.results = []
+                st.rerun()
     elif password != "":
         st.error("Wrong password. Try teacher123")
