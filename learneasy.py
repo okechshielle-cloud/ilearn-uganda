@@ -3,12 +3,9 @@ import pandas as pd
 
 st.set_page_config(page_title="LearnEasy", layout="wide")
 
-# ---------- MENU ----------
 page = st.sidebar.radio("Go to:", ["Take Quiz", "Teacher Dashboard"])
 
-# ---------- YOUR LEARNING OUTCOMES ----------
 learning_outcomes = {
-    # --- MATHS - 12 Topics ---
     "P5-M-T1-01 Sets": ["Describe, list and form sets","Identify types of sets - equal, equivalent, empty, subset","Find union and intersection of sets","Represent sets on Venn diagrams","Find probability of a coin, dice, days of week"],
     "P5-M-T1-02 Whole Numbers": ["Form numbers up to 999,999 from digits","State place value and value of digits","Expand numbers using place values and powers of 10","Write numbers in words and figures","Round off whole numbers to nearest 10, 100, 1000","Write Roman numerals up to 300"],
     "P5-M-T1-03 Number Patterns & Sequences": ["Identify even, odd, prime, square, cube numbers","Find multiples, LCM and HCF","Find prime factors by factor tree / ladder","Find increasing and decreasing sequences"],
@@ -21,7 +18,6 @@ learning_outcomes = {
     "P5-M-T3-10 Lines, Angles & Geometric Figures": ["Identify parallel, perpendicular and intersecting lines","Identify acute, right, obtuse, reflex angles","Identify properties of 2D and 3D shapes","Draw nets of solids"],
     "P5-M-T3-11 Time": ["Tell time on 12-hour and 24-hour clock","Convert time units","Find duration / time taken","Solve word problems on time"],
     "P5-M-T3-12 Measurement": ["Measure length, mass and capacity","Convert units - km-m-cm, kg-g, litres-ml","Find perimeter and area of squares and rectangles","Find volume of cubes and cuboids","Solve word problems on measurement"],
-    # --- SCIENCE ---
     "P5-SCI-T1-01 Keeping Poultry": ["Name types of poultry","Describe external parts of poultry","Explain feeding, housing, disease prevention","Keep farm records"],
     "P5-SCI-T1-02 Bee Keeping": ["Identify parts of a bee hive","Explain importance of bees","Describe products - honey, wax","State safety in bee keeping"],
     "P5-SCI-T1-03 Digestive System": ["Name parts of digestive system","Explain function of each part","State disorders and prevention","Explain balanced diet"],
@@ -34,7 +30,6 @@ learning_outcomes = {
     "P5-SCI-T3-10 Keeping Goats & Sheep": ["State reasons for keeping goats/sheep","Name breeds - Mubende goats","Explain feeding, housing, diseases - pneumonia, foot rot"],
     "P5-SCI-T3-11 Keeping Cattle & Pigs": ["State reasons for keeping cattle/pigs","Explain breeds, feeding, housing, diseases"],
     "P5-SCI-T3-12 Sanitation & Health": ["Explain personal hygiene","State causes of common diseases","Explain prevention - clean water, latrines"],
-    # --- ENGLISH ---
     "P5-E-T1-01 Vehicle Repair": ["Use vocabulary - engine, tyre, steering, windscreen, seat belt","Construct sentences about vehicle parts","Read passage and answer questions"],
     "P5-E-T1-02 Print Media": ["Use vocabulary - advertisement, reporter, article, column","Read advertisement","Write advertisement"],
     "P5-E-T1-03 Travelling": ["Use vocabulary - journey, fare, ticket, luggage","Use Past Simple and Past Continuous","Write guided composition on a journey"],
@@ -44,7 +39,6 @@ learning_outcomes = {
     "P5-E-T3-07 Peace & Security": ["Use vocabulary - peace, security, soldier, police","Construct sentences","Read passage on peace"],
     "P5-E-T3-08 Services - Banks": ["Use vocabulary - bank, account, deposit, withdraw","Fill bank forms","Write sentences on banking"],
     "P5-E-ALL-09 Grammar & Punctuation": ["Use capital letters, full stop, question mark, apostrophe","Identify nouns, pronouns, verbs, adjectives, adverbs, prepositions, conjunctions","Use tenses correctly","Use synonyms and antonyms"],
-    # --- SST ---
     "P5-SST-T1-01 Location of Uganda": ["Locate Uganda on map of East Africa","Name neighbours - Kenya, Tanzania, Rwanda, DRC, South Sudan","State Uganda is landlocked","Use compass directions"],
     "P5-SST-T1-02 Physical Features": ["Identify mountains, lakes, rivers, rift valley","Explain formation of mountains","State uses of lakes and rivers"],
     "P5-SST-T1-03 Climate of Uganda": ["Define climate","Identify factors - altitude, latitude, vegetation","Identify climatic regions","Explain relief rainfall in Eastern Uganda - Mt Elgon"],
@@ -55,7 +49,6 @@ learning_outcomes = {
     "P5-SST-T3-08 Uganda as Independent Nation": ["State independence 9th Oct 1962","Identify national symbols - flag, anthem, coat of arms","Explain meaning of colours"],
     "P5-SST-T3-09 Democracy & Citizenship": ["Define democracy, citizenship","Identify organs of government","Explain elections, ballot paper, constituency"],
     "P5-SST-T3-10 Economic Activities": ["Identify farming, fishing, mining, trade","Explain interdependence","State importance of transport"],
-    # --- RELIGIOUS EDUCATION ---
     "P5-RE-T1-01 Faith": ["Define faith - believing in God with full confidence","Name people of great faith - Abraham, Moses","Explain how faith overcomes problems"],
     "P5-RE-T1-02 Christianity & Islam": ["State facts about Islam and Christianity","Explain history of Islam in Uganda - Arab traders 1844","Show respect for other faiths"],
     "P5-RE-T1-03 Gods Word - The Bible": ["Name books of Bible","Explain how to read and study Bible","State uses of Bible"],
@@ -67,7 +60,6 @@ learning_outcomes = {
     "P5-RE-IRE-01 Tawhid & Pillars": ["Define Tawhid","Recite Surat Al-Zilzala","State pillars of Islam - Shahada, Swallah, Zakat, Saum, Hajj"],
     "P5-RE-IRE-02 Fiqh & Fasting": ["Explain fasting in Ramadhan","State rules of prayer","Explain Day of Judgement"],
     "P5-RE-IRE-03 History of Islam": ["Describe Prophet Muhammad at Medina","State history of Islam in Uganda"],
-    # --- KISWAHILI ---
     "P5-KIS-T1-01 Maamkuzi na Maagano": ["Kusalimia - Shikamoo, Habari za asubuhi","Kuagana - Safari njema, Lala salama","Kutumia maamkuzi katika mazungumzo"],
     "P5-KIS-T1-02 Familia na Nyumbani": ["Kutaja wanafamilia - baba, mama, kaka, dada","Kueleza kazi za nyumbani","Kuandika sentensi kuhusu familia"],
     "P5-KIS-T1-03 Shuleni": ["Kutaja vitu vya shule","Kueleza ratiba ya shule","Kusoma kifungu kuhusu shule"],
@@ -80,19 +72,16 @@ learning_outcomes = {
     "P5-KIS-T3-10 Methali na Semi": ["Kueleza maana ya methali","Kutumia methali katika mazungumzo","Kukariri vitanzandimi"],
 }
 
-# ---------- TAKE QUIZ ----------
 if page == "Take Quiz":
     st.title("LearnEasy Quiz")
     st.write("Answer all questions, then click Submit.")
-
     name = st.text_input("Your Name")
     school = st.text_input("Your School")
-
     subject_choice = st.selectbox("Choose Subject to see its Learning Outcomes", list(learning_outcomes.keys()))
     st.subheader(f"Learning Outcomes: {subject_choice}")
     for outcome in learning_outcomes[subject_choice]:
         st.write(f"- {outcome}")
-questions = [
+    questions = [
         ("Q1. [English] What gets wetter the more it dries?", ["A towel", "Water", "A stone", "A cup"], "A towel"),
         ("Q2. [Maths] The temperature of the room in the morning was 54 degrees Celsius. Find the temperature in degrees Fahrenheit.", ["129.2 F", "54 F", "97.2 F", "86 F"], "129.2 F"),
         ("Q3. [CRE] How did the people of Israel survive in the wilderness while moving to the promised land?", ["God provided them with manna, quails and water", "They bought food from shops", "They grew crops in the desert", "They hunted animals only"], "God provided them with manna, quails and water"),
@@ -114,12 +103,11 @@ questions = [
         ("Q19. [CRE] 'I AM WHO I AM.' To whom was the statement made?", ["Moses", "Abraham", "Jacob", "David"], "Moses"),
         ("Q20. [English] One of the following words means elephant in Kiswahili.", ["Tembo", "Tendo", "Rembo", "Pembo"], "Tembo"),
     ]
-answers = []
-for i, (q, options, correct) in enumerate(questions):
+    answers = []
+    for i, (q, options, correct) in enumerate(questions):
         ans = st.radio(q, options, key=f"q{i}", index=None)
         answers.append(ans)
-
-if st.button("Submit Quiz - See My Results"):
+    if st.button("Submit Quiz - See My Results"):
         if not name or not school:
             st.warning("Please enter Your Name and Your School first.")
         else:
@@ -135,12 +123,8 @@ if st.button("Submit Quiz - See My Results"):
             else:
                 grade = "Needs Practice"
             st.success(f"Well done {name}! You scored {score}/{len(questions)} = {percentage:.0f}% - {grade}")
-            st.subheader("Your Learning Outcomes")
-            for outcome in learning_outcomes[subject_choice]:
-                st.write(f"- {outcome}")
 
-# ---------- TEACHER DASHBOARD ----------
-if page == "Teacher Dashboard":
+elif page == "Teacher Dashboard":
     st.title("Teacher Dashboard - LearnEasy")
     password = st.text_input("Enter Teacher Password", type="password")
     if password == "teacher123":
