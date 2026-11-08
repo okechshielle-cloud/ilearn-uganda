@@ -100,7 +100,7 @@ if page == "Teacher Dashboard":
             data = ws.get_all_records()
             df = pd.DataFrame(data)
             df["Score"] = pd.to_numeric(df["Score"], errors="coerce")
-            df["Percentage"] = pd.to_numeric(df["Percentage"], errors="coerce")
+            df["Percentage"] = pd.to_numeric(df["Percentage"].astype(str).str.replace("%", "", regex=False), errors="coerce")
             if len(df) == 0:
                 st.info("No results yet.")
             else:
