@@ -99,6 +99,7 @@ if page == "Teacher Dashboard":
             ws = get_worksheet()
             data = ws.get_all_records()
             df = pd.DataFrame(data)
+            df.columns = [str(c).strip().capitalize() for c in df.columns]
             df["Score"] = pd.to_numeric(df["Score"], errors="coerce")
             df["Percentage"] = pd.to_numeric(df["Percentage"].astype(str).str.replace("%", "", regex=False), errors="coerce")
             if len(df) == 0:
