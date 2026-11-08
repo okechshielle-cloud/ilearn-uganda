@@ -145,7 +145,7 @@ questions = [
     ("Q19. [CRE] 'I AM WHO I AM.' To whom was the statement made?", ["Moses", "Abraham", "Jacob", "Aaron"], "Moses", "God said 'I AM WHO I AM' to Moses at the burning bush in Exodus 3, when Moses asked for God's name before going to Pharaoh in Egypt."),
     ("Q20. [English] One of the following words means elephant in Kiswahili.", ["Tembo", "Simba", "Nyani", "Paka"], "Tembo", "In Kiswahili, elephant = Tembo. Simba = lion, Nyani = monkey, Paka = cat."),
 ]
-    answers = []
+answers = []
     for i, t in enumerate(questions):
         q, options, correct, exp = (t + ("",) * 4)[:4]
         ans = st.radio(f"{q}", options, key=f"q{i}", index=None)
