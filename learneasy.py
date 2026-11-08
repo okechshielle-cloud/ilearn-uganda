@@ -96,6 +96,16 @@ if page == "Take Quiz":
             st.write(f"Percentage: {percentage:.0f}%")
             st.write(f"Grade: {grade}")
             st.write(f"Comment: {comment}")
+            st.subheader("Review - See correct answers and explanations")
+            for i, t in enumerate(questions):
+                q, options, correct, exp = (t + ("",) * 4)[:4]
+                ans = answers[i]
+                if ans == correct:
+                    st.success(f"Q{i+1}: {q} - Correct!")
+                else:
+                   st.error(f"Q{i+1}: {q} - Wrong. Your answer: {ans}. Correct answer: {correct}")
+                if exp:
+                    st.info(f"Explanation: {exp}")
 
             if save_to_sheet(name, school, score, percentage, grade):
                 st.info("✅ Your result has been saved!")
