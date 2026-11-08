@@ -70,7 +70,7 @@ if page == "Take Quiz":
     if st.button("🔄 New Pupil - Start Fresh Quiz"): st.session_state.clear(); st.rerun()
     answers = []
     for i, (q, options, correct) in enumerate(questions):
-        ans = st.radio(f"{q}", options, key=f"q{i}" index=None)
+        ans = st.radio(f"{q}", options, key=f"q{i}", index=None)
         answers.append(ans)
 
     if st.button("Submit Quiz - See My Results"):
