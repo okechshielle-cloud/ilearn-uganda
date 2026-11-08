@@ -5,8 +5,8 @@ import os
 
 st.set_page_config(page_title="LearnEasy", layout="wide")
 
-# --- LOAD SAVED RESULTS FROM FILE (so refresh does not delete them) ---
 RESULTS_FILE = "learneasy_results.csv"
+
 if "results" not in st.session_state:
     if os.path.exists(RESULTS_FILE):
         try:
@@ -26,6 +26,8 @@ if "last_grade" not in st.session_state:
     st.session_state.last_grade = ""
 if "last_answers" not in st.session_state:
     st.session_state.last_answers = []
+if "last_name" not in st.session_state:
+    st.session_state.last_name = ""
 
 def save_results():
     try:
@@ -102,7 +104,6 @@ learning_outcomes = {
     "P5-KIS-T3-10 Methali na Semi": ["Kueleza maana ya methali","Kutumia methali katika mazungumzo","Kukariri vitanzandimi"],
 }
 
-# QUESTIONS - ANSWERS SPREAD: A=5, B=5, C=5, D=5
 questions = [
     ("Q1. [English] What gets wetter the more it dries?", ["Water", "A towel", "A stone", "A cup"], "A towel", "A towel gets wetter the more it dries you or dishes. It is a riddle!"),
     ("Q2. [Maths] The temperature of the room in the morning was 54 degrees Celsius. Find the temperature in degrees Fahrenheit.", ["54 F", "86 F", "129.2 F", "97.2 F"], "129.2 F", "Use F = (C x 9/5) + 32. So (54 x 9/5) + 32 = 97.2 + 32 = 129.2 F."),
@@ -135,19 +136,20 @@ if page == "Take Quiz":
     st.subheader(f"Learning Outcomes: {subject_choice}")
     for outcome in learning_outcomes[subject_choice]:
         st.write(f"- {outcome}")
-
     answers = []
     for i, (q, options, correct, explain) in enumerate(questions):
         ans = st.radio(q, options, key=f"q{i}", index=None)
         answers.append(ans)
-
     if st.button("Submit Quiz - See My Results"):
         if not name or not school:
             st.warning("Please enter Your Name and Your School first.")
         elif st.session_state.submitted:
-            st.info("You already submitted. Click 'Take Quiz Again' below to start fresh.")
+            st.info("You already submitted. Click Take Quiz Again below to start fresh.")
         else:
-            score = sum(1 for i, (q, options, correct, explain) in enumerate(questions) if answers[i] == correct)
+            score = 0
+            for i in range(len(questions)):
+                if answers[i] == questions[i][2]:
+                    score = score + 1
             percentage = (score / len(questions)) * 100
             if percentage >= 80:
                 grade = "Excellent"
@@ -155,6 +157,41 @@ if page == "Take Quiz":
                 grade = "Good - Keep Practicing"
             else:
                 grade = "Needs Practice"
-            # SAVE ONCE
             st.session_state.results.append({
-                "Date & Time":
+                "Date & Time": datetime.now().strftime("%d %b %Y, %I:%M %p"),
+                "Name": name,
+                "School": school,
+                "Score": f"{score}/{len(questions)}",
+                "Percentage": round(percentage),
+                "Grade": grade,
+            })
+            save_results()
+            st.session_state.submitted = True
+            st.session_state.last_score = score
+            st.session_state.last_percentage = round(percentage)
+            st.session_state.last_grade = grade
+            st.session_state.last_answers = list(answers)
+            st.session_state.last_name = name
+            st.rerun()
+    if st.session_state.submitted:
+        st.success(f"Well done {st.session_state.last_name}! You scored {st.session_state.last_score}/{len(questions)} = {st.session_state.last_percentage}% - {st.session_state.last_grade}")
+        st.info("Your result has been SAVED. Your teacher can see it in Teacher Dashboard.")
+        # Top 3 badge - simple and safe
+        sorted_results = sorted(st.session_state.results, key=lambda x: int(x["Percentage"]), reverse=True)
+        top3 = sorted_results[:3]
+        my_pct = st.session_state.last_percentage
+        rank = 0
+        for idx in range(len(top3)):
+            if int(top3[idx]["Percentage"]) == my_pct:
+                rank = idx + 1
+                break
+        if rank == 1:
+            st.balloons()
+            st.success("🏆 🥇 GOLD - TOP 1! You are the Champion!")
+        elif rank == 2:
+            st.success("🏆 🥈 SILVER - TOP 2! Excellent work!")
+        elif rank == 3:
+            st.success("🏆 🥉 BRONZE - TOP 3! You made it!")
+        st.subheader("See Your Answers + Explanations")
+        saved = st.session_state.last_answers
+        for i in range(len(questions))
