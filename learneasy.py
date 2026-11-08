@@ -78,7 +78,7 @@ if page == "Take Quiz":
         if not name or not school:
             st.warning("Please enter your Name and School first.")
         else:
-            score = sum(1 for (q, opts, corr), ans in zip(questions, answers) if ans == corr)
+            score = sum(1 for (q, opts, corr, exp), ans in zip(questions, answers) if ans == corr)
             percentage = (score / len(questions)) * 100
             if percentage >= 90:
                 grade, comment = "D1", "Excellent! Keep it up!"
