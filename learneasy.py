@@ -39,7 +39,7 @@ st.sidebar.title("Menu")
 page = st.sidebar.radio("Go to:", ["Take Quiz", "Teacher Dashboard"])
 
 # ================= TAKE QUIZ =================
-if page == "Teacher Dahboard":
+if page == "Take Quiz":
     st.title("LearnEasy Quiz")
     st.write("Welcome! Answer all questions.")
 
