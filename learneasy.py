@@ -45,21 +45,28 @@ if page == "Take Quiz":
 
     name = st.text_input("Your Name")
     school = st.text_input("Your School")
-
     questions = [
-        ("Who is the head of a family?", ["Father / Mother", "Teacher", "LC1 Chairman", "President"], "Father / Mother"),
-        ("Who teaches learners at school?", ["Teacher", "Doctor", "Farmer", "Driver"], "Teacher"),
-        ("Who is the chairman of a village?", ["LC1 Chairman", "President", "Teacher", "Doctor"], "LC1 Chairman"),
-        ("Who is the head of Uganda?", ["President", "Teacher", "LC1 Chairman", "Father"], "President"),
-        ("What is 2 + 3?", ["5", "4", "6", "3"], "5"),
-        ("What is 10 - 4?", ["6", "5", "7", "4"], "6"),
-        ("Which is the capital of Uganda?", ["Kampala", "Jinja", "Mbarara", "Gulu"], "Kampala"),
-        ("How many days are in a week?", ["7", "5", "6", "10"], "7"),
-        ("Which colour is the Ugandan flag NOT?", ["Blue", "Black", "Yellow", "Red"], "Blue"),
-        ("What do plants need to grow?", ["Sunlight and water", "Soap", "Plastic", "Stone"], "Sunlight and water"),
-    ]
-
-    answers = []
+    ("Q1. [Maths] What is the place value of 5 in 5,432?", ["5", "50", "500", "Thousands / 5000"], "Thousands / 5000"),
+    ("Q2. [Maths] What is 1/2 + 1/4?", ["2/6", "3/4", "1/6", "2/4"], "3/4"),
+    ("Q3. [English] Choose the correct sentence.", ["She go to school.", "She goes to school.", "She going to school.", "She gone to school."], "She goes to school."),
+    ("Q4. [Science] Which gas do plants use to make food?", ["Oxygen", "Carbon dioxide", "Nitrogen", "Hydrogen"], "Carbon dioxide"),
+    ("Q5. [Maths] What is 12 x 8?", ["86", "96", "108", "88"], "96"),
+    ("Q6. [SST] What is the capital city of Uganda?", ["Jinja", "Entebbe", "Kampala", "Mbarara"], "Kampala"),
+    ("Q7. [English] What is the opposite of 'happy'?", ["Glad", "Sad", "Joyful", "Smiling"], "Sad"),
+    ("Q8. [Science] Which animal is a mammal?", ["Chicken", "Lizard", "Cow", "Fish"], "Cow"),
+    ("Q9. [Maths] What is 100 - 37?", ["63", "73", "67", "53"], "63"),
+    ("Q10. [English] Fill in: ___ apple is red.", ["A", "An", "The", "Some"], "The"),
+    ("Q11. [Maths] Simplify 2m - 8m + 13m", ["7m", "5m", "23m", "3m"], "7m"),
+    ("Q12. [SST] Which country does Uganda border in the East?", ["Kenya", "Tanzania", "South Sudan", "DR Congo"], "Kenya"),
+    ("Q13. [Science] Why is heat unable to travel in a vacuum?", ["There are no particles to carry it", "Vacuum is too hot", "Vacuum is too cold", "Heat hates vacuum"], "There are no particles to carry it"),
+    ("Q14. [Maths] Which of these is the net of a cylinder?", ["Two circles and a rectangle", "One circle and a triangle", "Three squares", "Two triangles and a rectangle"], "Two circles and a rectangle"),
+    ("Q15. [SST] Name the major physical feature that is known for the formation of relief rainfall in Eastern Uganda.", ["Mt. Elgon", "Lake Victoria", "Mt. Rwenzori", "River Nile"], "Mt. Elgon"),
+    ("Q16. [English] Sarah ........ meat to chicken. (Prefers, likes)", ["Prefers", "Likes", "Prefer", "Like"], "Prefers"),
+    ("Q17. [Maths] Molly is twice as old as Jolly. If the sum of their ages is 30, how old is Molly?", ["10 years", "15 years", "20 years", "30 years"], "20 years"),
+    ("Q18. [SST] What is a landlocked country?", ["A country with no sea coast", "A country with many lakes", "A country with a big airport", "A country near the sea"], "A country with no sea coast"),
+    ("Q19. [CRE] 'I AM WHO I AM.' To whom was the statement made?", ["Moses", "Abraham", "Jacob", "David"], "Moses"),
+    ("Q20. [English] One of the following words means elephant in Kiswahili.", ["Tembo", "Tendo", "Rembo", "Pembo"], "Tembo"),
+]
     for i, (q, options, correct) in enumerate(questions):
         ans = st.radio(f"Q{i+1}. {q}", options, key=f"q{i}")
         answers.append(ans)
