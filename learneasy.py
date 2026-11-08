@@ -4,7 +4,6 @@ from datetime import datetime
 
 st.set_page_config(page_title="LearnEasy", layout="wide")
 
-# --- SAVE RESULTS HERE ---
 if "results" not in st.session_state:
     st.session_state.results = []
 
@@ -87,26 +86,26 @@ if page == "Take Quiz":
     for outcome in learning_outcomes[subject_choice]:
         st.write(f"- {outcome}")
     questions = [
-        ("Q1. [English] What gets wetter the more it dries?", ["A towel", "Water", "A stone", "A cup"], "A towel", "A towel gets wetter the more it dries you or dishes. It is a riddle!"),
-        ("Q2. [Maths] The temperature of the room in the morning was 54 degrees Celsius. Find the temperature in degrees Fahrenheit.", ["129.2 F", "54 F", "97.2 F", "86 F"], "129.2 F", "Use F = (C x 9/5) + 32. So (54 x 9/5) + 32 = 97.2 + 32 = 129.2 F."),
+        ("Q1. [English] What gets wetter the more it dries?", ["Water", "A towel", "A stone", "A cup"], "A towel", "A towel gets wetter the more it dries you or dishes. It is a riddle!"),
+        ("Q2. [Maths] The temperature of the room in the morning was 54 degrees Celsius. Find the temperature in degrees Fahrenheit.", ["54 F", "86 F", "129.2 F", "97.2 F"], "129.2 F", "Use F = (C x 9/5) + 32. So (54 x 9/5) + 32 = 97.2 + 32 = 129.2 F."),
         ("Q3. [CRE] How did the people of Israel survive in the wilderness while moving to the promised land?", ["God provided them with manna, quails and water", "They bought food from shops", "They grew crops in the desert", "They hunted animals only"], "God provided them with manna, quails and water", "God gave them manna in the morning, quails for meat in the evening, and water from the rock."),
-        ("Q4. [SST] What is the largest vegetation in Uganda?", ["Savanna grassland", "Tropical rainforest", "Montane forest", "Swamp vegetation"], "Savanna grassland", "Savanna grassland covers the biggest part of Uganda. Rainforest is only in small areas like Mabira and Bwindi."),
-        ("Q5. [Maths] Simplify: -5 - (-6)", ["1", "-11", "11", "-1"], "1", "-5 - (-6) = -5 + 6 = 1. Minus a minus becomes plus."),
+        ("Q4. [SST] What is the largest vegetation in Uganda?", ["Tropical rainforest", "Montane forest", "Swamp vegetation", "Savanna grassland"], "Savanna grassland", "Savanna grassland covers the biggest part of Uganda. Rainforest is only in small areas like Mabira and Bwindi."),
+        ("Q5. [Maths] Simplify: -5 - (-6)", ["-11", "1", "11", "-1"], "1", "-5 - (-6) = -5 + 6 = 1. Minus a minus becomes plus."),
         ("Q6. [Maths] A pair of packets of biscuits costs Sh. 1000. Find the cost of 7 similar packets of biscuits.", ["Sh. 3500", "Sh. 7000", "Sh. 500", "Sh. 3000"], "Sh. 3500", "1 pair = 2 packets = 1000, so 1 packet = 500. 7 x 500 = 3500."),
-        ("Q7. [Maths] How far can a fox run into a circular forest?", ["Halfway", "All the way through", "Quarter way", "To the centre only"], "Halfway", "Trick! After halfway, the fox starts running OUT of the forest, not in."),
-        ("Q8. [Science] How does a mosquito differ from a cockroach in terms of their lifecycle?", ["Mosquito undergoes complete metamorphosis, cockroach undergoes incomplete metamorphosis", "Mosquito undergoes incomplete metamorphosis, cockroach undergoes complete metamorphosis", "Both undergo complete metamorphosis", "Both undergo incomplete metamorphosis"], "Mosquito undergoes complete metamorphosis, cockroach undergoes incomplete metamorphosis", "Mosquito: egg - larva - pupa - adult (complete). Cockroach: egg - nymph - adult (incomplete, no pupa)."),
+        ("Q7. [Maths] How far can a fox run into a circular forest?", ["All the way through", "Quarter way", "Halfway", "To the centre only"], "Halfway", "Trick! After halfway, the fox starts running OUT of the forest, not in."),
+        ("Q8. [Science] How does a mosquito differ from a cockroach in terms of their lifecycle?", ["Both undergo complete metamorphosis", "Both undergo incomplete metamorphosis", "Mosquito undergoes incomplete metamorphosis, cockroach undergoes complete metamorphosis", "Mosquito undergoes complete metamorphosis, cockroach undergoes incomplete metamorphosis"], "Mosquito undergoes complete metamorphosis, cockroach undergoes incomplete metamorphosis", "Mosquito: egg - larva - pupa - adult (complete). Cockroach: egg - nymph - adult (incomplete, no pupa)."),
         ("Q9. [Science] Why does heat travel faster in a solid than in a gas?", ["Particles in a solid are closer together", "Particles in a gas are closer together", "Solids are hotter", "Gases have no particles"], "Particles in a solid are closer together", "Heat needs particles to pass it on. Solid particles are packed tight, so heat moves faster."),
-        ("Q10. [RE] How does the school prayer assist a learner?", ["It helps the learner start the day with discipline, respect and a calm mind", "It makes the learner sleep", "It stops the learner from learning", "It makes the learner hungry"], "It helps the learner start the day with discipline, respect and a calm mind", "Prayer gives discipline, unity, respect for God, and settles the mind to learn."),
-        ("Q11. [Maths] Simplify 2m - 8m + 13m", ["7m", "5m", "23m", "3m"], "7m", "2m - 8m = -6m, -6m + 13m = 7m."),
-        ("Q12. [SST] Which country does Uganda border in the East?", ["Kenya", "Tanzania", "South Sudan", "DR Congo"], "Kenya", "Uganda borders Kenya in the East."),
+        ("Q10. [RE] How does the school prayer assist a learner?", ["It makes the learner sleep", "It helps the learner start the day with discipline, respect and a calm mind", "It stops the learner from learning", "It makes the learner hungry"], "It helps the learner start the day with discipline, respect and a calm mind", "Prayer gives discipline, unity, respect for God, and settles the mind to learn."),
+        ("Q11. [Maths] Simplify 2m - 8m + 13m", ["5m", "23m", "7m", "3m"], "7m", "2m - 8m = -6m, -6m + 13m = 7m."),
+        ("Q12. [SST] Which country does Uganda border in the East?", ["Tanzania", "South Sudan", "DR Congo", "Kenya"], "Kenya", "Uganda borders Kenya in the East."),
         ("Q13. [Science] Why is heat unable to travel in a vacuum?", ["There are no particles to carry it", "Vacuum is too hot", "Vacuum is too cold", "Heat hates vacuum"], "There are no particles to carry it", "Heat by conduction and convection needs particles. In a vacuum there are no particles."),
-        ("Q14. [Maths] Which of these is the net of a cylinder?", ["Two circles and a rectangle", "One circle and a triangle", "Three squares", "Two triangles and a rectangle"], "Two circles and a rectangle", "A cylinder net has 2 circles for top and bottom, and a rectangle for the curved side."),
-        ("Q15. [SST] Name the major physical feature that is known for the formation of relief rainfall in Eastern Uganda.", ["Mt. Elgon", "Lake Victoria", "Mt. Rwenzori", "River Nile"], "Mt. Elgon", "Mt. Elgon in Eastern Uganda causes relief rainfall."),
-        ("Q16. [English] Use the correct form: Sarah ........ meat to chicken. (Prefers, likes)", ["Prefers", "Likes", "Prefer", "Like"], "Prefers", "We say 'prefers ... to ...' when comparing two things. Sarah prefers meat to chicken."),
-        ("Q17. [Maths] Molly is twice as old as Jolly. If the sum of their ages is 30, how old is Molly?", ["10 years", "15 years", "20 years", "30 years"], "20 years", "Jolly = 10, Molly = 2 x 10 = 20. 10 + 20 = 30."),
-        ("Q18. [SST] What is a landlocked country?", ["A country with no sea coast", "A country with many lakes", "A country with a big airport", "A country near the sea"], "A country with no sea coast", "A landlocked country is surrounded by land and has no sea coast, e.g. Uganda."),
-        ("Q19. [CRE] 'I AM WHO I AM.' To whom was the statement made?", ["Moses", "Abraham", "Jacob", "David"], "Moses", "God said 'I AM WHO I AM' to Moses at the burning bush."),
-        ("Q20. [English] One of the following words means elephant in Kiswahili.", ["Tembo", "Tendo", "Rembo", "Pembo"], "Tembo", "Tembo means elephant in Kiswahili."),
+        ("Q14. [Maths] Which of these is the net of a cylinder?", ["One circle and a triangle", "Two circles and a rectangle", "Three squares", "Two triangles and a rectangle"], "Two circles and a rectangle", "A cylinder net has 2 circles for top and bottom, and a rectangle for the curved side."),
+        ("Q15. [SST] Name the major physical feature that is known for the formation of relief rainfall in Eastern Uganda.", ["Lake Victoria", "Mt. Rwenzori", "Mt. Elgon", "River Nile"], "Mt. Elgon", "Mt. Elgon in Eastern Uganda causes relief rainfall."),
+        ("Q16. [English] Use the correct form: Sarah ........ meat to chicken. (Prefers, likes)", ["Likes", "Prefer", "Like", "Prefers"], "Prefers", "We say 'prefers ... to ...' when comparing two things. Sarah prefers meat to chicken."),
+        ("Q17. [Maths] Molly is twice as old as Jolly. If the sum of their ages is 30, how old is Molly?", ["20 years", "10 years", "15 years", "30 years"], "20 years", "Jolly = 10, Molly = 2 x 10 = 20. 10 + 20 = 30."),
+        ("Q18. [SST] What is a landlocked country?", ["A country with many lakes", "A country with no sea coast", "A country with a big airport", "A country near the sea"], "A country with no sea coast", "A landlocked country is surrounded by land and has no sea coast, e.g. Uganda."),
+        ("Q19. [CRE] 'I AM WHO I AM.' To whom was the statement made?", ["Abraham", "Jacob", "Moses", "David"], "Moses", "God said 'I AM WHO I AM' to Moses at the burning bush."),
+        ("Q20. [English] One of the following words means elephant in Kiswahili.", ["Tendo", "Rembo", "Pembo", "Tembo"], "Tembo", "Tembo means elephant in Kiswahili."),
     ]
     answers = []
     for i, (q, options, correct, explain) in enumerate(questions):
@@ -129,7 +128,6 @@ if page == "Take Quiz":
                 grade = "Needs Practice"
             st.success(f"Well done {name}! You scored {score}/{len(questions)} = {percentage:.0f}% - {grade}")
             st.info("Your result has been SAVED. Your teacher can see it in Teacher Dashboard.")
-            # SAVE IT
             new_result = {
                 "Date & Time": datetime.now().strftime("%d %b %Y, %I:%M %p"),
                 "Name": name,
@@ -139,6 +137,15 @@ if page == "Take Quiz":
                 "Grade": grade,
             }
             st.session_state.results.append(new_result)
+            all_scores = sorted(st.session_state.results, key=lambda x: x["Percentage"], reverse=True)
+            top3_names = [r["Name"] for r in all_scores[:3]]
+            if name in top3_names:
+                rank = top3_names.index(name) + 1
+                badges = {1: "🥇 GOLD - TOP 1! You are the Champion!", 2: "🥈 SILVER - TOP 2! Excellent work!", 3: "🥉 BRONZE - TOP 3! You made it!"}
+                st.balloons()
+                st.success(f"🏆 {badges[rank]}")
+            else:
+                st.write("Keep practicing - you can enter the Top 3 next time!")
             st.subheader("See Your Answers + Explanations")
             st.write("Read this to learn from your mistakes. This is how you improve!")
             for i, (q, options, correct, explain) in enumerate(questions):
@@ -160,17 +167,10 @@ elif page == "Teacher Dashboard":
         for outcome in learning_outcomes[subject_choice2]:
             st.write(f"- {outcome}")
         st.subheader("Student Results")
-        if len(st.session_state.results) == 0:
-            st.info("No results yet. Ask pupils to take the quiz and click Submit.")
-        else:
-            df = pd.DataFrame(st.session_state.results)
-            st.write(f"Total pupils who have done the quiz: {len(df)}")
-            st.write(f"Class Average: {df['Percentage'].mean():.0f}%")
-            st.dataframe(df, use_container_width=True)
-            csv = df.to_csv(index=False).encode("utf-8")
-            st.download_button("Download Results as Excel / CSV", data=csv, file_name="learneasy_results.csv", mime="text/csv")
-            if st.button("Clear All Results"):
-                st.session_state.results = []
-                st.rerun()
-    elif password != "":
-        st.error("Wrong password. Try teacher123")
+        if len(st.session_state.results) >= 1:
+            st.subheader("🏆 Top 3 Performers - Hall of Fame")
+            df_top = pd.DataFrame(st.session_state.results).sort_values(by="Percentage", ascending=False).head(3).reset_index(drop=True)
+            medals = ["🥇 GOLD", "🥈 SILVER", "🥉 BRONZE"]
+            cols = st.columns(3)
+            for idx, row in df_top.iterrows():
+                with co
