@@ -121,8 +121,7 @@ if page == "Teacher Dashboard":
                     top3 = df.sort_values(by="Percentage", ascending=False).head(3)
                     st.subheader("🏆 Top 3 Performers")
                     medals = ["🥇", "🥈", "🥉"]
-                    for i, (idx, row) in enumerate(top3.iterrows()):
-                        st.success(f"{name} - {score} / {len(questions)} ({score/len(questions)*100:.0f}%)")
+                    for i, (idx, row) in enumerate(top3.iterrows()): st.success(f"{medals[i]} {row['Name']} - {row['Score']} / {len(questions)} ({row['Percentage']}%)")
                     st.balloons()
                     st.write("Search by name:")
                     search = st.text_input("Type name...")
