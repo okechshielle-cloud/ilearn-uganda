@@ -96,7 +96,7 @@ if page == "Teacher Dashboard":
     password = st.text_input("Enter Teacher Password", type="password")
     if password == "teacher123":
         st.success("Welcome Teacher!")
-            try:
+        try:
                 ws = get_worksheet()
                 data = ws.get_all_records()
                 df = pd.DataFrame(data)
