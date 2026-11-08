@@ -116,7 +116,7 @@ if page == "Take Quiz":
     ("Q20. [English] One of the following words means elephant in Kiswahili.", ["Tembo", "Tendo", "Rembo", "Pembo"], "Tembo"),
     ]
 answers = []
-    for i, (q, options, correct) in enumerate(questions):
+for i, (q, options, correct) in enumerate(questions):
         ans = st.radio(q, options, key=f"q{i}")
         answers.append(ans)
 
