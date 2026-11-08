@@ -117,5 +117,5 @@ if page == "Teacher Dashboard":
                     st.download_button("📥 Download Results", df.to_csv(index=False).encode("utf-8"), "results.csv", "text/csv")
         except Exception as e:
                 st.error(f"Could not load results: {e}")        
-        elif password != "":
+    elif password != "":
                 st.error("Wrong password")
