@@ -109,6 +109,9 @@ if page == "Teacher Dashboard":
                     col1, col2 = st.columns(2)
                     col1.metric("Total Learners", len(df))
                     col2.metric("Average Score", f"{df['Percentage'].mean():.1f}%")
+                    top = df.sort_values(by="Percentage", ascending=False).iloc[0]
+                    st.success(f"🏆 Top Performer: {top['Name']} — {top['Score']} / 10 ({top['Percentage']:.0f}%)")
+                    st.balloons()
                     st.write("Search by name:")
                     search = st.text_input("Type name...")
                     if search:
