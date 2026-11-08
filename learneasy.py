@@ -1,6 +1,7 @@
 import streamlit as st
 import gspread
 import pandas as pd
+import io
 from google.oauth2.service_account import Credentials
 
 SHEET_ID = "1G2PdfSMPXXlZCnumPYpAPkyIU84JrJ9wq97SHI0FoFg"
@@ -113,8 +114,10 @@ if page == "Teacher Dashboard":
                 if search:
                     df = df[df['Name'].astype(str).str.contains(search, case=False)]
                 st.dataframe(df)
-                st.download_button("Download Results", df.to_csv(index=False), "learneasy-results.csv")
-        except Exception as e:
+                # Download Button
+                st.download_button("📥 Download Results", df.to_csv(index=False).encode("utf-8"), "LearnEasy_Results.csv", "text/csv")
+        
+    except Exception as e:
             st.error(f"Could not load results: {e}")
     elif password != "":
         st.error("Wrong password")
