@@ -92,30 +92,29 @@ if page == "Take Quiz":
     st.subheader(f"Learning Outcomes: {subject_choice}")
     for outcome in learning_outcomes[subject_choice]:
         st.write(f"- {outcome}")
-
-    questions = [
+questions = [
         ("Q1. [English] What gets wetter the more it dries?", ["A towel", "Water", "A stone", "A cup"], "A towel"),
-    ("Q2. [Maths] The temperature of the room in the morning was 54 degrees Celsius. Find the temperature in degrees Fahrenheit.", ["129.2 F", "54 F", "97.2 F", "86 F"], "129.2 F"),
-    ("Q3. [CRE] How did the people of Israel survive in the wilderness while moving to the promised land?", ["God provided them with manna, quails and water", "They bought food from shops", "They grew crops in the desert", "They hunted animals only"], "God provided them with manna, quails and water"),
-    ("Q4. [SST] What is the largest vegetation in Uganda?", ["Savanna grassland", "Tropical rainforest", "Montane forest", "Swamp vegetation"], "Savanna grassland"),
-    ("Q5. [Maths] Simplify: -5 - (-6)", ["1", "-11", "11", "-1"], "1"),
-    ("Q6. [Maths] A pair of packets of biscuits costs Sh. 1000. Find the cost of 7 similar packets of biscuits.", ["Sh. 3500", "Sh. 7000", "Sh. 500", "Sh. 3000"], "Sh. 3500"),
-    ("Q7. [Maths] How far can a fox run into a circular forest?", ["Halfway", "All the way through", "Quarter way", "To the centre only"], "Halfway"),
-    ("Q8. [Science] How does a mosquito differ from a cockroach in terms of their lifecycle?", ["Mosquito undergoes complete metamorphosis, cockroach undergoes incomplete metamorphosis", "Mosquito undergoes incomplete metamorphosis, cockroach undergoes complete metamorphosis", "Both undergo complete metamorphosis", "Both undergo incomplete metamorphosis"], "Mosquito undergoes complete metamorphosis, cockroach undergoes incomplete metamorphosis"),
-    ("Q9. [Science] Why does heat travel faster in a solid than in a gas?", ["Particles in a solid are closer together", "Particles in a gas are closer together", "Solids are hotter", "Gases have no particles"], "Particles in a solid are closer together"),
-    ("Q10. [RE] How does the school prayer assist a learner?", ["It helps the learner start the day with discipline, respect and a calm mind", "It makes the learner sleep", "It stops the learner from learning", "It makes the learner hungry"], "It helps the learner start the day with discipline, respect and a calm mind"),
-    ("Q11. [Maths] Simplify 2m - 8m + 13m", ["7m", "5m", "23m", "3m"], "7m"),
-    ("Q12. [SST] Which country does Uganda border in the East?", ["Kenya", "Tanzania", "South Sudan", "DR Congo"], "Kenya"),
-    ("Q13. [Science] Why is heat unable to travel in a vacuum?", ["There are no particles to carry it", "Vacuum is too hot", "Vacuum is too cold", "Heat hates vacuum"], "There are no particles to carry it"),
-    ("Q14. [Maths] Which of these is the net of a cylinder?", ["Two circles and a rectangle", "One circle and a triangle", "Three squares", "Two triangles and a rectangle"], "Two circles and a rectangle"),
-    ("Q15. [SST] Name the major physical feature that is known for the formation of relief rainfall in Eastern Uganda.", ["Mt. Elgon", "Lake Victoria", "Mt. Rwenzori", "River Nile"], "Mt. Elgon"),
-    ("Q16. [English] Use the correct form: Sarah ........ meat to chicken. (Prefers, likes)", ["Prefers", "Likes", "Prefer", "Like"], "Prefers"),
-    ("Q17. [Maths] Molly is twice as old as Jolly. If the sum of their ages is 30, how old is Molly?", ["10 years", "15 years", "20 years", "30 years"], "20 years"),
-    ("Q18. [SST] What is a landlocked country?", ["A country with no sea coast", "A country with many lakes", "A country with a big airport", "A country near the sea"], "A country with no sea coast"),
-    ("Q19. [CRE] 'I AM WHO I AM.' To whom was the statement made?", ["Moses", "Abraham", "Jacob", "David"], "Moses"),
-    ("Q20. [English] One of the following words means elephant in Kiswahili.", ["Tembo", "Tendo", "Rembo", "Pembo"], "Tembo"),
+        ("Q2. [Maths] The temperature of the room in the morning was 54 degrees Celsius. Find the temperature in degrees Fahrenheit.", ["129.2 F", "54 F", "97.2 F", "86 F"], "129.2 F"),
+        ("Q3. [CRE] How did the people of Israel survive in the wilderness while moving to the promised land?", ["God provided them with manna, quails and water", "They bought food from shops", "They grew crops in the desert", "They hunted animals only"], "God provided them with manna, quails and water"),
+        ("Q4. [SST] What is the largest vegetation in Uganda?", ["Savanna grassland", "Tropical rainforest", "Montane forest", "Swamp vegetation"], "Savanna grassland"),
+        ("Q5. [Maths] Simplify: -5 - (-6)", ["1", "-11", "11", "-1"], "1"),
+        ("Q6. [Maths] A pair of packets of biscuits costs Sh. 1000. Find the cost of 7 similar packets of biscuits.", ["Sh. 3500", "Sh. 7000", "Sh. 500", "Sh. 3000"], "Sh. 3500"),
+        ("Q7. [Maths] How far can a fox run into a circular forest?", ["Halfway", "All the way through", "Quarter way", "To the centre only"], "Halfway"),
+        ("Q8. [Science] How does a mosquito differ from a cockroach in terms of their lifecycle?", ["Mosquito undergoes complete metamorphosis, cockroach undergoes incomplete metamorphosis", "Mosquito undergoes incomplete metamorphosis, cockroach undergoes complete metamorphosis", "Both undergo complete metamorphosis", "Both undergo incomplete metamorphosis"], "Mosquito undergoes complete metamorphosis, cockroach undergoes incomplete metamorphosis"),
+        ("Q9. [Science] Why does heat travel faster in a solid than in a gas?", ["Particles in a solid are closer together", "Particles in a gas are closer together", "Solids are hotter", "Gases have no particles"], "Particles in a solid are closer together"),
+        ("Q10. [RE] How does the school prayer assist a learner?", ["It helps the learner start the day with discipline, respect and a calm mind", "It makes the learner sleep", "It stops the learner from learning", "It makes the learner hungry"], "It helps the learner start the day with discipline, respect and a calm mind"),
+        ("Q11. [Maths] Simplify 2m - 8m + 13m", ["7m", "5m", "23m", "3m"], "7m"),
+        ("Q12. [SST] Which country does Uganda border in the East?", ["Kenya", "Tanzania", "South Sudan", "DR Congo"], "Kenya"),
+        ("Q13. [Science] Why is heat unable to travel in a vacuum?", ["There are no particles to carry it", "Vacuum is too hot", "Vacuum is too cold", "Heat hates vacuum"], "There are no particles to carry it"),
+        ("Q14. [Maths] Which of these is the net of a cylinder?", ["Two circles and a rectangle", "One circle and a triangle", "Three squares", "Two triangles and a rectangle"], "Two circles and a rectangle"),
+        ("Q15. [SST] Name the major physical feature that is known for the formation of relief rainfall in Eastern Uganda.", ["Mt. Elgon", "Lake Victoria", "Mt. Rwenzori", "River Nile"], "Mt. Elgon"),
+        ("Q16. [English] Use the correct form: Sarah ........ meat to chicken. (Prefers, likes)", ["Prefers", "Likes", "Prefer", "Like"], "Prefers"),
+        ("Q17. [Maths] Molly is twice as old as Jolly. If the sum of their ages is 30, how old is Molly?", ["10 years", "15 years", "20 years", "30 years"], "20 years"),
+        ("Q18. [SST] What is a landlocked country?", ["A country with no sea coast", "A country with many lakes", "A country with a big airport", "A country near the sea"], "A country with no sea coast"),
+        ("Q19. [CRE] 'I AM WHO I AM.' To whom was the statement made?", ["Moses", "Abraham", "Jacob", "David"], "Moses"),
+        ("Q20. [English] One of the following words means elephant in Kiswahili.", ["Tembo", "Tendo", "Rembo", "Pembo"], "Tembo"),
     ]
-answers = []
+    answers = []
 for i, (q, options, correct) in enumerate(questions):
         ans = st.radio(q, options, key=f"q{i}", index=None)
         answers.append(ans)
