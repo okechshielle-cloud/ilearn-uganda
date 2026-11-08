@@ -1,7 +1,7 @@
 import streamlit as st
 import gspread
 import pandas as pd
-import io
+import ioF
 from google.oauth2.service_account import Credentials
 
 SHEET_ID = "1G2PdfSMPXXlZCnumPYpAPkyIU84JrJ9wq97SHI0FoFg"
@@ -69,7 +69,8 @@ if page == "Take Quiz":
 ]
     if st.button("🔄 New Pupil - Start Fresh Quiz"): [st.session_state.pop(k) for k in list(st.session_state.keys()) if k.startswith("q")]; st.rerun()
     answers = []
-    for i, (q, options, correct) in enumerate(questions):
+    for i, (q, options, correct, exp) in enumerate(questions):
+        st.info(f"Explanation: {exp}")
         ans = st.radio(f"{q}", options, key=f"q{i}", index=None)
         answers.append(ans)
 
