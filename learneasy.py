@@ -194,4 +194,4 @@ if page == "Take Quiz":
             st.success("🏆 🥉 BRONZE - TOP 3! You made it!")
         st.subheader("See Your Answers + Explanations")
         saved = st.session_state.last_answers
-        for i in range(len(questions))':'
+        for i in range(len(questions)):
