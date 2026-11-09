@@ -128,7 +128,7 @@ questions = [
 ]
 
 if page == "Take Quiz":
-    st.title("🇺🇬 ILEARN Uganda")
+    st.title("🇺🇬 ILEARN Uganda - Quiz")
     st.subheader("Integrated Learning Environment")
     st.write("Answer all questions, then click Submit.")
     name = st.text_input("Your Name")
@@ -216,7 +216,7 @@ if page == "Take Quiz":
 
 
 elif page == "Teacher Dashboard":
-    st.title("Teacher Dashboard - LearnEasy")
+    st.title("Teacher Dashboard - ILEARNUganda")
     password = st.text_input("Enter Teacher Password", type="password")
     if password == "teacher123":
         st.success("Welcome Teacher!")
