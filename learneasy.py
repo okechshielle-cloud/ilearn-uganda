@@ -195,3 +195,20 @@ if page == "Take Quiz":
         st.subheader("See Your Answers + Explanations")
         saved = st.session_state.last_answers
         for i, item in enumerate(questions):
+            q = item[0]
+            correct = item[2]
+            explain = item[3]
+            if i < len(saved) and saved[i] is not None:
+                your_ans = saved[i]
+            else:
+                your_ans = "No answer - you did not tick"
+            is_correct = False
+            if i < len(saved):
+                if saved[i] == correct:
+                    is_correct = True
+            if is_correct:
+                st.success(f"{q} - Correct! Your answer: {your_ans}")
+            else:
+                st.error(f"{q} - Wrong. Your answer: {your_ans} | Correct answer: {correct}")
+            st.write(f"Explanation: {explain}")
+            st.write("---")
