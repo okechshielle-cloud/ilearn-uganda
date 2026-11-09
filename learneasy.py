@@ -127,7 +127,7 @@ questions = [
     ("Q20. [English] One of the following words means elephant in Kiswahili.", ["Tendo", "Rembo", "Pembo", "Tembo"], "Tembo", "Tembo means elephant in Kiswahili."),
 ]
 
-   if page == "Take Quiz":
+if page == "Take Quiz":
     st.title("🇺🇬 ILEARN Uganda")
     st.subheader("Integrated Learning Environment")
     st.write("Answer all questions, then click Submit.")
