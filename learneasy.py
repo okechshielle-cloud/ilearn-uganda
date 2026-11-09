@@ -212,3 +212,44 @@ if page == "Take Quiz":
                 st.error(f"{q} - Wrong. Your answer: {your_ans} | Correct answer: {correct}")
             st.write(f"Explanation: {explain}")
             st.write("---")
+
+
+elif page == "Teacher Dashboard":
+    st.title("Teacher Dashboard - LearnEasy")
+    password = st.text_input("Enter Teacher Password", type="password")
+    if password == "teacher123":
+        st.success("Welcome Teacher!")
+        st.subheader("Learning Outcomes - All Subjects")
+        subject_choice2 = st.selectbox("Choose Subject", list(learning_outcomes.keys()), key="teacher_subject")
+        for outcome in learning_outcomes[subject_choice2]:
+            st.write(f"- {outcome}")
+        st.subheader("Student Results")
+        if len(st.session_state.results) == 0:
+            st.info("No results yet. Ask pupils to take the quiz and click Submit.")
+        else:
+            st.subheader("🏆 Top 3 Performers - Hall of Fame")
+            df_top = pd.DataFrame(st.session_state.results).sort_values(by="Percentage", ascending=False).head(3).reset_index(drop=True)
+            medals = ["🥇 GOLD", "🥈 SILVER", "🥉 BRONZE"]
+            cols = st.columns(3)
+            for idx in range(len(df_top)):
+                row = df_top.iloc[idx]
+                with cols[idx]:
+                    st.markdown(f"### {medals[idx]}")
+                    st.markdown(f"**{row['Name']}**")
+                    st.markdown(f"{row['School']}")
+                    st.markdown(f"Score: **{row['Score']}**")
+                    st.markdown(f"**{row['Percentage']}%** - {row['Grade']}")
+            st.write("---")
+            df = pd.DataFrame(st.session_state.results)
+            st.write(f"Total pupils who have done the quiz: {len(df)}")
+            st.write(f"Class Average: {df['Percentage'].mean():.0f}%")
+            st.dataframe(df, use_container_width=True)
+            csv = df.to_csv(index=False).encode("utf-8")
+            st.download_button("Download Results as Excel / CSV", data=csv, file_name="learneasy_results.csv", mime="text/csv")
+            if st.button("Clear All Results"):
+                st.session_state.results = []
+                if os.path.exists(RESULTS_FILE):
+                    os.remove(RESULTS_FILE)
+                st.rerun()
+    elif password != "":
+        st.error("Wrong password. Try teacher123")
