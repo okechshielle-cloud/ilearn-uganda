@@ -3,7 +3,7 @@ import pandas as pd
 from datetime import datetime
 import os
 
-st.set_page_config(page_title="LearnEasy", layout="wide")
+st.set_page_config(page_title="ILEARN Uganda - Integrated Learning Environment", page_icon="🇺🇬", layout="centered")
 
 RESULTS_FILE = "learneasy_results.csv"
 
@@ -128,7 +128,8 @@ questions = [
 ]
 
 if page == "Take Quiz":
-    st.title("LearnEasy Quiz")
+    st.title("🇺🇬 ILEARN Uganda")
+st.subheader("Integrated Learning Environment")
     st.write("Answer all questions, then click Submit.")
     name = st.text_input("Your Name")
     school = st.text_input("Your School")
