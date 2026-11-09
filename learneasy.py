@@ -129,7 +129,7 @@ questions = [
 
    if page == "Take Quiz":
     st.title("🇺🇬 ILEARN Uganda")
-st.subheader("Integrated Learning Environment")
+    st.subheader("Integrated Learning Environment")
     st.write("Answer all questions, then click Submit.")
     name = st.text_input("Your Name")
     school = st.text_input("Your School")
