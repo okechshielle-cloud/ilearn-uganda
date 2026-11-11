@@ -298,4 +298,4 @@ with tab_alumni:
             found_l = learners_df[learners_df["Learner_Name"].astype(str).str.contains(search_name, case=False, na=False)]
             if not found_l.empty:
                 st.subheader("👥 Learner Record - All Years")
-                st.dataframe(found_l.sort_values("Year"), use_conta
+                st.dataframe(found_l.sort_values("Year"), use_container_width=True)
