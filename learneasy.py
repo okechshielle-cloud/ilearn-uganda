@@ -1,7 +1,7 @@
-# ILEARN UGANDA v45 COMPLETE - SECRETS FIXED - No hardcoded keys/passwords
-# All secrets from st.secrets - never in code, never in GitHub
+# ILEARN UGANDA v45.1 COMPLETE - SECRETS FIXED + FORGIVING LOGIN
+# No hardcoded keys/passwords. All secrets from st.secrets only.
 import streamlit as st
-import sqlite3, os
+import sqlite3
 import pandas as pd
 from datetime import date
 
@@ -14,11 +14,10 @@ def get_secret(name, default=""):
     except:
         return default
 
-# Private key - used only from secrets, never printed
 PRIVATE_KEY = get_secret("MY_PRIVATE_KEY", "")
-# NEVER do st.write(PRIVATE_KEY)
+# NEVER print PRIVATE_KEY
 
-# ---------- SCHOOL CONFIG - Change here only ----------
+# ---------- SCHOOL CONFIG ----------
 SCHOOL = {
     "name": "Your School Name",
     "short_name": "YS",
@@ -56,7 +55,6 @@ def get_db():
     c.execute("CREATE TABLE IF NOT EXISTS marks (learner TEXT, class TEXT, stream TEXT, term TEXT, subject TEXT, score INTEGER, teacher TEXT, UNIQUE(learner, class, stream, term, subject))")
     c.execute("CREATE TABLE IF NOT EXISTS marks_audit (learner TEXT, subject TEXT, old_score INTEGER, new_score INTEGER, who TEXT, when_ TEXT)")
     c.execute("CREATE TABLE IF NOT EXISTS audit (who TEXT, action TEXT, when_ TEXT)")
-    # Demo learners only if empty - no passwords here
     if c.execute("SELECT COUNT(*) FROM learners").fetchone()[0] == 0:
         for n, cl in [("Amina","P4"),("John","P4"),("Sarah","P4"),("David","P4"),("Grace","P5"),("Peter","P5"),("Mary","P5"),("James","P6")]:
             c.execute("INSERT OR IGNORE INTO learners VALUES (?,?,?)", (n, cl, "A"))
@@ -68,23 +66,25 @@ def audit(who, action):
     c.execute("INSERT INTO audit VALUES (?,?,datetime('now'))", (who, action))
     c.commit(); c.close()
 
-# ---------- LOGIN - FROM SECRETS ONLY ----------
+# ---------- LOGIN - MAIN BLOCK - FIXED v45.1 ----------
 if "user" not in st.session_state:
     st.markdown(f"# 🌟 ILEARN UGANDA\n### {SCHOOL['name']} - {SCHOOL['motto']}")
-    st.info("Login with the email/password in your secrets.toml. No demo passwords in code.")
-    email = st.text_input("Email")
-    password = st.text_input("Password", type="password")
-    pin = st.text_input("PIN (Headteacher / Bursar only)", type="password")
+    has_secrets = bool(get_secret("ADMIN_EMAIL"))
+    st.info(f"Secrets loaded in cloud: {'YES ✅' if has_secrets else 'NO ❌ - Go to Manage app > Settings > Secrets'}")
+    email = st.text_input("Email").strip().lower()
+    password = st.text_input("Password", type="password").strip()
+    pin = st.text_input("PIN (Headteacher / Bursar only)", type="password").strip()
     if st.button("Login", use_container_width=True):
         users = {
-            get_secret("ADMIN_EMAIL"): (get_secret("ADMIN_PASSWORD"), get_secret("ADMIN_PIN"), "Headteacher"),
-            get_secret("BURSAR_EMAIL"): (get_secret("BURSAR_PASSWORD"), get_secret("BURSAR_PIN"), "Bursar"),
-            get_secret("TEACHER_EMAIL"): (get_secret("TEACHER_PASSWORD"), "", "Teacher"),
+            get_secret("ADMIN_EMAIL","").strip().lower(): (get_secret("ADMIN_PASSWORD","").strip(), get_secret("ADMIN_PIN","").strip(), "Headteacher"),
+            get_secret("BURSAR_EMAIL","").strip().lower(): (get_secret("BURSAR_PASSWORD","").strip(), get_secret("BURSAR_PIN","").strip(), "Bursar"),
+            get_secret("TEACHER_EMAIL","").strip().lower(): (get_secret("TEACHER_PASSWORD","").strip(), "", "Teacher"),
         }
         if email in users and users[email][0] and password == users[email][0]:
             role = users[email][2]
-            if role in ["Headteacher","Bursar"] and pin != users[email][1]:
-                st.error("Wrong PIN")
+            saved_pin = users[email][1]
+            if saved_pin and role in ["Headteacher","Bursar"] and pin != saved_pin:
+                st.error("Password OK, but PIN wrong. Check ADMIN_PIN in Secrets.")
             else:
                 st.session_state.user = email
                 st.session_state.user_name = email.split("@")[0]
@@ -171,7 +171,6 @@ elif menu == "💰 Fees":
                 audit(st.session_state.user, f"Fees {name} paid {amt} receipt {rec}")
                 st.success(f"✅ Saved! Receipt {rec} Balance now {max(0,new_total-(paid+amt)):,}")
                 st.rerun()
-        # Who owes
         st.divider(); st.write("Who Owes:")
         cc = get_db(); all2 = cc.execute("SELECT name,class FROM learners").fetchall(); rows=[]
         for nm, cl2 in all2:
