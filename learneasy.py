@@ -280,7 +280,7 @@ if st.session_state.menu == "📝 Take Quiz":
 
     my_answers = {}
     for i, (q, opts, correct, expl) in enumerate(MY_QUESTIONS):
-        my_answers[i] = st.radio(f"Q{i+1}. {q}", opts, key=f"myquiz_bottom_{i}")
+        my_answers[i] = st.radio(f"Q{i+1}. {q}", opts, key=f"myquiz_bottom_{i}", index=None)
 
     if st.button("✅ SUBMIT MY 20 QUESTIONS", use_container_width=True):
         score = sum(1 for i, (q, opts, correct, expl) in enumerate(MY_QUESTIONS) if my_answers[i] == correct)
