@@ -247,4 +247,4 @@ if top_search:
     if matches:
         st.write("Found:"); cols=st.columns(min(len(matches),4))
         for i,m in enumerate(matches[:8]):
-            if cols[i%len:]
+            m1,m2,m3,m4 = st.columns(4)
