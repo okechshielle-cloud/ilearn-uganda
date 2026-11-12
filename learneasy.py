@@ -250,3 +250,55 @@ if top_search:
             m1,m2,m3,m4 = st.columns(4)
 
 
+# --- TAKE QUIZ PAGE - ADDED AT BOTTOM ---
+if st.session_state.menu == "📝 Take Quiz":
+    st.subheader("📝 Take Quiz - Your 20 Questions")
+    st.write("Answer all 20, then tap SUBMIT to see your score and explanations.")
+
+    MY_QUESTIONS = [
+        ("1. Maths: Zoey scored 30, 40, 50, 40, 60. Find the modal frequency.", ["30","40","50","60"], "40", "Explanation: Mode is the number that appears most. 40 appears twice, others appear once."),
+        ("2. Maths: Maximum number of girls who can share 24 oranges or 30 oranges without remainder.", ["4","6","8","12"], "6", "Explanation: Find HCF of 24 and 30. Highest common factor is 6."),
+        ("3. Maths: Lydia is thrice as old as Brian. Sum is 32. How old is Lydia?", ["8","16","24","32"], "24", "Explanation: Brian = x, Lydia = 3x. x + 3x = 32, 4x = 32, x = 8. Lydia = 3 x 8 = 24."),
+        ("4. Maths: Price of 3 T-shirts is Sh. 24000. Find price of 5 similar T-shirts.", ["Sh. 16000","Sh. 32000","Sh. 40000","Sh. 48000"], "Sh. 40000", "Explanation: 1 T-shirt = 24000 / 3 = 8000. 5 T-shirts = 5 x 8000 = Sh. 40000."),
+        ("5. Maths: Volume of cuboid is 120cm3. Base area is 24cm2. Find height.", ["3cm","5cm","6cm","10cm"], "5cm", "Explanation: Height = Volume / Base Area = 120 / 24 = 5cm."),
+        ("6. Kiswahili: Which means - this place is good?", ["Mahali hapa ni pazuri","Mahali hapa ni pabaya","Mahali hapa ni pakubwa","Mahali hapa ni padogo"], "Mahali hapa ni pazuri", "Explanation: Pazuri means good. Pabaya means bad. Pakubwa means big. Padogo means small."),
+        ("7. RE: One food God provided to Israelites while moving to promised land.", ["Manna","Rice","Bread","Fish"], "Manna", "Explanation: God gave them Manna from heaven every morning while in the desert."),
+        ("8. SST: What climate is experienced by central part of Uganda?", ["Desert climate","Tropical climate","Mediterranean climate","Polar climate"], "Tropical climate", "Explanation: Central Uganda is near the equator, warm with rain all year - tropical climate."),
+        ("9. SST: How is Lake Victoria related to Lake Albert?", ["Connected by River Nile","Connected by River Congo","They are the same lake","Not connected"], "Connected by River Nile", "Explanation: Water flows from Lake Victoria via Victoria Nile to Lake Albert."),
+        ("10. SST: Which region is Mount Rwenzori?", ["Northern","Eastern","Western","Central"], "Western", "Explanation: Rwenzori Mountains are in Western Uganda, near Kasese."),
+        ("11. English: Mr Mwenda is a ___ working with Observer newspaper. (column)", ["columnist","colonist","journal","writer"], "columnist", "Explanation: A person who writes a regular column is called a columnist."),
+        ("12. English: Our fathers car needs proper ___. (maintain)", ["maintain","maintenance","maintaining","maintained"], "maintenance", "Explanation: After proper we need a noun. Maintenance is the noun from maintain."),
+        ("13. English: Very many ___ houses will be closed soon. (medium)", ["medium","media","mediums","medias"], "media", "Explanation: Medium is singular, Media is plural. Very many needs plural."),
+        ("14. English: Moris liked reading newspapers more than watching television. Use prefer.", ["Moris prefers reading newspapers to watching television","Moris prefer reading newspapers than watching television","Moris prefers to read newspapers more than television","Moris is preferring newspapers"], "Moris prefers reading newspapers to watching television", "Explanation: We say prefer ... to ..., not prefer ... than ..."),
+        ("15. English: Kapere has a good television. Kapere does not watch news. Begin: Although...", ["Although Kapere has a good television, he does not watch any news","Although Kapere does not watch news, he has television","Although Kapere has television, he watches news","Although Kapere is good, he watches news"], "Although Kapere has a good television, he does not watch any news", "Explanation: Although joins two opposite ideas. Although + first idea, comma, + second idea."),
+        ("16. English: I bought a motorcycle. I wanted to reach workplace early. Join using ...so that...", ["I bought a new motorcycle so that I could reach my workplace early enough","I bought a motorcycle so that I reach early","I bought a motorcycle so that to reach early","I bought a motorcycle so that I can reach"], "I bought a new motorcycle so that I could reach my workplace early enough", "Explanation: So that shows purpose. Past tense bought, so we use could reach."),
+        ("17. Science: Give one example of root tuber crops.", ["Cassava","Beans","Maize","Rice"], "Cassava", "Explanation: Root tubers store food in roots. Cassava, sweet potatoes are root tubers."),
+        ("18. Science: Kyle was on moon and pencil could not fall down. What caused that?", ["No gravity on the moon","Too much air","Too much water","Too much heat"], "No gravity on the moon", "Explanation: The moon has very little gravity, so things float instead of falling."),
+        ("19. Science: Plant bent towards window. What makes it behave that way?", ["Phototropism - response to light","Photosynthesis","Gravity","Wind"], "Phototropism - response to light", "Explanation: Plants grow towards light to get sunlight. This is called phototropism."),
+        ("20. Science: State force experienced by body dropped into water.", ["Upthrust","Friction","Magnetism","Gravity"], "Upthrust", "Explanation: Water pushes a body upwards. That upward push is called upthrust."),
+    ]
+
+    my_answers = {}
+    for i, (q, opts, correct, expl) in enumerate(MY_QUESTIONS):
+        my_answers[i] = st.radio(f"Q{i+1}. {q}", opts, key=f"myquiz_bottom_{i}")
+
+    if st.button("✅ SUBMIT MY 20 QUESTIONS", use_container_width=True):
+        score = sum(1 for i, (q, opts, correct, expl) in enumerate(MY_QUESTIONS) if my_answers[i] == correct)
+        st.success(f"✅ You scored {score} / 20")
+        if score >= 18:
+            st.balloons()
+            st.write("Excellent! 🌟")
+        elif score >= 14:
+            st.write("Very Good! 👍")
+        elif score >= 10:
+            st.write("Good! Try again for 15+ 💪")
+        else:
+            st.write("Keep practising, you can do it 💪")
+        st.divider()
+        st.subheader("📖 Explanations")
+        for i, (q, opts, correct, expl) in enumerate(MY_QUESTIONS):
+            if my_answers[i] == correct:
+                st.success(f"Q{i+1} ✅ Correct: {correct}")
+            else:
+                st.error(f"Q{i+1} ❌ You chose: {my_answers[i]} | Correct answer is: {correct}")
+            st.info(expl)
