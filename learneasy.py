@@ -372,4 +372,4 @@ if st.session_state.menu == "👩🏾‍🏫 Staff & Payroll":
 
 if st.session_state.menu == "🎓 Exams / PLE Mock":
     st.markdown('<div class="color-blue">🎓 EXAMS / PLE MOCK</div>', unsafe_allow_html=True)
-    st.info("Paste
+    st.info("Paste your next piece here")
