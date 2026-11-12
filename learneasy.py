@@ -1,301 +1,300 @@
+# ILEARN UGANDA v45 COMPLETE - SECRETS FIXED - No hardcoded keys/passwords
+# All secrets from st.secrets - never in code, never in GitHub
 import streamlit as st
+import sqlite3, os
 import pandas as pd
-from datetime import date, datetime
-import calendar
+from datetime import date
 
 st.set_page_config(page_title="ILEARN Uganda", layout="wide")
-st.title("🇺🇬 ILEARN Uganda - School Management System")
 
-conn = st.connection("gsheets", type="GSheetsConnection")
-
-def read_sheet(name):
+# ---------- SECRETS - SAFE ----------
+def get_secret(name, default=""):
     try:
-        df = conn.read(worksheet=name, ttl=0)
-        df.columns = [c.strip() for c in df.columns]
-        return df
-    except Exception:
-        return pd.DataFrame()
+        return st.secrets.get(name, default)
+    except:
+        return default
 
-def save_to_sheet(name, new_row_dict):
-    df = read_sheet(name)
-    new_df = pd.DataFrame([new_row_dict])
-    if df.empty:
-        df = new_df
-    else:
-        for col in new_df.columns:
-            if col not in df.columns:
-                df[col] = ""
-        for col in df.columns:
-            if col not in new_df.columns:
-                new_df[col] = ""
-        df = pd.concat([df, new_df], ignore_index=True)
-    conn.update(worksheet=name, data=df)
-    return df
+# Private key - used only from secrets, never printed
+PRIVATE_KEY = get_secret("MY_PRIVATE_KEY", "")
+# NEVER do st.write(PRIVATE_KEY)
 
-def get_grade(percent):
-    if percent >= 80: return "D1"
-    elif percent >= 70: return "D2"
-    elif percent >= 60: return "C3"
-    elif percent >= 50: return "C4"
-    elif percent >= 40: return "C5"
-    elif percent >= 30: return "C6"
-    elif percent >= 20: return "P7"
-    elif percent >= 10: return "P8"
-    else: return "F9"
+# ---------- SCHOOL CONFIG - Change here only ----------
+SCHOOL = {
+    "name": "Your School Name",
+    "short_name": "YS",
+    "motto": "Strive For Excellence",
+    "district": "Kampala",
+    "phone": "+256 700 000000",
+    "email": "info@yourschool.ac.ug",
+    "year": 2026, "term": "Term 3",
+}
+FEES_STRUCTURE = {"Baby":120000,"Middle":120000,"Top":130000,"P1":150000,"P2":150000,"P3":170000,"P4":170000,"P5":200000,"P6":200000,"P7":250000}
+CLASSES = ["Baby","Middle","Top","P1","P2","P3","P4","P5","P6","P7"]
+STREAMS = ["A","B"]
+SUBJECTS = ["English","Maths","Science","SST","RE"]
 
-def get_active_learners(year, class_name, stream):
-    df = read_sheet("Learners")
-    if df.empty or "Learner_Name" not in df.columns:
-        return []
-    filt = df[(df["Year"].astype(str)==str(year)) & (df["Class"]==class_name) & (df["Stream"]==stream)]
-    if "Status" in filt.columns:
-        active = filt[filt["Status"].astype(str).str.lower()=="active"]
-        if not active.empty:
-            return active["Learner_Name"].drop_duplicates().tolist()
-        return filt["Learner_Name"].drop_duplicates().tolist()
-    return filt["Learner_Name"].drop_duplicates().tolist()
+def ilearn_grade(s):
+    try: s = int(s)
+    except: return "F"
+    if s >= 90: return "D1"
+    if s >= 80: return "D2"
+    if s >= 70: return "C3"
+    if s >= 60: return "C4"
+    if s >= 50: return "C5"
+    if s >= 40: return "C6"
+    if s >= 30: return "P7"
+    return "F"
 
-# ============ SIDEBAR - NOW WITH KISWAHILI ============
-st.sidebar.header("📅 School Filter - Applies Everywhere")
-YEARS = ["2025","2026","2027","2028","2029","2030"]
-selected_year = st.sidebar.selectbox("School Year - Annual Records", YEARS, index=1)
-selected_class = st.sidebar.selectbox("Class", ["P1","P2","P3","P4","P5","P6","P7"])
-selected_stream = st.sidebar.selectbox("Stream", ["A","B","C","Blue","Red"], index=0)
-selected_subject = st.sidebar.selectbox("Subject", ["English","Maths","Science","SST","Reading","R.E","Kiswahili"])
-selected_term = st.sidebar.selectbox("Term", ["Term 1", "Term 2", "Term 3"], index=0)
-st.sidebar.info(f"Viewing: **{selected_year} | {selected_class} {selected_stream} | {selected_subject} | {selected_term}**")
-st.sidebar.subheader("📅 Calendar - Click a Day")
-cal_month = st.sidebar.selectbox("Month", list(calendar.month_name)[1:], index=datetime.now().month-1)
-month_num = list(calendar.month_name).index(cal_month)
-cal = calendar.monthcalendar(int(selected_year), month_num)
-st.sidebar.write(f"**{cal_month} {selected_year}**")
-if "selected_date" not in st.session_state:
-    st.session_state.selected_date = date.today()
-for week in cal:
-    cols = st.sidebar.columns(7)
-    for i, day in enumerate(week):
-        if day != 0:
-            if cols[i].button(f"{day}", key=f"cal_{selected_year}_{month_num}_{day}"):
-                st.session_state.selected_date = date(int(selected_year), month_num, day)
-selected_date = st.sidebar.date_input("Selected Date", value=st.session_state.selected_date)
+# ---------- DB ----------
+def get_db():
+    c = sqlite3.connect("ilearn.db", check_same_thread=False)
+    c.execute("CREATE TABLE IF NOT EXISTS learners (name TEXT, class TEXT, stream TEXT, UNIQUE(name, class, stream))")
+    c.execute("CREATE TABLE IF NOT EXISTS attendance (date TEXT, class TEXT, stream TEXT, learner TEXT, status TEXT, UNIQUE(date, class, stream, learner))")
+    c.execute("CREATE TABLE IF NOT EXISTS fee_payments (learner TEXT, amount INTEGER, date TEXT, receipt TEXT)")
+    c.execute("CREATE TABLE IF NOT EXISTS fee_totals (learner TEXT PRIMARY KEY, total INTEGER)")
+    c.execute("CREATE TABLE IF NOT EXISTS homework (date TEXT, class TEXT, stream TEXT, subject TEXT, task TEXT, UNIQUE(date, class, stream, subject))")
+    c.execute("CREATE TABLE IF NOT EXISTS marks (learner TEXT, class TEXT, stream TEXT, term TEXT, subject TEXT, score INTEGER, teacher TEXT, UNIQUE(learner, class, stream, term, subject))")
+    c.execute("CREATE TABLE IF NOT EXISTS marks_audit (learner TEXT, subject TEXT, old_score INTEGER, new_score INTEGER, who TEXT, when_ TEXT)")
+    c.execute("CREATE TABLE IF NOT EXISTS audit (who TEXT, action TEXT, when_ TEXT)")
+    # Demo learners only if empty - no passwords here
+    if c.execute("SELECT COUNT(*) FROM learners").fetchone()[0] == 0:
+        for n, cl in [("Amina","P4"),("John","P4"),("Sarah","P4"),("David","P4"),("Grace","P5"),("Peter","P5"),("Mary","P5"),("James","P6")]:
+            c.execute("INSERT OR IGNORE INTO learners VALUES (?,?,?)", (n, cl, "A"))
+    c.commit()
+    return c
 
-# ============ MAIN TABS - 14 TABS ============
-tab_att, tab_quiz, tab_perf, tab_behav, tab_learn, tab_stream, tab_alumni, tab_quizbank, tab_vote, tab_report, tab_fees, tab_parent, tab_code, tab_curr = st.tabs([
-    "📋 Attendance", "📝 Take Quiz", "📊 Performance", "💬 Behaviour / Clinic",
-    "👥 Learners", "🏫 Streams", "🎓 Alumni", "📚 Quiz Bank", "🗳️ Voting",
-    "📄 Report Cards", "💰 Fees", "💬 Parent Message", "🔢 Student Code & Pay",
-    "📚 NCDC Outcomes"
-])
+def audit(who, action):
+    c = get_db()
+    c.execute("INSERT INTO audit VALUES (?,?,datetime('now'))", (who, action))
+    c.commit(); c.close()
 
-# ============ 1. ATTENDANCE ============
-with tab_att:
-    st.subheader(f"📋 Attendance - {selected_date} - {selected_class} {selected_stream} - {selected_year}")
-    learners = get_active_learners(selected_year, selected_class, selected_stream)
-    if not learners:
-        st.warning("No Active learners. Go to Learners tab.")
-    else:
-        results = {}
-        for learner in learners:
-            results[learner] = st.selectbox(learner, ["✅ Present", "❌ Absent", "⏰ Late"], key=f"att_{learner}_{selected_date}_{selected_class}_{selected_stream}")
-        if st.button("💾 SAVE ATTENDANCE", type="primary"):
-            present = sum(1 for v in results.values() if "Present" in v)
-            absent = sum(1 for v in results.values() if "Absent" in v)
-            late = sum(1 for v in results.values() if "Late" in v)
-            save_to_sheet("Attendance", {"Year": selected_year, "Date": str(selected_date), "Class": selected_class, "Stream": selected_stream, "Present": present, "Absent": absent, "Late": late, "Total": len(learners)})
-            st.success(f"✅ Saved! {present} Present | {absent} Absent | {late} Late")
-    att_df = read_sheet("Attendance")
-    if not att_df.empty and "Year" in att_df.columns:
-        st.dataframe(att_df[att_df["Year"].astype(str)==selected_year], use_container_width=True)
-
-# ============ 2. TAKE QUIZ ============
-with tab_quiz:
-    st.subheader(f"📝 Take Quiz - {selected_subject} - {selected_class} {selected_stream}")
-    quiz_sets_df = read_sheet("Quiz_Sets")
-    available = []
-    if not quiz_sets_df.empty and "Quiz_ID" in quiz_sets_df.columns:
-        available = quiz_sets_df[(quiz_sets_df["Year"].astype(str)==selected_year) & (quiz_sets_df["Status"].astype(str).str.lower()=="active")]["Quiz_ID"].tolist() if "Status" in quiz_sets_df.columns else quiz_sets_df["Quiz_ID"].tolist()
-    if not available:
-        st.warning("No Active Quiz in Quiz Bank. Go to Quiz Bank and create Q1 first.")
-        learner_name = st.text_input("Learner Name", key="quiz_learner_fallback")
-        if selected_subject == "Kiswahili":
-            q1 = st.radio("1. Neno 'Mwalimu' lina maana gani?", ["Mwanafunzi", "Mfundishaji", "Daktari", "Mkulima"], key="q1_fallback")
-            q2 = st.radio("2. Chagua neno sahihi: Mtoto ___ shule.", ["anaenda", "wanaenda", "naenda", "tunaenda"], key="q2_fallback")
-            if st.button("Submit Quick Quiz", type="primary"):
-                if learner_name:
-                    score = (1 if q1=="Mfundishaji" else 0) + (1 if q2=="anaenda" else 0)
-                    grade = get_grade((score/2)*100)
-                    save_to_sheet("Quiz_Results", {"Year": selected_year, "Date": str(selected_date), "Quiz_ID": "QUICK", "Learner_Name": learner_name, "Class": selected_class, "Stream": selected_stream, "Subject": selected_subject, "Score": score, "Grade": grade, "Total_Questions": 2})
-                    st.success(f"✅ Saved! {learner_name} got {score}/2 = {grade}")
-        else:
-            q1 = st.radio("1. What is 5 + 3?", ["6","7","8","9"], key="q1_fallback")
-            q2 = st.radio("2. What is 10 - 4?", ["5","6","7","8"], key="q2_fallback")
-            if st.button("Submit Quick Quiz", type="primary"):
-                if learner_name:
-                    score = (1 if q1=="8" else 0) + (1 if q2=="6" else 0)
-                    grade = get_grade((score/2)*100)
-                    save_to_sheet("Quiz_Results", {"Year": selected_year, "Date": str(selected_date), "Quiz_ID": "QUICK", "Learner_Name": learner_name, "Class": selected_class, "Stream": selected_stream, "Subject": selected_subject, "Score": score, "Grade": grade, "Total_Questions": 2})
-                    st.success(f"✅ Saved! {learner_name} got {score}/2 = {grade}")
-    else:
-        chosen_quiz_id = st.selectbox("Choose Quiz Set", available, key="take_quiz_id")
-        learner_name = st.text_input("Learner Name", key="quiz_learner")
-        q_df = read_sheet("Quiz_Questions")
-        questions = pd.DataFrame()
-        if not q_df.empty and "Quiz_ID" in q_df.columns:
-            questions = q_df[q_df["Quiz_ID"].astype(str)==str(chosen_quiz_id)].sort_values("Question_No") if "Question_No" in q_df.columns else q_df[q_df["Quiz_ID"].astype(str)==str(chosen_quiz_id)]
-        if questions.empty:
-            st.info(f"No questions yet for {chosen_quiz_id}. Go to Quiz Bank.")
-        else:
-            answers = {}
-            for idx, row in questions.iterrows():
-                opts = [str(row.get("Option_A","")), str(row.get("Option_B","")), str(row.get("Option_C","")), str(row.get("Option_D",""))]
-                opts = [o for o in opts if o and o!="nan"]
-                answers[str(idx)] = st.radio(f"{row.get('Question_No','')}. {row.get('Question','')}", opts, key=f"ans_{chosen_quiz_id}_{idx}")
-            if st.button("Submit Quiz - Save to Google Sheets", type="primary"):
-                if not learner_name:
-                    st.warning("Type learner name first.")
-                else:
-                    score = 0
-                    total = len(questions)
-                    for idx, row in questions.iterrows():
-                        letter = str(row.get("Correct_Answer","")).strip().upper()
-                        correct_text = ""
-                        if letter=="A": correct_text = str(row.get("Option_A",""))
-                        elif letter=="B": correct_text = str(row.get("Option_B",""))
-                        elif letter=="C": correct_text = str(row.get("Option_C",""))
-                        elif letter=="D": correct_text = str(row.get("Option_D",""))
-                        if answers.get(str(idx)) == correct_text:
-                            score += 1
-                    grade = get_grade((score/total)*100 if total>0 else 0)
-                    save_to_sheet("Quiz_Results", {"Year": selected_year, "Date": str(selected_date), "Quiz_ID": chosen_quiz_id, "Learner_Name": learner_name, "Class": selected_class, "Stream": selected_stream, "Subject": selected_subject, "Score": score, "Grade": grade, "Total_Questions": total})
-                    save_to_sheet("Performance", {"Year": selected_year, "Class": selected_class, "Stream": selected_stream, "Subject": selected_subject, "D1": 1 if grade=="D1" else 0, "D2": 1 if grade=="D2" else 0, "C3": 1 if grade=="C3" else 0, "C4": 1 if grade=="C4" else 0, "C5": 1 if grade=="C5" else 0, "C6": 1 if grade=="C6" else 0, "P7": 1 if grade=="P7" else 0, "P8": 1 if grade=="P8" else 0, "F9": 1 if grade=="F9" else 0, "Total": 1})
-                    st.success(f"✅ Saved! {learner_name} got {score}/{total} = {grade}")
-                    st.balloons()
-    quiz_df = read_sheet("Quiz_Results")
-    if not quiz_df.empty and "Year" in quiz_df.columns:
-        st.dataframe(quiz_df[quiz_df["Year"].astype(str)==selected_year].tail(20), use_container_width=True)
-
-# ============ 3. PERFORMANCE ============
-with tab_perf:
-    st.subheader(f"📊 SUBJECT GENERAL PERFORMANCE - {selected_year} - {selected_class} {selected_stream}")
-    quiz_df = read_sheet("Quiz_Results")
-    if not quiz_df.empty and "Grade" in quiz_df.columns:
-        filtered = quiz_df[(quiz_df["Year"].astype(str)==selected_year) & (quiz_df["Class"]==selected_class) & (quiz_df["Stream"]==selected_stream)]
-        if not filtered.empty:
-            perf = filtered.groupby(["Subject","Grade"]).size().unstack(fill_value=0)
-            for col in ["D1","D2","C3","C4","C5","C6","P7","P8","F9"]:
-                if col not in perf.columns: perf[col] = 0
-            perf = perf[["D1","D2","C3","C4","C5","C6","P7","P8","F9"]]
-            perf["TOT"] = perf.sum(axis=1)
-            perf.insert(0, "CLASS", selected_class)
-            st.dataframe(perf, use_container_width=True)
-            total_row = perf[["D1","D2","C3","C4","C5","C6","P7","P8","F9","TOT"]].sum()
-            st.write("**TOTAL Row:**")
-            st.dataframe(pd.DataFrame([total_row], index=["TOTAL"]), use_container_width=True)
-        else:
-            st.info("No quiz results yet.")
-    else:
-        st.info("No quiz results yet.")
-
-# ============ 4. BEHAVIOUR / CLINIC ============
-with tab_behav:
-    st.subheader(f"💬 Behaviour / Clinic - {selected_date} - {selected_class} {selected_stream}")
-    learners = get_active_learners(selected_year, selected_class, selected_stream)
-    if not learners:
-        st.warning("No Active learners.")
-    else:
-        col1, col2 = st.columns(2)
-        behav_learner = col1.selectbox("Choose Learner", learners, key="behav_learner")
-        behav_type = col2.selectbox("Type", ["Behaviour", "Clinic / Sickbay"], key="behav_type")
-        if behav_type == "Behaviour":
-            category = st.selectbox("Behaviour Category", ["Good Behaviour - Praise", "Late Coming", "Noise Making", "Fighting / Bullying", "Missing Homework", "Neatness - Dirty Uniform", "Helping Others", "Respectful", "Other"], key="behav_cat")
-            action_options = ["Talked to Learner", "Warned", "Called Parent", "Punishment - Clean Class", "Praised in Assembly", "No Action - Note Only"]
-        else:
-            category = st.selectbox("Clinic Category", ["Headache", "Fever", "Stomach Pain", "Injury / Wound", "Malaria Symptoms", "Cough / Flu", "First Aid Given", "Rest in Sickbay", "Sent Home", "Taken to Hospital"], key="clinic_cat")
-            action_options = ["Given First Aid", "Given Paracetamol / Rest", "Called Parent", "Sent Home", "Rest in Sickbay", "Taken to Hospital", "No Action - Note Only"]
-        note = st.text_area("Note / Details", key="behav_note")
-        action = st.selectbox("Action Taken", action_options, key="behav_action")
-        teacher = st.text_input("Teacher Name", value="Tr. Okech", key="behav_teacher")
-        follow_up = st.date_input("Follow-Up Date", value=selected_date, key="behav_follow")
-        need_follow = st.checkbox("Needs Follow-Up?", key="behav_follow_check")
-        if st.button("💾 SAVE BEHAVIOUR / CLINIC", type="primary"):
-            if not note:
-                st.warning("Write a small note first.")
+# ---------- LOGIN - FROM SECRETS ONLY ----------
+if "user" not in st.session_state:
+    st.markdown(f"# 🌟 ILEARN UGANDA\n### {SCHOOL['name']} - {SCHOOL['motto']}")
+    st.info("Login with the email/password in your secrets.toml. No demo passwords in code.")
+    email = st.text_input("Email")
+    password = st.text_input("Password", type="password")
+    pin = st.text_input("PIN (Headteacher / Bursar only)", type="password")
+    if st.button("Login", use_container_width=True):
+        users = {
+            get_secret("ADMIN_EMAIL"): (get_secret("ADMIN_PASSWORD"), get_secret("ADMIN_PIN"), "Headteacher"),
+            get_secret("BURSAR_EMAIL"): (get_secret("BURSAR_PASSWORD"), get_secret("BURSAR_PIN"), "Bursar"),
+            get_secret("TEACHER_EMAIL"): (get_secret("TEACHER_PASSWORD"), "", "Teacher"),
+        }
+        if email in users and users[email][0] and password == users[email][0]:
+            role = users[email][2]
+            if role in ["Headteacher","Bursar"] and pin != users[email][1]:
+                st.error("Wrong PIN")
             else:
-                save_to_sheet("Behaviour_Clinic", {"Year": selected_year, "Date": str(selected_date), "Learner_Name": behav_learner, "Class": selected_class, "Stream": selected_stream, "Type": behav_type, "Category": category, "Note": note, "Action_Taken": action, "Teacher": teacher, "Follow_Up_Date": str(follow_up) if need_follow else ""})
-                st.success(f"✅ Saved! {behav_learner} - {behav_type} - {category}")
+                st.session_state.user = email
+                st.session_state.user_name = email.split("@")[0]
+                st.session_state.role = role
+                st.session_state.menu = "🌟 Master Summary"
+                audit(email, "Login")
                 st.rerun()
-    bc_df = read_sheet("Behaviour_Clinic")
-    if not bc_df.empty and "Year" in bc_df.columns:
-        filtered_bc = bc_df[(bc_df["Year"].astype(str)==selected_year) & (bc_df["Class"]==selected_class) & (bc_df["Stream"]==selected_stream)]
-        st.dataframe(filtered_bc, use_container_width=True)
+        else:
+            st.error("Wrong email or password. Check secrets.toml")
+    st.stop()
 
-# ============ 5. LEARNERS ============
-with tab_learn:
-    st.subheader(f"👥 Learners - {selected_year} - {selected_class} {selected_stream}")
-    bulk = st.text_area("Paste names - one per line", placeholder="Okello John\nAchieng Mary", key="bulk_learners")
-    if st.button("Save Learners to Google Sheets"):
-        names = [n.strip() for n in bulk.split("\n") if n.strip()]
-        for name in names:
-            save_to_sheet("Learners", {"Year": selected_year, "Class": selected_class, "Stream": selected_stream, "Learner_Name": name, "Status": "Active", "Graduation_Year": "", "Reason": ""})
-        st.success(f"✅ Saved {len(names)} learners!")
-        st.rerun()
-    learners_df = read_sheet("Learners")
-    if not learners_df.empty and "Learner_Name" in learners_df.columns:
-        show_filter = st.radio("Show:", ["Active Only (Daily Use)", "Graduated / Alumni", "All Learners"], horizontal=True, key="learn_filter")
-        filtered = learners_df[learners_df["Year"].astype(str)==selected_year]
-        if "Status" in filtered.columns:
-            if show_filter == "Active Only (Daily Use)": filtered = filtered[filtered["Status"].astype(str).str.lower()=="active"]
-            elif show_filter == "Graduated / Alumni": filtered = filtered[filtered["Status"].astype(str).str.lower()=="graduated"]
-        st.dataframe(filtered, use_container_width=True)
-        st.divider()
-        st.subheader("🎓 Graduate Learner - Keep Records")
-        active_names = learners_df[(learners_df["Year"].astype(str)==selected_year) & (learners_df["Status"].astype(str).str.lower()=="active")]["Learner_Name"].drop_duplicates().tolist() if "Status" in learners_df.columns else []
-        if active_names:
-            learner_to_graduate = st.selectbox("Choose learner", active_names, key="grad_select")
-            graduation_reason = st.selectbox("Reason", ["Completed P7 - Graduated", "Transferred to Another School", "Left School"], key="grad_reason")
-            if st.button("🎓 Mark as Graduated - Keep Records", type="primary"):
-                save_to_sheet("Learners", {"Year": selected_year, "Class": selected_class, "Stream": selected_stream, "Learner_Name": learner_to_graduate, "Status": "Graduated", "Graduation_Year": selected_year, "Reason": graduation_reason})
-                save_to_sheet("Alumni", {"Year": selected_year, "Learner_Name": learner_to_graduate, "Class": selected_class, "Stream": selected_stream, "Status": "Graduated", "Graduation_Year": selected_year, "Reason": graduation_reason})
-                st.success(f"✅ {learner_to_graduate} marked as Graduated. Records SAFE.")
+# ---------- TOP BAR ----------
+st.markdown(f"### 🌟 {SCHOOL['name']} | {SCHOOL['motto']} | {SCHOOL['district']} | {st.session_state.role} - {st.session_state.user_name}")
+if st.button("Logout"):
+    audit(st.session_state.user, "Logout")
+    del st.session_state.user
+    st.rerun()
+
+selected_year = st.selectbox("Year", [2025,2026,2027], index=1)
+selected_term = st.selectbox("Term", ["Term 1","Term 2","Term 3"], index=2)
+selected_class = st.selectbox("Class", CLASSES, index=6)
+selected_stream = st.selectbox("Stream", STREAMS)
+selected_date = st.date_input("Date", date.today())
+selected_subject = st.selectbox("Subject", SUBJECTS)
+
+menu = st.sidebar.radio("Menu", ["🌟 Master Summary","📋 Attendance","💰 Fees","📚 Homework","📊 Performance","📄 Report Cards","📜 Audit Log"])
+st.session_state.menu = menu
+
+# ---------- ATTENDANCE ----------
+if menu == "📋 Attendance":
+    st.subheader("📋 Attendance")
+    c = get_db()
+    learners = c.execute("SELECT name FROM learners WHERE class=? AND stream=? ORDER BY name", (selected_class, selected_stream)).fetchall()
+    c.close()
+    if not learners:
+        new = st.text_input("Add learner name")
+        if st.button("Add Learner"):
+            cc = get_db(); cc.execute("INSERT INTO learners VALUES (?,?,?)", (new, selected_class, selected_stream)); cc.commit(); cc.close(); st.rerun()
+    else:
+        statuses = {}
+        for (nm,) in learners:
+            statuses[nm] = st.selectbox(f"{nm}", ["Present","Absent","Late"], key=f"att_{nm}")
+        if st.button("✅ SAVE Attendance", use_container_width=True):
+            cc = get_db()
+            for nm, stt in statuses.items():
+                cc.execute("INSERT INTO attendance VALUES (?,?,?,?,?) ON CONFLICT(date,class,stream,learner) DO UPDATE SET status=excluded.status", (str(selected_date), selected_class, selected_stream, nm, stt))
+            cc.commit(); cc.close()
+            audit(st.session_state.user, f"Saved Attendance {selected_class} {selected_stream} {selected_date}")
+            st.success(f"✅ Saved! {list(statuses.values()).count('Present')} Present, {list(statuses.values()).count('Absent')} Absent")
+        cc = get_db()
+        rows = cc.execute("SELECT learner,status FROM attendance WHERE date=? AND class=? AND stream=?", (str(selected_date), selected_class, selected_stream)).fetchall()
+        cc.close()
+        if rows: st.dataframe(pd.DataFrame(rows, columns=["Learner","Status"]), use_container_width=True)
+
+# ---------- FEES ----------
+elif menu == "💰 Fees":
+    st.subheader("💰 Fees")
+    search = st.text_input("Search learner").strip().lower()
+    c = get_db(); all_l = c.execute("SELECT name,class FROM learners ORDER BY name").fetchall(); c.close()
+    filt = [r for r in all_l if search in r[0].lower()] if search else all_l
+    if filt:
+        pick = st.selectbox("Pick Learner", [f"{n} - {cl}" for n,cl in filt])
+        name = pick.split(" - ")[0]; cl = pick.split(" - ")[1]
+        c = get_db()
+        tot_r = c.execute("SELECT total FROM fee_totals WHERE learner=?", (name,)).fetchone()
+        total = tot_r[0] if tot_r else FEES_STRUCTURE.get(cl,150000)
+        paid = c.execute("SELECT COALESCE(SUM(amount),0) FROM fee_payments WHERE learner=?", (name,)).fetchone()[0] or 0
+        c.close()
+        bal = max(0, total-paid)
+        c1,c2,c3 = st.columns(3); c1.metric("Total", f"{total:,}"); c2.metric("Paid", f"{paid:,}"); c3.metric("Balance", f"{bal:,}")
+        new_total = st.number_input("Change Total (bursary)", value=total, step=1000)
+        amt = st.number_input("Payment Amount", min_value=0, step=1000)
+        if st.button("✅ SAVE Payment", use_container_width=True):
+            if amt > bal and bal>0:
+                st.error("Overpay blocked. Pay only balance.")
+            elif amt <= 0:
+                st.error("Enter amount > 0")
+            else:
+                cc = get_db()
+                cc.execute("INSERT OR REPLACE INTO fee_totals VALUES (?,?)", (name, new_total))
+                rec = f"ILEARN-{cc.execute('SELECT COUNT(*)+1 FROM fee_payments').fetchone()[0]:03d}"
+                cc.execute("INSERT INTO fee_payments VALUES (?,?,?,?)", (name, amt, str(selected_date), rec))
+                cc.commit(); cc.close()
+                audit(st.session_state.user, f"Fees {name} paid {amt} receipt {rec}")
+                st.success(f"✅ Saved! Receipt {rec} Balance now {max(0,new_total-(paid+amt)):,}")
                 st.rerun()
+        # Who owes
+        st.divider(); st.write("Who Owes:")
+        cc = get_db(); all2 = cc.execute("SELECT name,class FROM learners").fetchall(); rows=[]
+        for nm, cl2 in all2:
+            t = cc.execute("SELECT total FROM fee_totals WHERE learner=?", (nm,)).fetchone()
+            tt = t[0] if t else FEES_STRUCTURE.get(cl2,150000)
+            pp = cc.execute("SELECT COALESCE(SUM(amount),0) FROM fee_payments WHERE learner=?", (nm,)).fetchone()[0] or 0
+            if tt-pp>0: rows.append((nm,cl2,tt,pp,tt-pp))
+        cc.close()
+        if rows: st.dataframe(pd.DataFrame(rows, columns=["Learner","Class","Total","Paid","Balance"]), use_container_width=True)
 
-# ============ 6. STREAMS ============
-with tab_stream:
-    st.subheader(f"🏫 Streams - {selected_year} - {selected_class}")
-    new_stream = st.text_input("New Stream Name", key="new_stream")
-    if st.button("Add Stream to Google Sheets"):
-        if new_stream:
-            save_to_sheet("Streams", {"Year": selected_year, "Class": selected_class, "Stream": new_stream})
-            st.success(f"✅ Stream {new_stream} saved!")
-            st.rerun()
-    streams_df = read_sheet("Streams")
-    if not streams_df.empty and "Year" in streams_df.columns:
-        st.dataframe(streams_df[streams_df["Year"].astype(str)==selected_year], use_container_width=True)
-    st.divider()
-    st.subheader("⬆️ Promote Learners to Next Year")
-    next_year = st.selectbox("Copy to Year", YEARS, index=2, key="next_year")
-    to_class = st.selectbox("To Class", ["P1","P2","P3","P4","P5","P6","P7"], key="to_class")
-    if st.button("Copy Active Learners to Next Year"):
-        to_copy = get_active_learners(selected_year, selected_class, selected_stream)
-        for name in to_copy:
-            save_to_sheet("Learners", {"Year": next_year, "Class": to_class, "Stream": selected_stream, "Learner_Name": name, "Status": "Active", "Graduation_Year": "", "Reason": ""})
-        st.success(f"✅ Copied {len(to_copy)} learners to {to_class} {selected_stream} {next_year}.")
+# ---------- HOMEWORK ----------
+elif menu == "📚 Homework":
+    st.subheader("📚 Homework")
+    task = st.text_area("Homework task", placeholder="e.g. Page 42 Q1-5")
+    if st.button("✅ SAVE Homework", use_container_width=True):
+        if not task: st.error("Type homework first")
+        else:
+            cc = get_db(); cc.execute("INSERT INTO homework VALUES (?,?,?,?,?) ON CONFLICT(date,class,stream,subject) DO UPDATE SET task=excluded.task", (str(selected_date), selected_class, selected_stream, selected_subject, task)); cc.commit(); cc.close()
+            audit(st.session_state.user, f"Homework {selected_class} {selected_stream} {selected_subject}")
+            st.success("✅ Saved!")
+    cc = get_db(); rows = cc.execute("SELECT class,stream,subject,task FROM homework WHERE date=?", (str(selected_date),)).fetchall(); cc.close()
+    if rows: st.dataframe(pd.DataFrame(rows, columns=["Class","Stream","Subject","Task"]), use_container_width=True)
+    else: st.info("No homework today yet.")
 
-# ============ 7. ALUMNI ============
-with tab_alumni:
-    st.subheader("🎓 Alumni - Search Any Learner - P1 to P7 History")
-    search_name = st.text_input("Type learner name to search", key="alumni_search")
-    if search_name:
-        for sheet_name, name_col, title in [("Quiz_Results","Learner_Name","📝 Quiz History"), ("Behaviour_Clinic","Learner_Name","💬 Behaviour / Clinic History"), ("Votes","Voter_Name","🗳️ Voting History"), ("Fees","Learner_Name","💰 Fees History"), ("Parent_Messages","Learner_Name","💬 Parent Messages History"), ("Mastery","Learner_Name","📚 Mastery History")]:
-            df = read_sheet(sheet_name)
-            if not df.empty and name_col in df.columns:
-                found = df[df[name_col].astype(str).str.contains(search_name, case=False, na=False)]
-                if not found.empty:
-                    st.subheader(title)
-                    st.dataframe(found, use_container_width=True)
-        learners_df = read_sheet("Learners")
-        if not learners_df.empty and "Learner_Name" in learners_df.columns:
-            found_l = learners_df[learners_df["Learner_Name"].astype(str).str.contains(search_name, case=False, na=False)]
-            if not found_l.empty:
-                st.subheader("👥 Learner Record - All Years")
-                st.dataframe(found_l.sort_values("Year"), use_container_width=True)
+# ---------- PERFORMANCE ----------
+elif menu == "📊 Performance":
+    st.subheader("📊 Performance / Marks")
+    c = get_db(); learners = c.execute("SELECT name FROM learners WHERE class=? AND stream=? ORDER BY name", (selected_class, selected_stream)).fetchall(); c.close()
+    for (nm,) in learners:
+        col1,col2 = st.columns([3,1])
+        with col1: st.write(nm)
+        with col2:
+            sc = st.number_input(f"Score {nm}", min_value=0, max_value=100, value=0, key=f"mark_{nm}")
+            if st.button(f"Save {nm}", key=f"btn_{nm}"):
+                cc = get_db()
+                old = cc.execute("SELECT score FROM marks WHERE learner=? AND class=? AND stream=? AND term=? AND subject=?", (nm, selected_class, selected_stream, selected_term, selected_subject)).fetchone()
+                cc.execute("INSERT INTO marks VALUES (?,?,?,?,?,?,?) ON CONFLICT(learner,class,stream,term,subject) DO UPDATE SET score=excluded.score, teacher=excluded.teacher", (nm, selected_class, selected_stream, selected_term, selected_subject, sc, st.session_state.user))
+                if old and old[0]!=sc:
+                    cc.execute("INSERT INTO marks_audit VALUES (?,?,?,?,?,datetime('now'))", (nm, selected_subject, old[0], sc, st.session_state.user))
+                cc.commit(); cc.close()
+                audit(st.session_state.user, f"Mark {nm} {selected_subject} {sc}")
+                st.success(f"{nm} {sc} ({ilearn_grade(sc)}) Saved")
+                st.rerun()
+    cc = get_db(); rows = cc.execute("SELECT learner,subject,score FROM marks WHERE class=? AND stream=? AND term=? ORDER BY learner", (selected_class, selected_stream, selected_term)).fetchall(); cc.close()
+    if rows:
+        df = pd.DataFrame(rows, columns=["Learner","Subject","Score"]); df["Grade"] = df["Score"].apply(ilearn_grade)
+        st.dataframe(df, use_container_width=True)
+        st.write(f"Average: {df['Score'].mean():.1f}")
+
+# ---------- REPORT CARDS ----------
+elif menu == "📄 Report Cards":
+    st.subheader("📄 Report Cards - Real Data")
+    c = get_db(); all_l = c.execute("SELECT name,class,stream FROM learners ORDER BY class,name").fetchall(); c.close()
+    if not all_l: st.warning("No learners yet.")
+    else:
+        pick = st.selectbox("Pick Learner", [f"{n} - {cl} {st_}" for n,cl,st_ in all_l])
+        name = pick.split(" - ")[0]; cl = pick.split(" - ")[1].split()[0]; st_ = pick.split(" - ")[1].split()[1]
+        c = get_db()
+        marks = c.execute("SELECT subject,score,teacher FROM marks WHERE learner=? AND class=? AND stream=? AND term=? ORDER BY subject", (name,cl,st_,selected_term)).fetchall()
+        att_t = c.execute("SELECT COUNT(*) FROM attendance WHERE learner=?", (name,)).fetchone()[0]
+        att_p = c.execute("SELECT COUNT(*) FROM attendance WHERE learner=? AND status='Present'", (name,)).fetchone()[0]
+        tot_r = c.execute("SELECT total FROM fee_totals WHERE learner=?", (name,)).fetchone()
+        paid = c.execute("SELECT COALESCE(SUM(amount),0) FROM fee_payments WHERE learner=?", (name,)).fetchone()[0] or 0
+        c.close()
+        total = tot_r[0] if tot_r else FEES_STRUCTURE.get(cl,150000); bal = max(0,total-paid)
+        avg = sum([r[1] for r in marks])/len(marks) if marks else 0
+        att_pct = (att_p/att_t*100) if att_t>0 else 0
+        st.write(f"**{SCHOOL['name']}** | {SCHOOL['motto']} | {SCHOOL['phone']}")
+        st.write(f"**Learner:** {name} | **Class:** {cl} {st_} | **Term:** {selected_term} {selected_year} | **Date:** {selected_date}")
+        c1,c2,c3,c4 = st.columns(4); c1.metric("Average", f"{avg:.1f} ({ilearn_grade(avg) if marks else '-'})"); c2.metric("Attendance", f"{att_pct:.0f}%"); c3.metric("Fees Balance", f"{bal:,} UGX"); c4.metric("Subjects", len(marks))
+        if marks:
+            df = pd.DataFrame([(r[0],r[1],ilearn_grade(r[1]),r[2]) for r in marks], columns=["Subject","Score","Grade","Teacher"])
+            st.dataframe(df, use_container_width=True)
+        else: st.warning("No marks yet for this term.")
+        st.write(f"Attendance: Total {att_t} | Present {att_p} | {att_pct:.0f}%")
+        st.write(f"Fees: Total {total:,} | Paid {paid:,} | Balance {bal:,}")
+        if bal==0: st.success("✅ Fees PAID IN FULL")
+        else: st.error(f"Balance Owed: {bal:,} UGX")
+        tc = st.text_area("Teacher Comment", key="tc"); hc = st.text_area("Headteacher Comment", key="hc")
+        st.write(f"**Teacher:** {tc or '-'}"); st.write(f"**Headteacher:** {hc or '-'}")
+        st.write("Class Teacher Signature: __________   Headteacher Signature: __________   Date: __________")
+        if marks:
+            df2 = pd.DataFrame([(name,cl,st_,selected_term,r[0],r[1],ilearn_grade(r[1])) for r in marks], columns=["Learner","Class","Stream","Term","Subject","Score","Grade"])
+            st.download_button("📥 Download Report Card CSV", df2.to_csv(index=False).encode(), f"report_{name}_{selected_term}.csv", "text/csv", use_container_width=True)
+        st.info(f"WhatsApp: *Report Card - {name} {cl} {st_} {selected_term}: Average {avg:.1f} ({ilearn_grade(avg) if marks else '-'}), Attendance {att_pct:.0f}%, Fees Balance {bal:,} UGX. - {SCHOOL['name']}*")
+
+# ---------- MASTER ----------
+elif menu == "🌟 Master Summary":
+    st.subheader("🌟 Master Summary - Real Data")
+    c = get_db()
+    total_l = c.execute("SELECT COUNT(*) FROM learners").fetchone()[0]
+    att_t = c.execute("SELECT COUNT(*) FROM attendance WHERE date=?", (str(selected_date),)).fetchone()[0]
+    att_p = c.execute("SELECT COUNT(*) FROM attendance WHERE date=? AND status='Present'", (str(selected_date),)).fetchone()[0]
+    att_a = c.execute("SELECT COUNT(*) FROM attendance WHERE date=? AND status='Absent'", (str(selected_date),)).fetchone()[0]
+    hw_t = c.execute("SELECT COUNT(*) FROM homework WHERE date=?", (str(selected_date),)).fetchone()[0]
+    fees_paid = c.execute("SELECT COALESCE(SUM(amount),0) FROM fee_payments").fetchone()[0] or 0
+    avg_m = c.execute("SELECT AVG(score) FROM marks WHERE term=?", (selected_term,)).fetchone()[0] or 0
+    c.close()
+    m1,m2,m3,m4 = st.columns(4); m1.metric("Learners", total_l); m2.metric("Attendance Today", f"{att_t} marked"); m3.metric("Present / Absent", f"{att_p} / {att_a}"); m4.metric("Homework Today", f"{hw_t} given")
+    m5,m6 = st.columns(2); m5.metric("Fees Paid (All Time)", f"{fees_paid:,} UGX"); m6.metric("Avg Mark This Term", f"{avg_m:.1f}")
+    st.divider(); st.write("Per Class:")
+    rows=[]
+    for cl in CLASSES:
+        for st_ in STREAMS:
+            cc = get_db()
+            li = cc.execute("SELECT COUNT(*) FROM learners WHERE class=? AND stream=?", (cl,st_)).fetchone()[0]
+            ai = cc.execute("SELECT COUNT(*) FROM attendance WHERE date=? AND class=? AND stream=?", (str(selected_date),cl,st_)).fetchone()[0]
+            hi = cc.execute("SELECT COUNT(*) FROM homework WHERE date=? AND class=? AND stream=?", (str(selected_date),cl,st_)).fetchone()[0]
+            av = cc.execute("SELECT AVG(score) FROM marks WHERE class=? AND stream=? AND term=?", (cl,st_,selected_term)).fetchone()[0] or 0
+            cc.close()
+            rows.append((cl,st_,li,f"{ai}/{li}" if li>0 else "No learners","✅ YES" if hi>0 else "🔴 NO", f"{av:.1f}" if av>0 else "-"))
+    st.dataframe(pd.DataFrame(rows, columns=["Class","Stream","Learners","Attendance Today","Homework?","Avg Mark"]), use_container_width=True)
+    st.divider(); st.write("Top 3 This Term:")
+    cc = get_db(); top3 = cc.execute("SELECT learner,class,AVG(score) as a FROM marks WHERE term=? GROUP BY learner,class ORDER BY a DESC LIMIT 3", (selected_term,)).fetchall(); cc.close()
+    for i,(nm,cl,av) in enumerate(top3,1): st.write(f"{i}. {nm} - {cl} - Avg {av:.1f} ({ilearn_grade(av)})")
+    if not top3: st.info("No marks yet this term.")
+
+# ---------- AUDIT ----------
+elif menu == "📜 Audit Log":
+    st.subheader("📜 Audit Log - Who Did What")
+    c = get_db(); rows = c.execute("SELECT who,action,when_ FROM audit ORDER BY rowid DESC LIMIT 100").fetchall(); c.close()
+    if rows: st.dataframe(pd.DataFrame(rows, columns=["Who","Action","When"]), use_container_width=True)
+    c = get_db(); rows2 = c.execute("SELECT learner,subject,old_score,new_score,who,when_ FROM marks_audit ORDER BY rowid DESC LIMIT 100").fetchall(); c.close()
+    if rows2:
+        st.write("Mark Changes:")
+        st.dataframe(pd.DataFrame(rows2, columns=["Learner","Subject","Old","New","Who","When"]), use_container_width=True)
