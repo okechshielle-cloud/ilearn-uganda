@@ -1,299 +1,250 @@
-# ILEARN UGANDA v45.1 COMPLETE - SECRETS FIXED + FORGIVING LOGIN
-# No hardcoded keys/passwords. All secrets from st.secrets only.
+# ============================================================
+# ILEARN UGANDA - COMPLETE FINAL FILE - v44
+# Login + 2FA + Forgot OTP + Add User + Audit + Timeout
+# + Home Dashboard + Colours + Search + Favourites + Recent
+# ============================================================
 import streamlit as st
-import sqlite3
 import pandas as pd
-from datetime import date
+import hashlib, random, time, re
+from datetime import date, datetime
 
-st.set_page_config(page_title="ILEARN Uganda", layout="wide")
+st.set_page_config(page_title="ILEARN Uganda", page_icon="🌟", layout="wide", initial_sidebar_state="expanded")
 
-# ---------- SECRETS - SAFE ----------
-def get_secret(name, default=""):
-    try:
-        return st.secrets.get(name, default)
-    except:
-        return default
+# ============ 🎨 COLOURS - CSS ============
+st.markdown("""
+<style>
+.stButton > button { height: 90px !important; font-size: 16px !important; font-weight: bold !important; border-radius: 16px !important; border: 2px solid #E0E0E0 !important; white-space: pre-line !important; line-height: 1.3 !important; }
+div[data-testid="stHorizontalBlock"] .stButton > button { height: 50px !important; font-size: 14px !important; }
+.color-blue { background: #1976D2; color: white; padding: 12px 16px; border-radius: 12px; font-size: 20px; font-weight: bold; margin: 16px 0 8px 0; }
+.color-green { background: #2E7D32; color: white; padding: 12px 16px; border-radius: 12px; font-size: 20px; font-weight: bold; margin: 16px 0 8px 0; }
+.color-orange { background: #EF6C00; color: white; padding: 12px 16px; border-radius: 12px; font-size: 20px; font-weight: bold; margin: 16px 0 8px 0; }
+.color-red { background: #D32F2F; color: white; padding: 12px 16px; border-radius: 12px; font-size: 20px; font-weight: bold; margin: 16px 0 8px 0; }
+.color-purple { background: #7B1FA2; color: white; padding: 12px 16px; border-radius: 12px; font-size: 20px; font-weight: bold; margin: 16px 0 8px 0; }
+.color-gold { background: #FFB300; color: #333; padding: 12px 16px; border-radius: 12px; font-size: 20px; font-weight: bold; margin: 16px 0 8px 0; }
+.color-teal { background: #00897B; color: white; padding: 12px 16px; border-radius: 12px; font-size: 20px; font-weight: bold; margin: 16px 0 8px 0; }
+</style>
+""", unsafe_allow_html=True)
 
-PRIVATE_KEY = get_secret("MY_PRIVATE_KEY", "")
-# NEVER print PRIVATE_KEY
+# ============ 🔐 HELPERS ============
+def hash_pw(pw): return hashlib.sha256(pw.encode()).hexdigest()
+def get_timeout_for_role(role):
+    if role in ["Headteacher","Bursar"]: return 15
+    if role=="Teacher": return 30
+    if role=="Parent": return 60
+    return 30
 
-# ---------- SCHOOL CONFIG ----------
-SCHOOL = {
-    "name": "Your School Name",
-    "short_name": "YS",
-    "motto": "Strive For Excellence",
-    "district": "Kampala",
-    "phone": "+256 700 000000",
-    "email": "info@yourschool.ac.ug",
-    "year": 2026, "term": "Term 3",
+# Base Users: Email: [hash, Name, Role, PIN]
+USERS = {
+    "head@ilearn.ug": [hash_pw("head123"), "Headteacher", "Headteacher", "1234"],
+    "bursar@ilearn.ug": [hash_pw("bursar123"), "Bursar Grace", "Bursar", "5678"],
+    "teacher1@ilearn.ug": [hash_pw("teach123"), "Teacher Amina", "Teacher", ""],
+    "teacher2@ilearn.ug": [hash_pw("teach123"), "Teacher John", "Teacher", ""],
+    "parent@ilearn.ug": [hash_pw("parent123"), "Parent", "Parent", ""],
 }
-FEES_STRUCTURE = {"Baby":120000,"Middle":120000,"Top":130000,"P1":150000,"P2":150000,"P3":170000,"P4":170000,"P5":200000,"P6":200000,"P7":250000}
-CLASSES = ["Baby","Middle","Top","P1","P2","P3","P4","P5","P6","P7"]
-STREAMS = ["A","B"]
-SUBJECTS = ["English","Maths","Science","SST","RE"]
+if "USERS_DYNAMIC" not in st.session_state: st.session_state.USERS_DYNAMIC = {}
+if "pending_users" not in st.session_state: st.session_state.pending_users = {}
+if "BLOCKED_USERS" not in st.session_state: st.session_state.BLOCKED_USERS = []
+def get_all_users():
+    all_u = dict(USERS); all_u.update(st.session_state.USERS_DYNAMIC)
+    for b in st.session_state.BLOCKED_USERS:
+        if b in all_u: del all_u[b]
+    return all_u
 
-def ilearn_grade(s):
-    try: s = int(s)
-    except: return "F"
-    if s >= 90: return "D1"
-    if s >= 80: return "D2"
-    if s >= 70: return "C3"
-    if s >= 60: return "C4"
-    if s >= 50: return "C5"
-    if s >= 40: return "C6"
-    if s >= 30: return "P7"
-    return "F"
+# ============ 📜 AUDIT LOG ============
+if "audit_log" not in st.session_state: st.session_state.audit_log = []
+def log_action(action, details=""):
+    entry = {"Time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "Name": st.session_state.get("user_name","Guest"), "Email": st.session_state.get("user_email","guest"), "Role": st.session_state.get("user_role","-"), "Action": action, "Details": details}
+    st.session_state.audit_log.insert(0, entry); st.session_state.audit_log = st.session_state.audit_log[:500]
 
-# ---------- DB ----------
-def get_db():
-    c = sqlite3.connect("ilearn.db", check_same_thread=False)
-    c.execute("CREATE TABLE IF NOT EXISTS learners (name TEXT, class TEXT, stream TEXT, UNIQUE(name, class, stream))")
-    c.execute("CREATE TABLE IF NOT EXISTS attendance (date TEXT, class TEXT, stream TEXT, learner TEXT, status TEXT, UNIQUE(date, class, stream, learner))")
-    c.execute("CREATE TABLE IF NOT EXISTS fee_payments (learner TEXT, amount INTEGER, date TEXT, receipt TEXT)")
-    c.execute("CREATE TABLE IF NOT EXISTS fee_totals (learner TEXT PRIMARY KEY, total INTEGER)")
-    c.execute("CREATE TABLE IF NOT EXISTS homework (date TEXT, class TEXT, stream TEXT, subject TEXT, task TEXT, UNIQUE(date, class, stream, subject))")
-    c.execute("CREATE TABLE IF NOT EXISTS marks (learner TEXT, class TEXT, stream TEXT, term TEXT, subject TEXT, score INTEGER, teacher TEXT, UNIQUE(learner, class, stream, term, subject))")
-    c.execute("CREATE TABLE IF NOT EXISTS marks_audit (learner TEXT, subject TEXT, old_score INTEGER, new_score INTEGER, who TEXT, when_ TEXT)")
-    c.execute("CREATE TABLE IF NOT EXISTS audit (who TEXT, action TEXT, when_ TEXT)")
-    if c.execute("SELECT COUNT(*) FROM learners").fetchone()[0] == 0:
-        for n, cl in [("Amina","P4"),("John","P4"),("Sarah","P4"),("David","P4"),("Grace","P5"),("Peter","P5"),("Mary","P5"),("James","P6")]:
-            c.execute("INSERT OR IGNORE INTO learners VALUES (?,?,?)", (n, cl, "A"))
-    c.commit()
-    return c
+# ============ ⏰ SESSION TIMEOUT ============
+SESSION_TIMEOUT_MINS = 30
+if "last_activity" not in st.session_state: st.session_state.last_activity = time.time()
+def update_activity(): st.session_state.last_activity = time.time()
+def check_session_timeout():
+    if not st.session_state.get("logged_in", False): return False
+    role = st.session_state.get("user_role","Teacher")
+    tm = st.session_state.get("SESSION_TIMEOUT_MINS", get_timeout_for_role(role))
+    if time.time() - st.session_state.last_activity > tm*60:
+        try: log_action("SESSION TIMEOUT", f"Auto-logout after {tm} mins idle")
+        except: pass
+        st.session_state.logged_in=False; st.session_state.user_email=""; st.session_state.user_name=""; st.session_state.user_role=""; st.session_state.login_step=1; st.session_state.twofa_code=""
+        return True
+    return False
 
-def audit(who, action):
-    c = get_db()
-    c.execute("INSERT INTO audit VALUES (?,?,datetime('now'))", (who, action))
-    c.commit(); c.close()
+# ============ SESSION STATE INIT ============
+if "logged_in" not in st.session_state:
+    st.session_state.logged_in=False; st.session_state.user_email=""; st.session_state.user_name=""; st.session_state.user_role=""; st.session_state.menu="🏠 Home Dashboard"
+if "login_step" not in st.session_state:
+    st.session_state.login_step=1; st.session_state.pending_email=""; st.session_state.pending_name=""; st.session_state.pending_role=""; st.session_state.twofa_code=""; st.session_state.twofa_expiry=0
+if "otp_code" not in st.session_state:
+    st.session_state.otp_code=""; st.session_state.otp_email=""; st.session_state.otp_step=1; st.session_state.otp_expiry=0
 
-# ---------- LOGIN - MAIN BLOCK - FIXED v45.1 ----------
-if "user" not in st.session_state:
-    st.markdown(f"# 🌟 ILEARN UGANDA\n### {SCHOOL['name']} - {SCHOOL['motto']}")
-    has_secrets = bool(get_secret("ADMIN_EMAIL"))
-    st.info(f"Secrets loaded in cloud: {'YES ✅' if has_secrets else 'NO ❌ - Go to Manage app > Settings > Secrets'}")
-    email = st.text_input("Email").strip().lower()
-    password = st.text_input("Password", type="password").strip()
-    pin = st.text_input("PIN (Headteacher / Bursar only)", type="password").strip()
-    if st.button("Login", use_container_width=True):
-        users = {
-            get_secret("ADMIN_EMAIL","").strip().lower(): (get_secret("ADMIN_PASSWORD","").strip(), get_secret("ADMIN_PIN","").strip(), "Headteacher"),
-            get_secret("BURSAR_EMAIL","").strip().lower(): (get_secret("BURSAR_PASSWORD","").strip(), get_secret("BURSAR_PIN","").strip(), "Bursar"),
-            get_secret("TEACHER_EMAIL","").strip().lower(): (get_secret("TEACHER_PASSWORD","").strip(), "", "Teacher"),
-        }
-        if email in users and users[email][0] and password == users[email][0]:
-            role = users[email][2]
-            saved_pin = users[email][1]
-            if saved_pin and role in ["Headteacher","Bursar"] and pin != saved_pin:
-                st.error("Password OK, but PIN wrong. Check ADMIN_PIN in Secrets.")
+# Check timeout
+timed_out = check_session_timeout()
+if timed_out:
+    st.warning("🔒 Session Expired - You were idle. Please login again for security.")
+
+# ============ 🔐 LOGIN SCREEN ============
+if not st.session_state.logged_in:
+    st.title("🌟 ILEARN UGANDA")
+    st.markdown('<div class="color-gold">🔐 LOGIN - Staff Only</div>', unsafe_allow_html=True)
+    # --- STEP 1: Email + Password ---
+    if st.session_state.login_step == 1:
+        email = st.text_input("📧 Email", placeholder="e.g. teacher1@ilearn.ug", key="login_email").strip().lower()
+        password = st.text_input("🔑 Password", type="password", placeholder="Enter your password", key="login_pw")
+        if st.button("🔓 LOGIN - Step 1", type="primary", use_container_width=True):
+            ALL = get_all_users()
+            if email in ALL and ALL[email][0]==hash_pw(password):
+                role = ALL[email][2]
+                if role not in ["Headteacher","Bursar"]:
+                    st.session_state.logged_in=True; st.session_state.user_email=email; st.session_state.user_name=ALL[email][1]; st.session_state.user_role=role; st.session_state.menu="🏠 Home Dashboard"; update_activity(); log_action("LOGIN","Login Success - No 2FA"); st.rerun()
+                else:
+                    otp2 = f"{random.randint(100000,999999)}"
+                    st.session_state.twofa_code=otp2; st.session_state.twofa_expiry=time.time()+300; st.session_state.pending_email=email; st.session_state.pending_name=ALL[email][1]; st.session_state.pending_role=role; st.session_state.login_step=2
+                    st.success("✅ Password OK! Now enter 2FA Code below.")
+                    st.info(f"Demo OTP (WhatsApp Mode): *{otp2}* - Valid 5 mins. Or enter your PIN.")
+                    pin = ALL[email][3] if len(ALL[email])>3 else ""
+                    if pin: st.info(f"Your PIN is also accepted: {pin} (Change it in Admin)")
+                    st.rerun()
             else:
-                st.session_state.user = email
-                st.session_state.user_name = email.split("@")[0]
-                st.session_state.role = role
-                st.session_state.menu = "🌟 Master Summary"
-                audit(email, "Login")
-                st.rerun()
-        else:
-            st.error("Wrong email or password. Check secrets.toml")
+                st.error("❌ Wrong Email or Password."); log_action("LOGIN FAILED", f"Failed login for {email}")
+        st.caption("Demo: Head: head@ilearn.ug / head123 + PIN 1234 | Teacher: teacher1@ilearn.ug / teach123 | Bursar: bursar@ilearn.ug / bursar123 + PIN 5678 | Parent: parent@ilearn.ug / parent123")
+    # --- STEP 2: 2FA ---
+    if st.session_state.login_step == 2:
+        st.markdown('<div class="color-red">🔐 STEP 2 - Enter 2FA Code / PIN</div>', unsafe_allow_html=True)
+        st.write(f"Hello **{st.session_state.pending_name}** ({st.session_state.pending_role}) - {st.session_state.pending_email}")
+        code2 = st.text_input("🔢 Enter 2FA Code or 4-Digit PIN", max_chars=6, key="twofa_input", placeholder="e.g. 123456 or 1234")
+        c1,c2 = st.columns(2)
+        if c1.button("✅ Verify & Login", type="primary", use_container_width=True):
+            ALL=get_all_users(); em=st.session_state.pending_email; pin=ALL[em][3] if len(ALL[em])>3 else ""
+            otp_ok = (code2==st.session_state.twofa_code and time.time()<=st.session_state.twofa_expiry)
+            pin_ok = (pin!="" and code2==pin)
+            if otp_ok or pin_ok:
+                st.session_state.logged_in=True; st.session_state.user_email=em; st.session_state.user_name=st.session_state.pending_name; st.session_state.user_role=st.session_state.pending_role; st.session_state.menu="🏠 Home Dashboard"; st.session_state.login_step=1; st.session_state.twofa_code=""; update_activity(); log_action("LOGIN","Login Success - 2FA Verified"); st.rerun()
+            else:
+                st.error("❌ Wrong 2FA / PIN or Expired."); log_action("2FA FAILED", f"Wrong 2FA for {em}")
+        if c2.button("🔄 Resend Code", use_container_width=True):
+            otp2=f"{random.randint(100000,999999)}"; st.session_state.twofa_code=otp2; st.session_state.twofa_expiry=time.time()+300; st.success(f"New Code (WhatsApp Mode): {otp2}"); st.rerun()
+        if st.button("← Back to Login"):
+            st.session_state.login_step=1; st.session_state.twofa_code=""; st.rerun()
+    # --- FORGOT PASSWORD + OTP ---
+    st.divider(); st.subheader("❓ Forgot Password?")
+    if st.session_state.otp_step==1:
+        fe = st.text_input("Enter your Email to reset:", placeholder="teacher1@ilearn.ug", key="forgot_email").strip().lower()
+        if st.button("📩 Send OTP Code", use_container_width=True):
+            if fe in get_all_users():
+                otp=f"{random.randint(100000,999999)}"; st.session_state.otp_code=otp; st.session_state.otp_email=fe; st.session_state.otp_step=2; st.session_state.otp_expiry=time.time()+600; log_action("FORGOT PW - OTP SENT", f"OTP sent to {fe}"); st.success(f"✅ OTP Sent! (Demo Mode - OTP is: {otp})"); st.info(f"Headteacher: Send via WhatsApp: *Your ILEARN OTP is {otp}. Valid 10 mins.*"); st.rerun()
+            else: st.error("❌ Email not found. Ask Headteacher to add you.")
+    if st.session_state.otp_step==2:
+        st.success(f"OTP sent to {st.session_state.otp_email}")
+        eotp = st.text_input("🔢 Enter 6-Digit OTP", max_chars=6, key="entered_otp")
+        npw = st.text_input("🔑 New Password", type="password", key="new_pw1")
+        npw2 = st.text_input("🔑 Confirm New Password", type="password", key="new_pw2")
+        cc1,cc2 = st.columns(2)
+        if cc1.button("✅ Reset Password", type="primary", use_container_width=True):
+            if time.time()>st.session_state.otp_expiry: st.error("⏰ OTP Expired!"); st.session_state.otp_step=1; st.rerun()
+            elif eotp!=st.session_state.otp_code: st.error("❌ Wrong OTP.")
+            elif len(npw)<6: st.error("❌ Password must be 6+ chars.")
+            elif npw!=npw2: st.error("❌ Passwords do not match.")
+            else:
+                em=st.session_state.otp_email; ALL=get_all_users(); name,role=ALL[em][1],ALL[em][2]; pin=ALL[em][3] if len(ALL[em])>3 else ""
+                st.session_state.USERS_DYNAMIC[em]=[hash_pw(npw),name,role,pin]; log_action("RESET PASSWORD", f"Reset password for {em}"); st.success("✅ Password Changed! Now Login with new password."); st.code(f"New hash: {hash_pw(npw)} - Headteacher: save this"); st.session_state.otp_step=1; st.session_state.otp_code=""
+        if cc2.button("🔄 Resend OTP", use_container_width=True): st.session_state.otp_step=1; st.rerun()
+        if st.button("← Back to Login"): st.session_state.otp_step=1; st.rerun()
+    # --- SELF REGISTER ---
+    st.divider(); st.subheader("📝 New Here? Register")
+    st.write("Parents / New Staff: Register. Headteacher will approve.")
+    rn = st.text_input("Your Full Name", key="reg_name"); re_ = st.text_input("Your Email", key="reg_email").strip().lower(); rp = st.text_input("Choose Password", type="password", key="reg_pw"); rr = st.selectbox("I am a:", ["Parent","Teacher","Bursar"], key="reg_role")
+    if st.button("📩 Request Account", use_container_width=True):
+        if not rn or "@" not in re_ or len(rp)<6: st.error("Fill Name, valid Email, Password 6+ chars")
+        elif re_ in get_all_users() or re_ in st.session_state.pending_users: st.error("Email already registered / pending.")
+        else: st.session_state.pending_users[re_]=[hash_pw(rp),rn,rr,""]; st.success("✅ Request Sent! Ask Headteacher to approve in Admin page.")
     st.stop()
 
-# ---------- TOP BAR ----------
-st.markdown(f"### 🌟 {SCHOOL['name']} | {SCHOOL['motto']} | {SCHOOL['district']} | {st.session_state.role} - {st.session_state.user_name}")
-if st.button("Logout"):
-    audit(st.session_state.user, "Logout")
-    del st.session_state.user
-    st.rerun()
+# ============ LOGGED IN - TOP BAR ============
+update_activity()
+st.sidebar.success(f"👤 {st.session_state.user_name}\nRole: {st.session_state.user_role}")
+st.sidebar.caption(f"📧 {st.session_state.user_email}")
+st.sidebar.caption(f"⏰ Auto-logout in {st.session_state.get('SESSION_TIMEOUT_MINS', get_timeout_for_role(st.session_state.user_role))} mins if idle")
+if st.sidebar.button("🟢 I'm Still Here", key="keep_alive"): update_activity(); st.success("✅ Session extended!"); st.rerun()
+if st.sidebar.button("🚪 LOGOUT", use_container_width=True):
+    log_action("LOGOUT","User logged out"); st.session_state.logged_in=False; st.session_state.user_email=""; st.session_state.user_name=""; st.session_state.user_role=""; st.session_state.login_step=1; st.rerun()
+st.write(f"Welcome, **{st.session_state.user_name}** ({st.session_state.user_role}) | Today: {date.today()}")
 
-selected_year = st.selectbox("Year", [2025,2026,2027], index=1)
-selected_term = st.selectbox("Term", ["Term 1","Term 2","Term 3"], index=2)
-selected_class = st.selectbox("Class", CLASSES, index=6)
-selected_stream = st.selectbox("Stream", STREAMS)
-selected_date = st.date_input("Date", date.today())
-selected_subject = st.selectbox("Subject", SUBJECTS)
+# ============ TOP BAR - YEAR / TERM / CLASS ============
+st.title("🌟 ILEARN UGANDA - One App. One School. All Records.")
+c1,c2,c3,c4,c5,c6 = st.columns(6)
+with c1: selected_year = st.selectbox("Year", [2024,2025,2026,2027], index=2, key="top_year")
+with c2: selected_term = st.selectbox("Term", ["Term 1","Term 2","Term 3"], index=2, key="top_term")
+with c3: selected_class = st.selectbox("Class", ["Baby","Middle","Top","P1","P2","P3","P4","P5","P6","P7"], index=7, key="top_class")
+with c4: selected_stream = st.selectbox("Stream", ["A","B","C"], index=0, key="top_stream")
+with c5: selected_subject = st.selectbox("Subject", ["English","Maths","Science","SST","Kiswahili","All"], index=5, key="top_subject")
+with c6: selected_date = st.date_input("Date", date.today(), key="top_date")
 
-menu = st.sidebar.radio("Menu", ["🌟 Master Summary","📋 Attendance","💰 Fees","📚 Homework","📊 Performance","📄 Report Cards","📜 Audit Log"])
-st.session_state.menu = menu
+# ============ ALL MENUS + ROLE FILTER ============
+ALL_MENUS = ["🏠 Home Dashboard","👑 Admin - Add User","🌟 Master Summary","📋 Attendance","📝 Take Quiz","📊 Performance","💬 Behaviour / Clinic","👥 Learners","🏫 Streams","🎓 Alumni","📚 Quiz Bank","🗳️ Voting","📄 Report Cards","💰 Fees","💬 Parent Message","🔢 Student Code & Pay","📚 NCDC Outcomes","📝 Lesson Plans","📔 Record of Work","📅 Schemes of Work","📊 Headteacher Dashboard","🗓️ Timetable & Duty","👩🏾‍🏫 Staff & Payroll","🎓 Exams / PLE Mock","📝 Assessment Records","📚 Library","🚌 Transport / Bus","🏥 Health","⭐ Discipline / Rewards","🛒 School Shop","👨‍👩‍👧 PTA Meeting","🏫 Assets","🚪 Visitors / Gate Pass","📅 Calendar / Events","💝 Donations","🎓 Bursary","🍲 Feeding / Lunch","👩🏾‍🏫 Staff Attendance","📚 Homework","🏦 Cash Book","📢 Notice Board","🎓 PLE / UNEB","🔍 Inspection","🎉 Alumni Reunion"]
+ROLE_MENUS = {
+    "Headteacher": None,
+    "Teacher": ["🏠 Home Dashboard","🌟 Master Summary","📋 Attendance","📝 Take Quiz","📊 Performance","💬 Behaviour / Clinic","👥 Learners","📚 Quiz Bank","📄 Report Cards","💬 Parent Message","📚 NCDC Outcomes","📝 Lesson Plans","📔 Record of Work","📅 Schemes of Work","🗓️ Timetable & Duty","📝 Assessment Records","📚 Library","🏥 Health","⭐ Discipline / Rewards","📚 Homework","📢 Notice Board"],
+    "Bursar": ["🏠 Home Dashboard","🌟 Master Summary","👥 Learners","💰 Fees","🔢 Student Code & Pay","👩🏾‍🏫 Staff & Payroll","🛒 School Shop","🏦 Cash Book","💝 Donations","🎓 Bursary","📊 Headteacher Dashboard"],
+    "Parent": ["🏠 Home Dashboard","👥 Learners","📊 Performance","📄 Report Cards","💰 Fees","📚 Homework","🏥 Health","📢 Notice Board"],
+}
+if st.session_state.user_role in ROLE_MENUS and ROLE_MENUS[st.session_state.user_role] is not None:
+    ALL_MENUS = [m for m in ALL_MENUS if m in ROLE_MENUS[st.session_state.user_role]]
+    if st.session_state.menu not in ALL_MENUS: st.session_state.menu="🏠 Home Dashboard"
+if st.session_state.user_role != "Headteacher" and "👑 Admin - Add User" in ALL_MENUS:
+    ALL_MENUS.remove("👑 Admin - Add User")
+    if st.session_state.menu=="👑 Admin - Add User": st.session_state.menu="🏠 Home Dashboard"
+if "menu" not in st.session_state: st.session_state.menu="🏠 Home Dashboard"
 
-# ---------- ATTENDANCE ----------
-if menu == "📋 Attendance":
-    st.subheader("📋 Attendance")
-    c = get_db()
-    learners = c.execute("SELECT name FROM learners WHERE class=? AND stream=? ORDER BY name", (selected_class, selected_stream)).fetchall()
-    c.close()
-    if not learners:
-        new = st.text_input("Add learner name")
-        if st.button("Add Learner"):
-            cc = get_db(); cc.execute("INSERT INTO learners VALUES (?,?,?)", (new, selected_class, selected_stream)); cc.commit(); cc.close(); st.rerun()
-    else:
-        statuses = {}
-        for (nm,) in learners:
-            statuses[nm] = st.selectbox(f"{nm}", ["Present","Absent","Late"], key=f"att_{nm}")
-        if st.button("✅ SAVE Attendance", use_container_width=True):
-            cc = get_db()
-            for nm, stt in statuses.items():
-                cc.execute("INSERT INTO attendance VALUES (?,?,?,?,?) ON CONFLICT(date,class,stream,learner) DO UPDATE SET status=excluded.status", (str(selected_date), selected_class, selected_stream, nm, stt))
-            cc.commit(); cc.close()
-            audit(st.session_state.user, f"Saved Attendance {selected_class} {selected_stream} {selected_date}")
-            st.success(f"✅ Saved! {list(statuses.values()).count('Present')} Present, {list(statuses.values()).count('Absent')} Absent")
-        cc = get_db()
-        rows = cc.execute("SELECT learner,status FROM attendance WHERE date=? AND class=? AND stream=?", (str(selected_date), selected_class, selected_stream)).fetchall()
-        cc.close()
-        if rows: st.dataframe(pd.DataFrame(rows, columns=["Learner","Status"]), use_container_width=True)
+# ============ SIDEBAR ============
+st.sidebar.title("🌟 ILEARN Uganda"); st.sidebar.caption("43 Features | One School")
+st.sidebar.subheader("🔍 Search Feature")
+search = st.sidebar.text_input("Type to search... e.g. Fees, PLE, Shop", placeholder="Type Fees, Homework, PLE...", key="search_menu").strip().lower()
+if search:
+    filtered=[m for m in ALL_MENUS if search in m.lower()]
+    if not filtered: st.sidebar.warning(f"No feature for '{search}'"); filtered=ALL_MENUS
+    else: st.sidebar.success(f"Found {len(filtered)} - Click one:")
+    menu = st.sidebar.radio("Results:", filtered, index=filtered.index(st.session_state.menu) if st.session_state.menu in filtered else 0, key="side_menu_search")
+else:
+    menu = st.sidebar.radio("📂 CHOOSE FEATURE:", ALL_MENUS, index=ALL_MENUS.index(st.session_state.menu), key="side_menu_main")
+if menu != st.session_state.menu:
+    log_action("VIEW PAGE", f"Opened {menu}")
+st.session_state.menu=menu
+st.sidebar.divider(); st.sidebar.success(f"📍 {selected_class} {selected_stream} | {selected_term} | {selected_year}"); st.sidebar.info("Tip: Start day with 🏠 Home or 🌟 Master")
+if st.sidebar.button("🔄 REFRESH"): st.rerun()
 
-# ---------- FEES ----------
-elif menu == "💰 Fees":
-    st.subheader("💰 Fees")
-    search = st.text_input("Search learner").strip().lower()
-    c = get_db(); all_l = c.execute("SELECT name,class FROM learners ORDER BY name").fetchall(); c.close()
-    filt = [r for r in all_l if search in r[0].lower()] if search else all_l
-    if filt:
-        pick = st.selectbox("Pick Learner", [f"{n} - {cl}" for n,cl in filt])
-        name = pick.split(" - ")[0]; cl = pick.split(" - ")[1]
-        c = get_db()
-        tot_r = c.execute("SELECT total FROM fee_totals WHERE learner=?", (name,)).fetchone()
-        total = tot_r[0] if tot_r else FEES_STRUCTURE.get(cl,150000)
-        paid = c.execute("SELECT COALESCE(SUM(amount),0) FROM fee_payments WHERE learner=?", (name,)).fetchone()[0] or 0
-        c.close()
-        bal = max(0, total-paid)
-        c1,c2,c3 = st.columns(3); c1.metric("Total", f"{total:,}"); c2.metric("Paid", f"{paid:,}"); c3.metric("Balance", f"{bal:,}")
-        new_total = st.number_input("Change Total (bursary)", value=total, step=1000)
-        amt = st.number_input("Payment Amount", min_value=0, step=1000)
-        if st.button("✅ SAVE Payment", use_container_width=True):
-            if amt > bal and bal>0:
-                st.error("Overpay blocked. Pay only balance.")
-            elif amt <= 0:
-                st.error("Enter amount > 0")
-            else:
-                cc = get_db()
-                cc.execute("INSERT OR REPLACE INTO fee_totals VALUES (?,?)", (name, new_total))
-                rec = f"ILEARN-{cc.execute('SELECT COUNT(*)+1 FROM fee_payments').fetchone()[0]:03d}"
-                cc.execute("INSERT INTO fee_payments VALUES (?,?,?,?)", (name, amt, str(selected_date), rec))
-                cc.commit(); cc.close()
-                audit(st.session_state.user, f"Fees {name} paid {amt} receipt {rec}")
-                st.success(f"✅ Saved! Receipt {rec} Balance now {max(0,new_total-(paid+amt)):,}")
-                st.rerun()
-        st.divider(); st.write("Who Owes:")
-        cc = get_db(); all2 = cc.execute("SELECT name,class FROM learners").fetchall(); rows=[]
-        for nm, cl2 in all2:
-            t = cc.execute("SELECT total FROM fee_totals WHERE learner=?", (nm,)).fetchone()
-            tt = t[0] if t else FEES_STRUCTURE.get(cl2,150000)
-            pp = cc.execute("SELECT COALESCE(SUM(amount),0) FROM fee_payments WHERE learner=?", (nm,)).fetchone()[0] or 0
-            if tt-pp>0: rows.append((nm,cl2,tt,pp,tt-pp))
-        cc.close()
-        if rows: st.dataframe(pd.DataFrame(rows, columns=["Learner","Class","Total","Paid","Balance"]), use_container_width=True)
+# ============ FAVOURITES + RECENT ============
+if "recent" not in st.session_state: st.session_state.recent=["🏠 Home Dashboard"]
+if "favs" not in st.session_state: st.session_state.favs=["📋 Attendance","💰 Fees","🌟 Master Summary"]
+if st.session_state.menu in st.session_state.recent: st.session_state.recent.remove(st.session_state.menu)
+st.session_state.recent.insert(0, st.session_state.menu); st.session_state.recent=st.session_state.recent[:5]
+st.sidebar.divider(); st.sidebar.subheader("⭐ My Favourites")
+for fav in list(st.session_state.favs):
+    if fav not in ALL_MENUS: continue
+    cc1,cc2 = st.sidebar.columns([4,1])
+    if cc1.button(fav, key=f"fav_{fav}", use_container_width=True): st.session_state.menu=fav; st.rerun()
+    if cc2.button("❌", key=f"fav_del_{fav}"): st.session_state.favs.remove(fav); st.rerun()
+if st.session_state.menu not in st.session_state.favs:
+    if st.sidebar.button(f"⭐ Add '{st.session_state.menu}' to Favourites"): st.session_state.favs.append(st.session_state.menu); st.rerun()
+else: st.sidebar.caption(f"✅ '{st.session_state.menu}' is in Favourites")
+st.sidebar.subheader("🕒 Recent - Last 5")
+for r in st.session_state.recent:
+    if st.sidebar.button(r, key=f"recent_{r}"): st.session_state.menu=r; st.rerun()
+if st.sidebar.button("🧹 Clear Recent"): st.session_state.recent=[st.session_state.menu]; st.rerun()
 
-# ---------- HOMEWORK ----------
-elif menu == "📚 Homework":
-    st.subheader("📚 Homework")
-    task = st.text_area("Homework task", placeholder="e.g. Page 42 Q1-5")
-    if st.button("✅ SAVE Homework", use_container_width=True):
-        if not task: st.error("Type homework first")
-        else:
-            cc = get_db(); cc.execute("INSERT INTO homework VALUES (?,?,?,?,?) ON CONFLICT(date,class,stream,subject) DO UPDATE SET task=excluded.task", (str(selected_date), selected_class, selected_stream, selected_subject, task)); cc.commit(); cc.close()
-            audit(st.session_state.user, f"Homework {selected_class} {selected_stream} {selected_subject}")
-            st.success("✅ Saved!")
-    cc = get_db(); rows = cc.execute("SELECT class,stream,subject,task FROM homework WHERE date=?", (str(selected_date),)).fetchall(); cc.close()
-    if rows: st.dataframe(pd.DataFrame(rows, columns=["Class","Stream","Subject","Task"]), use_container_width=True)
-    else: st.info("No homework today yet.")
-
-# ---------- PERFORMANCE ----------
-elif menu == "📊 Performance":
-    st.subheader("📊 Performance / Marks")
-    c = get_db(); learners = c.execute("SELECT name FROM learners WHERE class=? AND stream=? ORDER BY name", (selected_class, selected_stream)).fetchall(); c.close()
-    for (nm,) in learners:
-        col1,col2 = st.columns([3,1])
-        with col1: st.write(nm)
-        with col2:
-            sc = st.number_input(f"Score {nm}", min_value=0, max_value=100, value=0, key=f"mark_{nm}")
-            if st.button(f"Save {nm}", key=f"btn_{nm}"):
-                cc = get_db()
-                old = cc.execute("SELECT score FROM marks WHERE learner=? AND class=? AND stream=? AND term=? AND subject=?", (nm, selected_class, selected_stream, selected_term, selected_subject)).fetchone()
-                cc.execute("INSERT INTO marks VALUES (?,?,?,?,?,?,?) ON CONFLICT(learner,class,stream,term,subject) DO UPDATE SET score=excluded.score, teacher=excluded.teacher", (nm, selected_class, selected_stream, selected_term, selected_subject, sc, st.session_state.user))
-                if old and old[0]!=sc:
-                    cc.execute("INSERT INTO marks_audit VALUES (?,?,?,?,?,datetime('now'))", (nm, selected_subject, old[0], sc, st.session_state.user))
-                cc.commit(); cc.close()
-                audit(st.session_state.user, f"Mark {nm} {selected_subject} {sc}")
-                st.success(f"{nm} {sc} ({ilearn_grade(sc)}) Saved")
-                st.rerun()
-    cc = get_db(); rows = cc.execute("SELECT learner,subject,score FROM marks WHERE class=? AND stream=? AND term=? ORDER BY learner", (selected_class, selected_stream, selected_term)).fetchall(); cc.close()
-    if rows:
-        df = pd.DataFrame(rows, columns=["Learner","Subject","Score"]); df["Grade"] = df["Score"].apply(ilearn_grade)
-        st.dataframe(df, use_container_width=True)
-        st.write(f"Average: {df['Score'].mean():.1f}")
-
-# ---------- REPORT CARDS ----------
-elif menu == "📄 Report Cards":
-    st.subheader("📄 Report Cards - Real Data")
-    c = get_db(); all_l = c.execute("SELECT name,class,stream FROM learners ORDER BY class,name").fetchall(); c.close()
-    if not all_l: st.warning("No learners yet.")
-    else:
-        pick = st.selectbox("Pick Learner", [f"{n} - {cl} {st_}" for n,cl,st_ in all_l])
-        name = pick.split(" - ")[0]; cl = pick.split(" - ")[1].split()[0]; st_ = pick.split(" - ")[1].split()[1]
-        c = get_db()
-        marks = c.execute("SELECT subject,score,teacher FROM marks WHERE learner=? AND class=? AND stream=? AND term=? ORDER BY subject", (name,cl,st_,selected_term)).fetchall()
-        att_t = c.execute("SELECT COUNT(*) FROM attendance WHERE learner=?", (name,)).fetchone()[0]
-        att_p = c.execute("SELECT COUNT(*) FROM attendance WHERE learner=? AND status='Present'", (name,)).fetchone()[0]
-        tot_r = c.execute("SELECT total FROM fee_totals WHERE learner=?", (name,)).fetchone()
-        paid = c.execute("SELECT COALESCE(SUM(amount),0) FROM fee_payments WHERE learner=?", (name,)).fetchone()[0] or 0
-        c.close()
-        total = tot_r[0] if tot_r else FEES_STRUCTURE.get(cl,150000); bal = max(0,total-paid)
-        avg = sum([r[1] for r in marks])/len(marks) if marks else 0
-        att_pct = (att_p/att_t*100) if att_t>0 else 0
-        st.write(f"**{SCHOOL['name']}** | {SCHOOL['motto']} | {SCHOOL['phone']}")
-        st.write(f"**Learner:** {name} | **Class:** {cl} {st_} | **Term:** {selected_term} {selected_year} | **Date:** {selected_date}")
-        c1,c2,c3,c4 = st.columns(4); c1.metric("Average", f"{avg:.1f} ({ilearn_grade(avg) if marks else '-'})"); c2.metric("Attendance", f"{att_pct:.0f}%"); c3.metric("Fees Balance", f"{bal:,} UGX"); c4.metric("Subjects", len(marks))
-        if marks:
-            df = pd.DataFrame([(r[0],r[1],ilearn_grade(r[1]),r[2]) for r in marks], columns=["Subject","Score","Grade","Teacher"])
-            st.dataframe(df, use_container_width=True)
-        else: st.warning("No marks yet for this term.")
-        st.write(f"Attendance: Total {att_t} | Present {att_p} | {att_pct:.0f}%")
-        st.write(f"Fees: Total {total:,} | Paid {paid:,} | Balance {bal:,}")
-        if bal==0: st.success("✅ Fees PAID IN FULL")
-        else: st.error(f"Balance Owed: {bal:,} UGX")
-        tc = st.text_area("Teacher Comment", key="tc"); hc = st.text_area("Headteacher Comment", key="hc")
-        st.write(f"**Teacher:** {tc or '-'}"); st.write(f"**Headteacher:** {hc or '-'}")
-        st.write("Class Teacher Signature: __________   Headteacher Signature: __________   Date: __________")
-        if marks:
-            df2 = pd.DataFrame([(name,cl,st_,selected_term,r[0],r[1],ilearn_grade(r[1])) for r in marks], columns=["Learner","Class","Stream","Term","Subject","Score","Grade"])
-            st.download_button("📥 Download Report Card CSV", df2.to_csv(index=False).encode(), f"report_{name}_{selected_term}.csv", "text/csv", use_container_width=True)
-        st.info(f"WhatsApp: *Report Card - {name} {cl} {st_} {selected_term}: Average {avg:.1f} ({ilearn_grade(avg) if marks else '-'}), Attendance {att_pct:.0f}%, Fees Balance {bal:,} UGX. - {SCHOOL['name']}*")
-
-# ---------- MASTER ----------
-elif menu == "🌟 Master Summary":
-    st.subheader("🌟 Master Summary - Real Data")
-    c = get_db()
-    total_l = c.execute("SELECT COUNT(*) FROM learners").fetchone()[0]
-    att_t = c.execute("SELECT COUNT(*) FROM attendance WHERE date=?", (str(selected_date),)).fetchone()[0]
-    att_p = c.execute("SELECT COUNT(*) FROM attendance WHERE date=? AND status='Present'", (str(selected_date),)).fetchone()[0]
-    att_a = c.execute("SELECT COUNT(*) FROM attendance WHERE date=? AND status='Absent'", (str(selected_date),)).fetchone()[0]
-    hw_t = c.execute("SELECT COUNT(*) FROM homework WHERE date=?", (str(selected_date),)).fetchone()[0]
-    fees_paid = c.execute("SELECT COALESCE(SUM(amount),0) FROM fee_payments").fetchone()[0] or 0
-    avg_m = c.execute("SELECT AVG(score) FROM marks WHERE term=?", (selected_term,)).fetchone()[0] or 0
-    c.close()
-    m1,m2,m3,m4 = st.columns(4); m1.metric("Learners", total_l); m2.metric("Attendance Today", f"{att_t} marked"); m3.metric("Present / Absent", f"{att_p} / {att_a}"); m4.metric("Homework Today", f"{hw_t} given")
-    m5,m6 = st.columns(2); m5.metric("Fees Paid (All Time)", f"{fees_paid:,} UGX"); m6.metric("Avg Mark This Term", f"{avg_m:.1f}")
-    st.divider(); st.write("Per Class:")
-    rows=[]
-    for cl in CLASSES:
-        for st_ in STREAMS:
-            cc = get_db()
-            li = cc.execute("SELECT COUNT(*) FROM learners WHERE class=? AND stream=?", (cl,st_)).fetchone()[0]
-            ai = cc.execute("SELECT COUNT(*) FROM attendance WHERE date=? AND class=? AND stream=?", (str(selected_date),cl,st_)).fetchone()[0]
-            hi = cc.execute("SELECT COUNT(*) FROM homework WHERE date=? AND class=? AND stream=?", (str(selected_date),cl,st_)).fetchone()[0]
-            av = cc.execute("SELECT AVG(score) FROM marks WHERE class=? AND stream=? AND term=?", (cl,st_,selected_term)).fetchone()[0] or 0
-            cc.close()
-            rows.append((cl,st_,li,f"{ai}/{li}" if li>0 else "No learners","✅ YES" if hi>0 else "🔴 NO", f"{av:.1f}" if av>0 else "-"))
-    st.dataframe(pd.DataFrame(rows, columns=["Class","Stream","Learners","Attendance Today","Homework?","Avg Mark"]), use_container_width=True)
-    st.divider(); st.write("Top 3 This Term:")
-    cc = get_db(); top3 = cc.execute("SELECT learner,class,AVG(score) as a FROM marks WHERE term=? GROUP BY learner,class ORDER BY a DESC LIMIT 3", (selected_term,)).fetchall(); cc.close()
-    for i,(nm,cl,av) in enumerate(top3,1): st.write(f"{i}. {nm} - {cl} - Avg {av:.1f} ({ilearn_grade(av)})")
-    if not top3: st.info("No marks yet this term.")
-
-# ---------- AUDIT ----------
-elif menu == "📜 Audit Log":
-    st.subheader("📜 Audit Log - Who Did What")
-    c = get_db(); rows = c.execute("SELECT who,action,when_ FROM audit ORDER BY rowid DESC LIMIT 100").fetchall(); c.close()
-    if rows: st.dataframe(pd.DataFrame(rows, columns=["Who","Action","When"]), use_container_width=True)
-    c = get_db(); rows2 = c.execute("SELECT learner,subject,old_score,new_score,who,when_ FROM marks_audit ORDER BY rowid DESC LIMIT 100").fetchall(); c.close()
-    if rows2:
-        st.write("Mark Changes:")
-        st.dataframe(pd.DataFrame(rows2, columns=["Learner","Subject","Old","New","Who","When"]), use_container_width=True)
+# ============ TOP QUICK BUTTONS ============
+st.markdown('<div class="color-teal">⚡ QUICK ACCESS - Most Used Today</div>', unsafe_allow_html=True)
+q1,q2,q3,q4,q5 = st.columns(5)
+if q1.button("📋\nAttendance", use_container_width=True): st.session_state.menu="📋 Attendance"; st.rerun()
+if q2.button("💰\nFees", use_container_width=True): st.session_state.menu="💰 Fees"; st.rerun()
+if q3.button("📚\nHomework", use_container_width=True): st.session_state.menu="📚 Homework"; st.rerun()
+if q4.button("🏥\nHealth", use_container_width=True): st.session_state.menu="🏥 Health"; st.rerun()
+if q5.button("🌟\nMaster", type="primary", use_container_width=True): st.session_state.menu="🌟 Master Summary"; st.rerun()
+top_search = st.text_input("🔍 Quick Search - Type feature and press Enter:", placeholder="e.g. PLE, Cash, Shop", key="top_search_box").strip().lower()
+if top_search:
+    matches=[m for m in ALL_MENUS if top_search in m.lower()]
+    if matches:
+        st.write("Found:"); cols=st.columns(min(len(matches),4))
+        for i,m in enumerate(matches[:8]):
+            if cols[i%len(
