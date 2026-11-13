@@ -238,23 +238,18 @@ st.markdown('<div class="color-teal">⚡ QUICK ACCESS - Most Used Today</div>', 
 q1,q2,q3,q4,q5 = st.columns(5)
 if q1.button("📋 Attendance", use_container_width=True):
     st.session_state.menu = "Attendance"
-    st.session_state.side_menu_main = "Attendance"
     st.rerun()
 if q2.button("💰 Fees", use_container_width=True):
     st.session_state.menu = "Fees"
-    st.session_state.side_menu_main = "Fees"
     st.rerun()
 if q3.button("📚 Homework", use_container_width=True):
     st.session_state.menu = "Homework"
-    st.session_state.side_menu_main = "Homework"
     st.rerun()
 if q4.button("🩺 Health", use_container_width=True):
     st.session_state.menu = "Health"
-    st.session_state.side_menu_main = "Health"
     st.rerun()
 if q5.button("⭐ Master", type="primary", use_container_width=True):
     st.session_state.menu = "Master Summary"
-    st.session_state.side_menu_main = "Master Summary"
     st.rerun()
 
 # --- TAKE QUIZ PAGE - ADDED AT BOTTOM ---
