@@ -236,19 +236,26 @@ if st.sidebar.button("🧹 Clear Recent"): st.session_state.recent=[st.session_s
 # ============ TOP QUICK BUTTONS ============
 st.markdown('<div class="color-teal">⚡ QUICK ACCESS - Most Used Today</div>', unsafe_allow_html=True)
 q1,q2,q3,q4,q5 = st.columns(5)
-if q1.button("📋\nAttendance", use_container_width=True): st.session_state.menu="📋 Attendance"; st.rerun()
-if q2.button("💰\nFees", use_container_width=True): st.session_state.menu="💰 Fees"; st.rerun()
-if q3.button("📚\nHomework", use_container_width=True): st.session_state.menu="📚 Homework"; st.rerun()
-if q4.button("🏥\nHealth", use_container_width=True): st.session_state.menu="🏥 Health"; st.rerun()
-if q5.button("🌟\nMaster", type="primary", use_container_width=True): st.session_state.menu="🌟 Master Summary"; st.rerun()
-top_search = st.text_input("🔍 Quick Search - Type feature and press Enter:", placeholder="e.g. PLE, Cash, Shop", key="top_search_box").strip().lower()
-if top_search:
-    matches=[m for m in ALL_MENUS if top_search in m.lower()]
-    if matches:
-        st.write("Found:"); cols=st.columns(min(len(matches),4))
-        for i,m in enumerate(matches[:8]):
-            m1,m2,m3,m4 = st.columns(4)
-
+if q1.button("📋 Attendance", use_container_width=True):
+    st.session_state.menu = "Attendance"
+    st.session_state.side_menu_main = "Attendance"
+    st.rerun()
+if q2.button("💰 Fees", use_container_width=True):
+    st.session_state.menu = "Fees"
+    st.session_state.side_menu_main = "Fees"
+    st.rerun()
+if q3.button("📚 Homework", use_container_width=True):
+    st.session_state.menu = "Homework"
+    st.session_state.side_menu_main = "Homework"
+    st.rerun()
+if q4.button("🩺 Health", use_container_width=True):
+    st.session_state.menu = "Health"
+    st.session_state.side_menu_main = "Health"
+    st.rerun()
+if q5.button("⭐ Master", type="primary", use_container_width=True):
+    st.session_state.menu = "Master Summary"
+    st.session_state.side_menu_main = "Master Summary"
+    st.rerun()
 
 # --- TAKE QUIZ PAGE - ADDED AT BOTTOM ---
 if st.session_state.menu == "📝 Take Quiz":
