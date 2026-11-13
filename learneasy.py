@@ -245,36 +245,42 @@ if st.sidebar.button("🧹 Clear Recent"): st.session_state.recent=[st.session_s
 # ============ TOP QUICK BUTTONS ============
 st.markdown('<div class="color-teal">⚡ QUICK ACCESS - Most Used Today</div>', unsafe_allow_html=True)
 q1,q2,q3,q4,q5 = st.columns(5)
-if q1.button("📋 Attendance", use_container_width=True):
-    for m in ALL_MENUS:
-        if "Attendance" in m:
-            st.session_state.menu = m
-            break
-    st.rerun()
-if q2.button("💰 Fees", use_container_width=True):
-    for m in ALL_MENUS:
-        if "Fees" in m:
-            st.session_state.menu = m
-            break
-    st.rerun()
-if q3.button("📚 Homework", use_container_width=True):
-    for m in ALL_MENUS:
-        if "Homework" in m:
-            st.session_state.menu = m
-            break
-    st.rerun()
-if q4.button("🩺 Health", use_container_width=True):
-    for m in ALL_MENUS:
-        if "Health" in m or "Behaviour" in m or "Clinic" in m:
-            st.session_state.menu = m
-            break
-    st.rerun()
-if q5.button("⭐ Master", type="primary", use_container_width=True):
-    for m in ALL_MENUS:
-        if "Master" in m:
-            st.session_state.menu = m
-            break
-    st.rerun()
+# Only show buttons that are in YOUR role's ALL_MENUS
+if any("Attendance" in m for m in ALL_MENUS):
+    if q1.button("📋 Attendance", use_container_width=True):
+        for m in ALL_MENUS:
+            if "Attendance" in m:
+                st.session_state.menu = m
+                break
+        st.rerun()
+if any("Fees" in m for m in ALL_MENUS):
+    if q2.button("💰 Fees", use_container_width=True):
+        for m in ALL_MENUS:
+            if "Fees" in m:
+                st.session_state.menu = m
+                break
+        st.rerun()
+if any("Homework" in m for m in ALL_MENUS):
+    if q3.button("📚 Homework", use_container_width=True):
+        for m in ALL_MENUS:
+            if "Homework" in m:
+                st.session_state.menu = m
+                break
+        st.rerun()
+if any("Behaviour" in m or "Clinic" in m or "Health" in m for m in ALL_MENUS):
+    if q4.button("🩺 Health", use_container_width=True):
+        for m in ALL_MENUS:
+            if "Behaviour" in m or "Clinic" in m or "Health" in m:
+                st.session_state.menu = m
+                break
+        st.rerun()
+if any("Master" in m for m in ALL_MENUS):
+    if q5.button("⭐ Master", type="primary", use_container_width=True):
+        for m in ALL_MENUS:
+            if "Master" in m:
+                st.session_state.menu = m
+                break
+        st.rerun()
 
 # --- TAKE QUIZ PAGE - ADDED AT BOTTOM ---
 if st.session_state.menu == "📝 Take Quiz":
