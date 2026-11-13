@@ -202,12 +202,19 @@ st.sidebar.title("🌟 ILEARN Uganda"); st.sidebar.caption("43 Features | One Sc
 st.sidebar.subheader("🔍 Search Feature")
 search = st.sidebar.text_input("Type to search... e.g. Fees, PLE, Shop", placeholder="Type Fees, Homework, PLE...", key="search_menu").strip().lower()
 if search:
-    filtered=[m for m in ALL_MENUS if search in m.lower()]
-    if not filtered: st.sidebar.warning(f"No feature for '{search}'"); filtered=ALL_MENUS
-    else: st.sidebar.success(f"Found {len(filtered)} - Click one:")
-    menu = st.sidebar.radio("Results:", filtered, index=filtered.index(st.session_state.menu) if st.session_state.menu in filtered else 0, key="side_menu_search")
+    filtered = [m for m in ALL_MENUS if search in m.lower()]
+    if not filtered:
+        st.sidebar.warning(f"No feature for '{search}'")
+        filtered = ALL_MENUS
+    else:
+        st.sidebar.success(f"Found {len(filtered)} - Click one:")
+    if st.session_state.menu not in filtered:
+        st.session_state.menu = filtered[0]
+    menu = st.sidebar.radio("Results:", filtered, index=filtered.index(st.session_state.menu))
 else:
-    menu = st.sidebar.radio("📂 CHOOSE FEATURE:", ALL_MENUS, index=ALL_MENUS.index(st.session_state.menu), key="side_menu_main")
+    if st.session_state.menu not in ALL_MENUS:
+        st.session_state.menu = "Home Dashboard"
+    menu = st.sidebar.radio("📋 CHOOSE FEATURE:", ALL_MENUS, index=ALL_MENUS.index(st.session_state.menu))
 if menu != st.session_state.menu:
     log_action("VIEW PAGE", f"Opened {menu}")
 st.session_state.menu=menu
