@@ -245,19 +245,29 @@ if st.sidebar.button("🧹 Clear Recent"): st.session_state.recent=[st.session_s
 st.markdown('<div class="color-teal">⚡ QUICK ACCESS - Most Used Today</div>', unsafe_allow_html=True)
 q1,q2,q3,q4,q5 = st.columns(5)
 if q1.button("📋 Attendance", use_container_width=True):
-    st.session_state.menu = "Attendance"
+    for m in ALL_MENUS:
+        if "Attendance" in m:
+            st.session_state.menu = m
     st.rerun()
 if q2.button("💰 Fees", use_container_width=True):
-    st.session_state.menu = "Fees"
+    for m in ALL_MENUS:
+        if "Fees" in m:
+            st.session_state.menu = m
     st.rerun()
 if q3.button("📚 Homework", use_container_width=True):
-    st.session_state.menu = "Homework"
+    for m in ALL_MENUS:
+        if "Homework" in m:
+            st.session_state.menu = m
     st.rerun()
 if q4.button("🩺 Health", use_container_width=True):
-    st.session_state.menu = "Health"
+    for m in ALL_MENUS:
+        if "Health" in m or "Behaviour" in m or "Clinic" in m:
+            st.session_state.menu = m
     st.rerun()
 if q5.button("⭐ Master", type="primary", use_container_width=True):
-    st.session_state.menu = "Master Summary"
+    for m in ALL_MENUS:
+        if "Master" in m:
+            st.session_state.menu = m
     st.rerun()
 
 # --- TAKE QUIZ PAGE - ADDED AT BOTTOM ---
