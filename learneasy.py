@@ -214,9 +214,9 @@ if search:
 else:
     if st.session_state.menu not in ALL_MENUS:
         st.session_state.menu = "Home Dashboard"
-    safe_index = ALL_MENUS.index(st.session_state.menu) if st.session_state.menu in ALL_MENUS else 0
-    menu = st.sidebar.radio("📋 CHOOSE FEATURE:", ALL_MENUS, index=safe_index)
-    st.session_state.menu = menu
+    if st.session_state.menu not in ALL_MENUS:
+    st.session_state.menu = ALL_MENUS[0]
+menu = st.sidebar.radio("📋 CHOOSE FEATURE:", ALL_MENUS, key="menu")
 if menu != st.session_state.menu:
     log_action("VIEW PAGE", f"Opened {menu}")
 st.session_state.menu=menu
