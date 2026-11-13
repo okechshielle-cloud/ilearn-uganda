@@ -214,8 +214,7 @@ if search:
 else:
     if st.session_state.menu not in ALL_MENUS:
         st.session_state.menu = "Home Dashboard"
-    if st.session_state.menu not in ALL_MENUS:
-    st.session_state.menu = ALL_MENUS[0]
+    if st.session_state.menu not in ALL_MENUS: st.session_state.menu = ALL_MENUS[0]
 menu = st.sidebar.radio("📋 CHOOSE FEATURE:", ALL_MENUS, key="menu")
 if menu != st.session_state.menu:
     log_action("VIEW PAGE", f"Opened {menu}")
