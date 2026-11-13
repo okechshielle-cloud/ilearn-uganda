@@ -307,7 +307,7 @@ with tab_alumni:
         for sheet_name, name_col, title in [("Quiz_Results","Learner_Name","📝 Quiz History"), ("Behaviour_Clinic","Learner_Name","💬 Behaviour / Clinic History"), ("Votes","Voter_Name","🗳️ Voting History"), ("Fees","Learner_Name","💰 Fees History"), ("Parent_Messages","Learner_Name","💬 Parent Messages History"), ("Mastery","Learner_Name","📚 Mastery History")]:
             df = read_sheet(sheet_name)
            if not df.empty and name_col in df.columns:
-                    filtered = df[df[name_col].astype(str).str.contains(search_name, case=False, na=False)]
-                    if not filtered.empty:
-                        st.write(title)
-                        st.dataframe(filtered, use_container_width=True)
+                filtered = df[df[name_col].astype(str).str.contains(search_name, case=False, na=False)]
+                if not filtered.empty:
+                    st.write(title)
+                    st.dataframe(filtered, use_container_width=True)
