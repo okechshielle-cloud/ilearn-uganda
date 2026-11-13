@@ -249,26 +249,31 @@ if q1.button("📋 Attendance", use_container_width=True):
     for m in ALL_MENUS:
         if "Attendance" in m:
             st.session_state.menu = m
+            break
     st.rerun()
 if q2.button("💰 Fees", use_container_width=True):
     for m in ALL_MENUS:
         if "Fees" in m:
             st.session_state.menu = m
+            break
     st.rerun()
 if q3.button("📚 Homework", use_container_width=True):
     for m in ALL_MENUS:
         if "Homework" in m:
             st.session_state.menu = m
+            break
     st.rerun()
 if q4.button("🩺 Health", use_container_width=True):
     for m in ALL_MENUS:
         if "Health" in m or "Behaviour" in m or "Clinic" in m:
             st.session_state.menu = m
+            break
     st.rerun()
 if q5.button("⭐ Master", type="primary", use_container_width=True):
     for m in ALL_MENUS:
         if "Master" in m:
             st.session_state.menu = m
+            break
     st.rerun()
 
 # --- TAKE QUIZ PAGE - ADDED AT BOTTOM ---
