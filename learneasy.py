@@ -97,13 +97,12 @@ for week in cal:
                 st.session_state.selected_date = date(int(selected_year), month_num, day)
 selected_date = st.sidebar.date_input("Selected Date", value=st.session_state.selected_date)
 
-# ============ MAIN TABS - 19 TABS ============
-tab_att, tab_quiz, tab_perf, tab_behav, tab_learn, tab_stream, tab_alumni, tab_quizbank, tab_vote, tab_report, tab_fees, tab_parent, tab_code, tab_curr, tab_lesson, tab_row, tab_scheme, tab_dash, tab_time = st.tabs([
+# ============ MAIN TABS - 17 TABS ============
+tab_att, tab_quiz, tab_perf, tab_behav, tab_learn, tab_stream, tab_alumni, tab_quizbank, tab_vote, tab_report, tab_fees, tab_parent, tab_code, tab_curr, tab_lesson, tab_row, tab_scheme = st.tabs([
     "📋 Attendance", "📝 Take Quiz", "📊 Performance", "💬 Behaviour / Clinic",
     "👥 Learners", "🏫 Streams", "🎓 Alumni", "📚 Quiz Bank", "🗳️ Voting",
     "📄 Report Cards", "💰 Fees", "💬 Parent Message", "🔢 Student Code & Pay",
-    "📚 NCDC Outcomes", "📝 Lesson Plans", "📔 Record of Work", "📅 Schemes of Work",
-    "📊 Headteacher Dashboard", "🗓️ Timetable & Duty"
+    "📚 NCDC Outcomes", "📝 Lesson Plans", "📔 Record of Work", "📅 Schemes of Work"
 ])
 
 # ============ 1. ATTENDANCE ============
@@ -306,4 +305,5 @@ with tab_alumni:
     search_name = st.text_input("Type learner name to search", key="alumni_search")
     if search_name:
         for sheet_name, name_col, title in [("Quiz_Results","Learner_Name","📝 Quiz History"), ("Behaviour_Clinic","Learner_Name","💬 Behaviour / Clinic History"), ("Votes","Voter_Name","🗳️ Voting History"), ("Fees","Learner_Name","💰 Fees History"), ("Parent_Messages","Learner_Name","💬 Parent Messages History"), ("Mastery","Learner_Name","📚 Mastery History")]:
-        
+            df = read_sheet(sheet_name)
+            if not df.empty and name_col in df.column
