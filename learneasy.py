@@ -200,7 +200,7 @@ if page == "Take Quiz":
             st.write(f"Q{i+1}: {q}")
             st.write(f"Your answer: {ans}")
             if page == "Teacher Dashboard":
-    st.title("Teacher Dashboard")
+                st.title("Teacher Dashboard")
     if "results" not in st.session_state:
         st.session_state.results = []
     if len(st.session_state.results) == 0:
