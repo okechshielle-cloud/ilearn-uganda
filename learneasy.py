@@ -199,8 +199,9 @@ if page == "Take Quiz":
             ans = saved[i] if i < len(saved) else ""
             st.write(f"Q{i+1}: {q}")
             st.write(f"Your answer: {ans}")
-            if page == "Teacher Dashboard":
-                st.title("Teacher Dashboard")
+
+if page == "Teacher Dashboard":
+    st.title("Teacher Dashboard")
     if "results" not in st.session_state:
         st.session_state.results = []
     if len(st.session_state.results) == 0:
@@ -213,3 +214,4 @@ if page == "Take Quiz":
         st.subheader("All Results")
         st.dataframe(df)
         st.download_button("Download Results CSV", df.to_csv(index=False), "results.csv", "text/csv")
+            
