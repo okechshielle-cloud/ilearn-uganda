@@ -130,8 +130,14 @@ questions = [
 if page == "Take Quiz":
     st.title("LearnEasy Quiz")
     st.write("Answer all questions, then click Submit.")
-    name = st.text_input("Your Name")
-    school = st.text_input("Your School")
+    if st.button("🔄 Next Child - Clear for New Learner"):
+    for key in list(st.session_state.keys()):
+        if key.startswith("q") or key in ["name", "school", "last_answers", "last_name", "last_school", "submitted"]:
+            del st.session_state[key]
+    st.session_state.submitted = False
+    st.rerun()
+    name = st.text_input("Your Name", key="name")
+school = st.text_input("Your School", key="school")
     subject_choice = st.selectbox("Choose Subject to see its Learning Outcomes", list(learning_outcomes.keys()))
     st.subheader(f"Learning Outcomes: {subject_choice}")
     for outcome in learning_outcomes[subject_choice]:
@@ -141,9 +147,15 @@ if page == "Take Quiz":
         ans = st.radio(q, options, key=f"q{i}", index=None)
         answers.append(ans)
     if st.button("Submit Quiz - See My Results"):
-        if not name or not school:
-            st.warning("Please enter Your Name and Your School first.")
-        elif st.session_state.submitted:
+    if not name or not school:
+        st.warning("Please enter Your Name and Your School first.")
+    else:
+        st.session_state.submitted = True
+        st.session_state.last_answers = list(answers)
+        st.session_state.last_name = name
+        st.session_state.last_school = school
+        # --- score it from answers, not from old saved ---
+        # (keep your existing score / grade / append code here, just below this)
             st.info("You already submitted. Click Take Quiz Again below to start fresh.")
         else:
             score = 0
