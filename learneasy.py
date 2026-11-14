@@ -1,11 +1,46 @@
 import streamlit as st
 import pandas as pd
-from datetime import date, datetime
-import calendar
+import gspread
+from google.oauth2.service_account import Credentials
 
 st.set_page_config(page_title="ILEARN Uganda", layout="wide")
-st.title("🇺🇬 ILEARN Uganda - School Management System")
-conn = st.connection("gsheets", type="GSheetsConnection")
+st.title("UG ILEARN Uganda - School Management System")
+
+# --- New conn using gspread (works on Python 3.14) ---
+def _get_conn():
+    gs = st.secrets["connections"]["gsheets"]
+    if "service_account" in gs:
+        creds_dict = dict(gs["service_account"])
+    else:
+        creds_dict = {k: v for k, v in gs.items() if k not in ("spreadsheet", "spreadsheet_url", "url")}
+    if "private_key" in creds_dict:
+        creds_dict["private_key"] = creds_dict["private_key"].replace("\\n", "\n")
+    creds = Credentials.from_service_account_info(creds_dict, scopes=["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"])
+    client = gspread.authorize(creds)
+    url = gs.get("spreadsheet") or gs.get("spreadsheet_url") or gs.get("url")
+    if url and "http" in str(url):
+        return client.open_by_url(url)
+    return client.open_by_key(str(url))
+
+class _Conn:
+    def read(self, worksheet, ttl=0):
+        try:
+            sh = _get_conn()
+            ws = sh.worksheet(worksheet)
+            records = ws.get_all_records()
+            df = pd.DataFrame(records)
+            df.columns = [str(c).strip() for c in df.columns]
+            return df
+        except Exception:
+            return pd.DataFrame()
+    def update(self, worksheet, data):
+        sh = _get_conn()
+        ws = sh.worksheet(worksheet)
+        df = data.fillna("").astype(str)
+        values = [df.columns.tolist()] + df.values.tolist()
+        ws.clear()
+        ws.update(values)
+conn = _Conn()
 
 def read_sheet(name):
     try:
