@@ -199,3 +199,17 @@ if page == "Take Quiz":
             ans = saved[i] if i < len(saved) else ""
             st.write(f"Q{i+1}: {q}")
             st.write(f"Your answer: {ans}")
+            elif page == "Teacher Dashboard":
+    st.title("Teacher Dashboard")
+    if "results" not in st.session_state:
+        st.session_state.results = []
+    if len(st.session_state.results) == 0:
+        st.info("No results yet. Ask a student to take a quiz first, then come back here.")
+    else:
+        df = pd.DataFrame(st.session_state.results)
+        st.write(f"Total attempts: {len(df)}")
+        if "Percentage" in df.columns:
+            st.write(f"Average score: {int(df['Percentage'].astype(int).mean())}%")
+        st.subheader("All Results")
+        st.dataframe(df)
+        st.download_button("Download Results CSV", df.to_csv(index=False), "results.csv", "text/csv")
