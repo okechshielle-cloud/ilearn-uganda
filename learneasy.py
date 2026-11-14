@@ -196,7 +196,7 @@ if page == "Take Quiz":
 st.write("Read each question carefully. Green means you got it right. Red means you got it wrong. The explanation tells you WHY the correct answer is correct.")
 saved = st.session_state.last_answers
 for i in range(len(questions)):
-    q = questions[i]
+        q = questions[i]
         ans = saved[i] if i < len(saved) else ""
         if isinstance(q, dict):
             q_text = q.get("question", q.get("text", str(q)))
