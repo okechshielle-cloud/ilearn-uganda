@@ -211,6 +211,31 @@ if page == "Teacher Dashboard":
         st.write(f"Total attempts: {len(df)}")
         if "Percentage" in df.columns:
             st.write(f"Average score: {int(df['Percentage'].astype(int).mean())}%")
+            st.write(f"Highest score: {int(df['Percentage'].astype(int).max())}%")
+            st.write(f"Lowest score: {int(df['Percentage'].astype(int).min())}%")
+        st.subheader("All Results")
+        st.dataframe(df)
+        st.download_button("Download Results CSV", df.to_csv(index=False), "results.csv", "text/csv")
+        st.divider()
+        st.subheader("Top 25 Performers")
+        st.write("These are the best 25 scores. The top 3 get Gold, Silver and Bronze. Ranks 4 to 25 get the Top 25 Performer badge.")
+        if "Percentage" in df.columns:
+            top25 = df.sort_values(by="Percentage", ascending=False).head(25).reset_index(drop=True)
+            for rank, row in top25.iterrows():
+                pos = rank + 1
+                name = row.get("Name", "Student")
+                score = row.get("Percentage", row.get("Score", ""))
+                if pos == 1:
+                    badge = "GOLD - TOP 1"
+                elif pos == 2:
+                    badge = "SILVER - TOP 2"
+                elif pos == 3:
+                    badge = "BRONZE - TOP 3"
+                else:
+                    badge = "TOP 25 PERFORMER"
+                st.success(f"#{pos} - {name} - {score}% - {badge}")
+        else:
+            st.info("No Percentage column found, so Top 25 cannot be sorted yet.")
         st.subheader("All Results")
         st.dataframe(df)
         st.download_button("Download Results CSV", df.to_csv(index=False), "results.csv", "text/csv")
