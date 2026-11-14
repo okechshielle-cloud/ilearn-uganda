@@ -1,10 +1,26 @@
 import streamlit as st
 import pandas as pd
+import os
 
 st.set_page_config(page_title="LearnEasy", layout="centered")
 
+CSV_FILE = "results.csv"
+
+def load_results():
+    if os.path.exists(CSV_FILE):
+        try:
+            df = pd.read_csv(CSV_FILE)
+            return df.to_dict("records")
+        except:
+            return []
+    return []
+
+def save_results(results):
+    df = pd.DataFrame(results)
+    df.to_csv(CSV_FILE, index=False)
+
 if "results" not in st.session_state:
-    st.session_state.results = []
+    st.session_state.results = load_results()
 if "submitted" not in st.session_state:
     st.session_state.submitted = False
 if "last_submit_key" not in st.session_state:
@@ -83,7 +99,9 @@ if page == "Take Quiz":
                 else:
                     grade = "D"
                     comment = "Keep trying, you can do better."
-                st.session_state.results.append({"Name": name, "School": school, "Score": f"{score}/{total}", "Percentage": pct, "Grade": grade, "Comment": comment})
+                new_row = {"Name": name, "School": school, "Score": f"{score}/{total}", "Percentage": pct, "Grade": grade, "Comment": comment}
+                st.session_state.results.append(new_row)
+                save_results(st.session_state.results)
                 st.session_state.last_submit_key = submit_key
                 st.session_state.submitted = True
                 st.success(f"Well done {name}! You scored {score}/{total} = {pct}% Grade {grade}")
@@ -106,6 +124,8 @@ if page == "Teacher Dashboard":
     st.write(f"Total attempts: {len(results)}")
     if st.button("Clear All Results - Start Fresh"):
         st.session_state.results = []
+        if os.path.exists(CSV_FILE):
+            os.remove(CSV_FILE)
         st.session_state.submitted = False
         st.session_state.last_submit_key = ""
         st.rerun()
