@@ -136,7 +136,7 @@ if st.button("🔄 Next Child - Clear for New Learner"):
         st.session_state.results = saved
         st.rerun()
     name = st.text_input("Your Name", key="name")
-school = st.text_input("Your School", key="school")
+    school = st.text_input("Your School", key="school")
     subject_choice = st.selectbox("Choose Subject to see its Learning Outcomes", list(learning_outcomes.keys()))
     st.subheader(f"Learning Outcomes: {subject_choice}")
     for outcome in learning_outcomes[subject_choice]:
