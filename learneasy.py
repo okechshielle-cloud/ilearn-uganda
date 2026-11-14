@@ -131,11 +131,10 @@ if page == "Take Quiz":
     st.title("LearnEasy Quiz")
     st.write("Answer all questions, then click Submit.")
 if st.button("🔄 Next Child - Clear for New Learner"):
-        for key in list(st.session_state.keys()):
-        if key.startswith("q") or key in ["name", "school", "last_answers", "last_name", "last_school", "submitted"]:
-            del st.session_state[key]
-    st.session_state.submitted = False
-    st.rerun()
+        saved = st.session_state.get("results", [])
+        st.session_state.clear()
+        st.session_state.results = saved
+        st.rerun()
     name = st.text_input("Your Name", key="name")
 school = st.text_input("Your School", key="school")
     subject_choice = st.selectbox("Choose Subject to see its Learning Outcomes", list(learning_outcomes.keys()))
