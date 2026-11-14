@@ -1,5 +1,3 @@
 streamlit
 pandas
 st-gsheet-connection
-gspread
-google-auth
