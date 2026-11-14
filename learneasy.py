@@ -192,9 +192,23 @@ if page == "Take Quiz":
             st.success("🏆 🥈 SILVER - TOP 2! Excellent work!")
         elif rank == 3:
             st.success("🏆 🥉 BRONZE - TOP 3! You made it!")
-        st.subheader("See Your Answers + Explanations")
-        saved = st.session_state.last_answers
-        for i in range(len(questions)):
+        st.subheader("See Your Answers + Detailed Explanations")
+st.write("Read each question carefully. Green means you got it right. Red means you got it wrong. The explanation tells you WHY the correct answer is correct.")
+saved = st.session_state.last_answers
+for i in range(len(questions)):
+    q = questions[i]
+    ans = saved[i] if i < len(saved) else ""
+    correct = q.get("answer", q.get("correct", ""))
+    explain = q.get("explanation", q.get("why", "No explanation added yet for this question."))
+    st.divider()
+    st.write(f"**Question {i+1}: {q.get('question', q)}**")
+    st.write(f"Your answer: {ans}")
+    st.write(f"Correct answer: {correct}")
+    if ans == correct:
+        st.success("Correct! Well done.")
+    else:
+        st.error("Not correct. See the explanation below.")
+    st.info(f"Why: {explain}")
             q = questions[i]
             ans = saved[i] if i < len(saved) else ""
             st.write(f"Q{i+1}: {q}")
@@ -239,4 +253,3 @@ if page == "Teacher Dashboard":
         st.subheader("All Results")
         st.dataframe(df)
         st.download_button("Download Results CSV", df.to_csv(index=False), "results.csv", "text/csv")
-            
