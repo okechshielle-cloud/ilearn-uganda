@@ -130,8 +130,8 @@ questions = [
 if page == "Take Quiz":
     st.title("LearnEasy Quiz")
     st.write("Answer all questions, then click Submit.")
-    if st.button("🔄 Next Child - Clear for New Learner"):
-    for key in list(st.session_state.keys()):
+if st.button("🔄 Next Child - Clear for New Learner"):
+        for key in list(st.session_state.keys()):
         if key.startswith("q") or key in ["name", "school", "last_answers", "last_name", "last_school", "submitted"]:
             del st.session_state[key]
     st.session_state.submitted = False
