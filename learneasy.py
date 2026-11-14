@@ -5,6 +5,10 @@ st.set_page_config(page_title="LearnEasy", layout="centered")
 
 if "results" not in st.session_state:
     st.session_state.results = []
+if "submitted" not in st.session_state:
+    st.session_state.submitted = False
+if "last_submit_key" not in st.session_state:
+    st.session_state.last_submit_key = ""
 
 questions = [
     ("Q1. [English] What gets wetter the more it dries?", ["Water", "A towel", "A stone", "A cup"], "A towel", "A towel gets wetter as it dries you."),
@@ -38,6 +42,8 @@ if page == "Take Quiz":
         saved = st.session_state.get("results", [])
         st.session_state.clear()
         st.session_state.results = saved
+        st.session_state.submitted = False
+        st.session_state.last_submit_key = ""
         st.rerun()
     name = st.text_input("Your Name", key="name")
     school = st.text_input("Your School", key="school")
@@ -45,53 +51,64 @@ if page == "Take Quiz":
     for i, (q, options, correct, explain) in enumerate(questions):
         ans = st.radio(q, options, key=f"q{i}", index=None)
         answers.append(ans)
+    if st.session_state.submitted:
+        st.info("This child has already submitted. Click 'Next Child' above for the next learner.")
     if st.button("Submit Quiz - See My Results"):
-        if not name or not school:
+        if st.session_state.submitted:
+            st.warning("Already submitted. Click 'Next Child' for the next learner.")
+        elif not name or not school:
             st.warning("Please enter Your Name and Your School first.")
         elif any(a is None for a in answers):
             st.warning("Please answer all questions before submitting.")
         else:
-            score = 0
-            for i, (q, options, correct, explain) in enumerate(questions):
-                if str(answers[i]) == str(correct):
-                    score = score + 1
-            total = len(questions)
-            pct = round(score * 100 / total, 1)
-            if pct >= 80:
-                grade = "A"
-                comment = "Excellent! Keep it up."
-            elif pct >= 60:
-                grade = "B"
-                comment = "Very good!"
-            elif pct >= 40:
-                grade = "C"
-                comment = "Good, keep practising."
+            submit_key = f"{name}|{school}|{answers}"
+            if submit_key == st.session_state.last_submit_key:
+                st.warning("Already submitted. Click 'Next Child' for the next learner.")
             else:
-                grade = "D"
-                comment = "Keep trying, you can do better."
-            st.session_state.results.append({"Name": name, "School": school, "Score": f"{score}/{total}", "Percentage": pct, "Grade": grade, "Comment": comment})
-            st.session_state.last_answers = list(answers)
-            st.session_state.last_name = name
-            st.session_state.last_school = school
-            st.session_state.submitted = True
-            st.success(f"Well done {name}! You scored {score}/{total} = {pct}% Grade {grade}")
-            st.write(comment)
-            st.subheader("Review Your Answers")
-            for i, (q, options, correct, explain) in enumerate(questions):
-                st.write(f"Q{i+1}: {q}")
-                st.write(f"Your answer: {answers[i]}")
-                st.write(f"Correct answer: {correct}")
-                if str(answers[i]) == str(correct):
-                    st.write("Correct! Well done.")
+                score = 0
+                for i, (q, options, correct, explain) in enumerate(questions):
+                    if str(answers[i]) == str(correct):
+                        score = score + 1
+                total = len(questions)
+                pct = round(score * 100 / total, 1)
+                if pct >= 80:
+                    grade = "A"
+                    comment = "Excellent! Keep it up."
+                elif pct >= 60:
+                    grade = "B"
+                    comment = "Very good!"
+                elif pct >= 40:
+                    grade = "C"
+                    comment = "Good, keep practising."
                 else:
-                    st.write("Not correct.")
-                st.write(f"Explanation: {explain}")
-                st.write("---")
+                    grade = "D"
+                    comment = "Keep trying, you can do better."
+                st.session_state.results.append({"Name": name, "School": school, "Score": f"{score}/{total}", "Percentage": pct, "Grade": grade, "Comment": comment})
+                st.session_state.last_submit_key = submit_key
+                st.session_state.submitted = True
+                st.success(f"Well done {name}! You scored {score}/{total} = {pct}% Grade {grade}")
+                st.write(comment)
+                st.subheader("Review Your Answers")
+                for i, (q, options, correct, explain) in enumerate(questions):
+                    st.write(f"Q{i+1}: {q}")
+                    st.write(f"Your answer: {answers[i]}")
+                    st.write(f"Correct answer: {correct}")
+                    if str(answers[i]) == str(correct):
+                        st.write("Correct! Well done.")
+                    else:
+                        st.write("Not correct.")
+                    st.write(f"Explanation: {explain}")
+                    st.write("---")
 
 if page == "Teacher Dashboard":
     st.title("Teacher Dashboard")
     results = st.session_state.get("results", [])
     st.write(f"Total attempts: {len(results)}")
+    if st.button("Clear All Results - Start Fresh"):
+        st.session_state.results = []
+        st.session_state.submitted = False
+        st.session_state.last_submit_key = ""
+        st.rerun()
     if len(results) == 0:
         st.info("No results yet. Let a child take the quiz first.")
     else:
