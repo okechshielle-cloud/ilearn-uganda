@@ -195,3 +195,7 @@ if page == "Take Quiz":
         st.subheader("See Your Answers + Explanations")
         saved = st.session_state.last_answers
         for i in range(len(questions)):
+            q = questions[i]
+            ans = saved[i] if i < len(saved) else ""
+            st.write(f"Q{i+1}: {q}")
+            st.write(f"Your answer: {ans}")
