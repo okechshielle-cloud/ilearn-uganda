@@ -5,6 +5,7 @@ import os
 st.set_page_config(page_title="LearnEasy", layout="centered")
 
 CSV_FILE = "results.csv"
+TEACHER_PASSWORD = "LearnEasy123"
 
 def load_results():
     if os.path.exists(CSV_FILE):
@@ -25,6 +26,8 @@ if "submitted" not in st.session_state:
     st.session_state.submitted = False
 if "last_submit_key" not in st.session_state:
     st.session_state.last_submit_key = ""
+if "dashboard_unlocked" not in st.session_state:
+    st.session_state.dashboard_unlocked = False
 
 questions = [
     ("Q1. [English] What gets wetter the more it dries?", ["Water", "A towel", "A stone", "A cup"], "A towel", "A towel gets wetter as it dries you."),
@@ -60,6 +63,7 @@ if page == "Take Quiz":
         st.session_state.results = saved
         st.session_state.submitted = False
         st.session_state.last_submit_key = ""
+        st.session_state.dashboard_unlocked = False
         st.rerun()
     name = st.text_input("Your Name", key="name")
     school = st.text_input("Your School", key="school")
@@ -119,7 +123,21 @@ if page == "Take Quiz":
                     st.write("---")
 
 if page == "Teacher Dashboard":
+    st.title("Teacher Dashboard - Locked")
+    if not st.session_state.dashboard_unlocked:
+        st.write("This page is for teachers only. Enter your password.")
+        pwd = st.text_input("Teacher Password", type="password", key="teacher_pwd")
+        if st.button("Unlock Dashboard"):
+            if pwd == TEACHER_PASSWORD:
+                st.session_state.dashboard_unlocked = True
+                st.rerun()
+            else:
+                st.error("Wrong password. Try again.")
+        st.stop()
     st.title("Teacher Dashboard")
+    if st.button("Lock Dashboard"):
+        st.session_state.dashboard_unlocked = False
+        st.rerun()
     results = st.session_state.get("results", [])
     st.write(f"Total attempts: {len(results)}")
     if st.button("Clear All Results - Start Fresh"):
