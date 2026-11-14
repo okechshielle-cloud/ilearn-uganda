@@ -197,18 +197,30 @@ st.write("Read each question carefully. Green means you got it right. Red means 
 saved = st.session_state.last_answers
 for i in range(len(questions)):
     q = questions[i]
-    ans = saved[i] if i < len(saved) else ""
-    correct = q.get("answer", q.get("correct", ""))
-    explain = q.get("explanation", q.get("why", "No explanation added yet for this question."))
-    st.divider()
-    st.write(f"**Question {i+1}: {q.get('question', q)}**")
-    st.write(f"Your answer: {ans}")
-    st.write(f"Correct answer: {correct}")
-    if ans == correct:
-        st.success("Correct! Well done.")
-    else:
-        st.error("Not correct. See the explanation below.")
-    st.info(f"Why: {explain}")
+        ans = saved[i] if i < len(saved) else ""
+        if isinstance(q, dict):
+            q_text = q.get("question", q.get("text", str(q)))
+            correct = q.get("answer", q.get("correct", ""))
+            explain = q.get("explanation", q.get("why", "No explanation added yet for this question."))
+        elif isinstance(q, (list, tuple)):
+            q_text = str(q[0]) if len(q) > 0 else str(q)
+            correct = str(q[2]) if len(q) > 2 else ""
+            explain = str(q[3]) if len(q) > 3 else "No explanation added yet for this question."
+        else:
+            q_text = str(q)
+            correct = ""
+            explain = "No explanation added yet for this question."
+        st.divider()
+        st.write(f"**Question {i+1}: {q_text}**")
+        st.write(f"Your answer: {ans}")
+        st.write(f"Correct answer: {correct}")
+        if ans == correct and correct != "":
+            st.success("Correct! Well done.")
+        elif correct == "":
+            st.info("This question has no correct answer saved yet.")
+        else:
+            st.error("Not correct. See the explanation below.")
+        st.info(f"Why: {explain}")
 if page == "Teacher Dashboard":
     st.title("Teacher Dashboard")
     if "results" not in st.session_state:
