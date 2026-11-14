@@ -3,7 +3,7 @@ import pandas as pd
 import gspread
 from google.oauth2.service_account import Credentials
 import calendar
-from datetime import datetime
+from datetime import datetime, date
 st.set_page_config(page_title="ILEARN Uganda", layout="wide")
 st.title("UG ILEARN Uganda - School Management System")
 
