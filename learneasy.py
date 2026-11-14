@@ -133,7 +133,28 @@ if page == "Teacher Dashboard":
         st.info("No results yet. Let a child take the quiz first.")
     else:
         df = pd.DataFrame(results)
-        df = df.sort_values(by="Percentage", ascending=False)
+        df = df.sort_values(by="Percentage", ascending=False).reset_index(drop=True)
+        medals = []
+        for idx in range(len(df)):
+            if idx == 0:
+                medals.append("🥇 Gold")
+            elif idx == 1:
+                medals.append("🥈 Silver")
+            elif idx == 2:
+                medals.append("🥉 Bronze")
+            else:
+                medals.append("")
+        df.insert(0, "Medal", medals)
+        df.insert(0, "Rank", range(1, len(df) + 1))
+        st.subheader("🏆 Top 3 Medal Winners")
+        for idx in range(min(3, len(df))):
+            row = df.iloc[idx]
+            if idx == 0:
+                st.success(f"🥇 GOLD - {row['Name']} - {row['School']} - {row['Score']} = {row['Percentage']}%")
+            elif idx == 1:
+                st.info(f"🥈 SILVER - {row['Name']} - {row['School']} - {row['Score']} = {row['Percentage']}%")
+            elif idx == 2:
+                st.warning(f"🥉 BRONZE - {row['Name']} - {row['School']} - {row['Score']} = {row['Percentage']}%")
         st.subheader("Top 25 Learners")
         st.dataframe(df.head(25))
         st.subheader("All Results")
