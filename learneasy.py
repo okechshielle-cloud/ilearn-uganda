@@ -257,6 +257,4 @@ if page == "Teacher Dashboard":
                 st.success(f"#{pos} - {name} - {score}% - {badge}")
         else:
             st.info("No Percentage column found, so Top 25 cannot be sorted yet.")
-        st.subheader("All Results")
-        st.dataframe(df)
-        st.download_button("Download Results CSV", df.to_csv(index=False), "results.csv", "text/csv")
+        
