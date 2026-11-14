@@ -209,11 +209,6 @@ for i in range(len(questions)):
     else:
         st.error("Not correct. See the explanation below.")
     st.info(f"Why: {explain}")
-            q = questions[i]
-            ans = saved[i] if i < len(saved) else ""
-            st.write(f"Q{i+1}: {q}")
-            st.write(f"Your answer: {ans}")
-
 if page == "Teacher Dashboard":
     st.title("Teacher Dashboard")
     if "results" not in st.session_state:
