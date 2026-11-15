@@ -1,24 +1,62 @@
 import streamlit as st
 import pandas as pd
 import os
+import requests
+import json
 
 st.set_page_config(page_title="LearnEasy", layout="centered")
 
-CSV_FILE = "results.csv"
 TEACHER_PASSWORD = "LearnEasy123"
+CSV_FILE = "results.csv"
+SHEET_URL = st.secrets.get("SHEET_URL", "")
 
 def load_results():
+    # 1. Try Google Sheets via Apps Script
+    if SHEET_URL:
+        try:
+            r = requests.get(SHEET_URL, timeout=10)
+            data = r.json()
+            clean = []
+            for row in data:
+                if str(row.get("Name", "")).strip() != "":
+                    clean.append({
+                        "Name": row.get("Name", ""),
+                        "School": row.get("School", ""),
+                        "Score": row.get("Score", ""),
+                        "Percentage": float(row.get("Percentage", 0)) if str(row.get("Percentage", "")).strip() != "" else 0,
+                        "Grade": row.get("Grade", ""),
+                        "Comment": row.get("Comment", ""),
+                    })
+            return clean
+        except Exception as e:
+            st.warning(f"Could not load from Google Sheets: {e}")
+    # 2. Fallback local
     if os.path.exists(CSV_FILE):
         try:
-            df = pd.read_csv(CSV_FILE)
-            return df.to_dict("records")
+            return pd.read_csv(CSV_FILE).to_dict("records")
         except:
             return []
     return []
 
-def save_results(results):
-    df = pd.DataFrame(results)
-    df.to_csv(CSV_FILE, index=False)
+def save_one_result(row):
+    saved = False
+    if SHEET_URL:
+        try:
+            r = requests.post(SHEET_URL, data=json.dumps(row), headers={"Content-Type": "application/json"}, timeout=10)
+            if r.status_code == 200:
+                saved = True
+        except Exception as e:
+            st.warning(f"Google Sheets save failed: {e}")
+    # Always backup locally too
+    try:
+        existing = []
+        if os.path.exists(CSV_FILE):
+            existing = pd.read_csv(CSV_FILE).to_dict("records")
+        existing.append(row)
+        pd.DataFrame(existing).to_csv(CSV_FILE, index=False)
+    except:
+        pass
+    return saved
 
 if "results" not in st.session_state:
     st.session_state.results = load_results()
@@ -105,7 +143,11 @@ if page == "Take Quiz":
                     comment = "Keep trying, you can do better."
                 new_row = {"Name": name, "School": school, "Score": f"{score}/{total}", "Percentage": pct, "Grade": grade, "Comment": comment}
                 st.session_state.results.append(new_row)
-                save_results(st.session_state.results)
+                ok = save_one_result(new_row)
+                if ok:
+                    st.success("Saved to Google Sheets ✅ - Will survive reboot")
+                else:
+                    st.warning("Saved locally only - Check SHEET_URL in Secrets")
                 st.session_state.last_submit_key = submit_key
                 st.session_state.submitted = True
                 st.success(f"Well done {name}! You scored {score}/{total} = {pct}% Grade {grade}")
@@ -135,18 +177,18 @@ if page == "Teacher Dashboard":
                 st.error("Wrong password. Try again.")
         st.stop()
     st.title("Teacher Dashboard")
+    if SHEET_URL:
+        st.success("Google Sheets Link is set ✅")
+    else:
+        st.error("No SHEET_URL in Secrets - Go to Step 3")
     if st.button("Lock Dashboard"):
         st.session_state.dashboard_unlocked = False
         st.rerun()
+    if st.button("Refresh from Google Sheets"):
+        st.session_state.results = load_results()
+        st.rerun()
     results = st.session_state.get("results", [])
     st.write(f"Total attempts: {len(results)}")
-    if st.button("Clear All Results - Start Fresh"):
-        st.session_state.results = []
-        if os.path.exists(CSV_FILE):
-            os.remove(CSV_FILE)
-        st.session_state.submitted = False
-        st.session_state.last_submit_key = ""
-        st.rerun()
     if len(results) == 0:
         st.info("No results yet. Let a child take the quiz first.")
     else:
