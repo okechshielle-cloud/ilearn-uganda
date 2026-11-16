@@ -1,4 +1,7 @@
-
+import streamlit as st
+st.set_page_config(page_title="ilearn-uganda", page_icon="ilearn-icon.png")
+#st.sidebar.image("ilearn-full-refined.png", width=250)
+st.sidebar.markdown("**integrated learning environment**")
 import streamlit as st
 import pandas as pd
 import os
