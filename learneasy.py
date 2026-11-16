@@ -1,6 +1,4 @@
-import streamlit as st
-st.set_page_config(page_title="ilearn-uganda", page_icon="ilearn-icon.png")
-# st.image("ilearn-full-refined.png", width=350)  # uncomment after uploading logo
+
 import streamlit as st
 import pandas as pd
 import os
