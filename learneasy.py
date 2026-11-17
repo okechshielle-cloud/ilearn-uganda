@@ -10,7 +10,7 @@ TEACHER_PASSWORD = st.secrets.get("TEACHER_PASSWORD", "iLearnUganda123")
 CSV_FILE = "results.csv"
 SHEET_URL = st.secrets.get("SHEET_URL", "")
 
-# 1. General Curriculum Framework Overview
+# Comprehensive NCDC Curriculum Framework Overview
 NCDC_CURRICULUM = {
     "Lower Primary (Cycle 1: Thematic Approach P1-P3)": {
         "P1": {
@@ -69,7 +69,7 @@ NCDC_CURRICULUM = {
     }
 }
 
-# 2. Dedicated Class-by-Class NCDC Topical Breakdown (with Topic Selector data)
+# Complete Class-by-Class Topical Breakdown (P1 to P7 across all subjects)
 TOPICAL_BREAKDOWN = {
     "P1": {
         "Literacy & Language (Thematic)": {
@@ -631,9 +631,9 @@ if page == "Take Quiz":
                     st.write("---")
 
 elif page == "Topical Breakdown":
-    st.title("🗂️ NCDC Class-by-Class Topical Breakdown")
+    st.title("🗂️ NCDC Class-by-Class Topical Breakdown (P1–P7)")
     st.caption("Integrated Learning Environment — Select Class, Subject & Topic")
-    st.write("Browse individual syllabus topics class by class, along with subtopics, learning outcomes, learning aids, life skills, and values.")
+    st.write("Browse individual syllabus topics across all primary classes, along with subtopics, learning outcomes, learning aids, life skills, and values.")
     
     col1, col2 = st.columns(2)
     with col1:
