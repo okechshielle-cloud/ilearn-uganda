@@ -10,123 +10,245 @@ TEACHER_PASSWORD = st.secrets.get("TEACHER_PASSWORD", "iLearnUganda123")
 CSV_FILE = "results.csv"
 SHEET_URL = st.secrets.get("SHEET_URL", "")
 
-# Complete Official NCDC Primary Curriculum Framework with Life Skills, Values & Learning Aids
+# Complete Official NCDC Primary Curriculum Framework (P1–P7) with All Subjects, Life Skills, Values & Learning Aids
 NCDC_OFFICIAL_FRAMEWORK = {
     "Lower Primary (Cycle 1: Thematic Approach P1–P3)": {
         "P1": {
-            "Core Learning Areas": ["Literacy I (Local Language)", "Literacy II (Health, Science & Environment)", "Numeracy", "English (Oral/Transition)", "Life Skills"],
-            "Life Skills Developed": ["Effective communication", "Self-awareness", "Interpersonal relationships", "Empathy", "Coping with emotions"],
-            "Core Values Inculcated": ["Obedience", "Respect", "Neatness", "Love", "Unity", "Cleanliness"],
-            "Learning Aids / Instructional Materials": ["Classroom realia", "Name flashcards", "Picture charts of school buildings", "Bottle tops, sticks, stones (counters)", "Soap, clean water, basin"],
-            "12 Official Themes": [
-                "1. Our School", "2. Our Home and Community", "3. The Human Body and Health", 
-                "4. Food and Nutrition", "5. Our Environment", "6. Plants in Our Environment", 
-                "7. Animals in Our Environment", "8. Weather Changes", "9. Transport in Our Community", 
-                "10. Communication", "11. Peace and Security", "12. Occupations and Economic Activities"
-            ]
+            "Literacy I (Local Language)": {
+                "Topics / Themes": ["Our School", "Our Home and Community", "Our Environment", "Plants and Animals"],
+                "Life Skills": ["Effective communication", "Self-awareness", "Interpersonal relationships"],
+                "Values": ["Obedience", "Respect", "Neatness"],
+                "Learning Aids": ["Name flashcards", "Picture charts", "Real school objects"]
+            },
+            "Literacy II (Health, Science & Environment)": {
+                "Topics / Themes": ["The Human Body and Health", "Food and Nutrition", "Weather Changes", "Sanitation"],
+                "Life Skills": ["Self-care", "Health awareness", "Critical thinking"],
+                "Values": ["Cleanliness", "Self-respect", "Hygiene"],
+                "Learning Aids": ["Soap, clean water, basin", "Human body charts", "Weather symbols"]
+            },
+            "Numeracy (Mathematics)": {
+                "Topics / Themes": ["Set Concepts (Sorting & Matching)", "Whole Numbers (1-10)", "Operations (Addition & Subtraction up to 20)"],
+                "Life Skills": ["Logical thinking", "Problem solving", "Accuracy"],
+                "Values": ["Patience", "Orderliness", "Honesty"],
+                "Learning Aids": ["Bottle tops, sticks, stones (counters)", "Number cards", "Abacus"]
+            },
+            "English (Oral & Transition)": {
+                "Topics / Themes": ["Greetings & Courtesies", "Simple Classroom Instructions", "Naming Common Objects"],
+                "Life Skills": ["Listening attention", "Verbal expression"],
+                "Values": ["Confidence", "Courtesy"],
+                "Learning Aids": ["Audio flashcards", "Puppets", "Action charts"]
+            }
         },
         "P2": {
-            "Core Learning Areas": ["Literacy I", "Literacy II", "Numeracy", "English", "Life Skills"],
-            "Life Skills Developed": ["Decision making", "Critical thinking", "Creative thinking", "Effective communication", "Coping with stress"],
-            "Core Values Inculcated": ["Gratitude", "Sharing", "Caution", "Discipline", "Cooperation", "Responsibility"],
-            "Learning Aids / Instructional Materials": ["Real food samples (local food groups)", "Food group charts", "Toy vehicles", "Road sign flashcards", "Place value tins and abacus"],
-            "12 Official Themes": [
-                "1. Our Community", "2. Food and Nutrition", "3. Changes in the Environment", 
-                "4. Sanitation and Personal Hygiene", "5. Transport and Communication", "6. Peace and Security", 
-                "7. Accidents and Safety", "8. Child Rights and Responsibilities", "9. Sources of Energy", 
-                "10. Leisure Time and Play", "11. Keeping Animals and Plants", "12. Our Leaders in the Community"
-            ]
+            "Literacy I (Local Language)": {
+                "Topics / Themes": ["Our Community", "Child Rights and Responsibilities", "Cultural Practices"],
+                "Life Skills": ["Decision making", "Empathy", "Effective communication"],
+                "Values": ["Cooperation", "Sharing", "Responsibility"],
+                "Learning Aids": ["Storybooks", "Community role-play cards", "Local language charts"]
+            },
+            "Literacy II (Environment & Science)": {
+                "Topics / Themes": ["Food and Nutrition (Local food groups)", "Sanitation and Personal Hygiene", "Sources of Energy", "Keeping Animals and Plants"],
+                "Life Skills": ["Health consciousness", "Environmental observation", "Coping with stress"],
+                "Values": ["Gratitude", "Stewardship", "Cleanliness"],
+                "Learning Aids": ["Real food samples", "Seed samples", "Energy source charts"]
+            },
+            "Numeracy (Mathematics)": {
+                "Topics / Themes": ["Set Concepts (Intersection & Union)", "Whole Numbers up to 50", "Addition & Subtraction with Regrouping", "Basic Multiplication"],
+                "Life Skills": ["Analytical thinking", "Numerical estimation"],
+                "Values": ["Precision", "Diligence"],
+                "Learning Aids": ["Place value tins", "Bundles of 10 sticks", "Multiplication grids"]
+            },
+            "English": {
+                "Topics / Themes": ["Descriptive Vocabulary", "Simple Present Tense", "Reading Short Sentences"],
+                "Life Skills": ["Literacy comprehension", "Confidence"],
+                "Values": ["Perseverance", "Neatness"],
+                "Learning Aids": ["Word flashcards", "Reader books"]
+            }
         },
         "P3": {
-            "Core Learning Areas": ["Literacy I / Transition", "Literacy II", "Numeracy", "English (Transition Medium)", "Local Language"],
-            "Life Skills Developed": ["Spatial orientation", "Civic awareness", "Problem solving", "Negotiation", "Effective communication"],
-            "Core Values Inculcated": ["Patriotism", "Community pride", "Honesty in trade", "Precision", "Respect"],
-            "Learning Aids / Instructional Materials": ["Sub-county sketch maps", "Clay physical models", "Fraction strips", "Meter rulers", "Clock face models", "Currency notes/coins"],
-            "12 Official Themes": [
-                "1. Our Sub-county / Division", "2. Living Together in Our Sub-county", "3. Environment and Weather", 
-                "4. Food and Nutrition", "5. Sanitation and Water", "6. Transport", 
-                "7. Communication Systems", "8. Energy Resources", "9. Occupations and Trade", 
-                "10. Security and Peace", "11. Cultural Practices", "12. Transition Foundations to Upper Primary"
-            ]
+            "Literacy I / Transition to English": {
+                "Topics / Themes": ["Our Sub-county / Division", "Living Together", "Transition Foundations to English-medium instruction"],
+                "Life Skills": ["Spatial orientation", "Civic awareness", "Negotiation"],
+                "Values": ["Patriotism", "Community pride", "Tolerance"],
+                "Learning Aids": ["Sub-county sketch maps", "Transition reading cards"]
+            },
+            "Literacy II (Science & Environment)": {
+                "Topics / Themes": ["Environment and Weather", "Sanitation and Water", "Energy Resources", "Vector Control"],
+                "Life Skills": ["Health protection", "Problem solving"],
+                "Values": ["Responsibility", "Environmental care"],
+                "Learning Aids": ["Safe water chain charts", "Rain gauge models"]
+            },
+            "Numeracy (Mathematics)": {
+                "Topics / Themes": ["Numbers up to 1,000", "Multiplication Tables", "Simple Fractions (Halves, Quarters)", "Money & Local Currency", "Standard Metric Units"],
+                "Life Skills": ["Financial literacy", "Measurement estimation"],
+                "Values": ["Honesty in trade", "Fairness"],
+                "Learning Aids": ["Currency notes/coins", "Meter rulers", "Fraction cut-outs"]
+            },
+            "English": {
+                "Topics / Themes": ["Grammar fundamentals", "Paragraph construction", "Guided composition"],
+                "Life Skills": ["Effective writing", "Expression"],
+                "Values": ["Clarity", "Discipline"],
+                "Learning Aids": ["Sentence strips", "Writing charts"]
+            }
         }
     },
     "Upper Primary (Cycle 2 & 3: Subject-Based P4–P7)": {
-        "P4 (Transition Year)": {
-            "Set One (Core Academic Subjects)": [
-                "1. English Language: Grammar, Comprehension, Composition, Guided Writing",
-                "2. Mathematics: 12 Core NCDC Strands (Sets, Whole Numbers, Operations, Patterns, Fractions, Geometry, Data, Time, Integers, Money, Measurements, Algebra)",
-                "3. Integrated Science: Plant & Animal Life, Human Body, Teeth & Digestion, Weather",
-                "4. Social Studies (SST): Map Reading, District Geography, Local Governance, History",
-                "5. Religious Education (CRE / IRE): Creation, Covenants, Moral Integrity",
-                "6. Local Language Framework"
-            ],
-            "Set Two (CAPE Framework)": [
-                "CAPE 1: Music, Dance and Drama (MDD)",
-                "CAPE 2: Physical Education (PE, Athletics & Sports Rules)",
-                "CAPE 3: Art, Craft and Technology (Color Mixing & Paper Work)"
-            ],
-            "Life Skills Developed": ["Classification", "Logical reasoning", "Analytical thinking", "Spatial awareness", "Moral reasoning", "Motor coordination"],
-            "Core Values Inculcated": ["Orderliness", "Accuracy", "Patience", "Persistence", "Integrity", "Sportsmanship"],
-            "Learning Aids / Instructional Materials": ["Venn diagram charts", "Abacus & place value cards", "Protractors & rulers", "Uprooted flowering plants", "District wall maps", "Watercolors & footballs"]
+        "P4": {
+            "1. Mathematics (12 Core NCDC Strands)": {
+                "Topics / Themes": ["Set Concepts", "Whole Numbers", "Operations on Whole Numbers", "Patterns & Sequences", "Fractions", "Lines, Angles & Geometry", "Data Handling", "Time", "Integers", "Money", "Length, Mass & Capacity", "Algebra"],
+                "Life Skills": ["Logical reasoning", "Spatial precision", "Problem solving"],
+                "Values": ["Accuracy", "Orderliness", "Persistence"],
+                "Learning Aids": ["Venn diagram charts", "Abacus", "Protractors", "Weighing scales"]
+            },
+            "2. English Language": {
+                "Topics / Themes": ["Nouns & Pronouns", "Present & Past Simple Tenses", "Punctuation", "Comprehension & Summary", "Guided Letter Writing"],
+                "Life Skills": ["Effective written & oral communication", "Critical analysis"],
+                "Values": ["Neatness", "Clarity", "Courtesy"],
+                "Learning Aids": ["Grammar charts", "Letter templates", "Comprehension readers"]
+            },
+            "3. Integrated Science": {
+                "Topics / Themes": ["Plant Anatomy & Crop Growing", "Human Digestive System & Teeth", "Weather Instruments", "Sanitation & Vectors"],
+                "Life Skills": ["Scientific observation", "Agricultural husbandry", "Health safety"],
+                "Values": ["Environmental stewardship", "Hard work", "Cleanliness"],
+                "Learning Aids": ["Uprooted flowering plants", "Dental anatomy charts", "Rain gauge"]
+            },
+            "4. Social Studies (SST)": {
+                "Topics / Themes": ["Map Reading (Compass, Scale, Key)", "District Physical Geography", "Vegetation & Climate", "Local Administrative Leadership"],
+                "Life Skills": ["Map navigation", "Civic participation", "Environmental awareness"],
+                "Values": ["Patriotism", "Respect for leaders", "Unity"],
+                "Learning Aids": ["District wall maps", "Magnetic compass", "Relief models"]
+            },
+            "5. Religious Education (CRE / IRE)": {
+                "Topics / Themes": ["Creation & God's Purpose", "Foundational Covenants (Noah, Abraham)", "Moral Integrity & Honesty", "Service to Community"],
+                "Life Skills": ["Moral reasoning", "Empathy", "Spiritual reflection"],
+                "Values": ["Integrity", "Truthfulness", "Reverence"],
+                "Learning Aids": ["Bible / Quran extracts", "Moral scenario flashcards"]
+            },
+            "6. CAPE (Arts & PE)": {
+                "Topics / Themes": ["CAPE 1: Music, Dance & Drama (Folk tunes & rhythm)", "CAPE 2: Physical Education (Athletics & ball game rules)", "CAPE 3: Art & Technology (Color mixing, paper craft)"],
+                "Life Skills": ["Motor coordination", "Physical endurance", "Creative design"],
+                "Values": ["Sportsmanship", "Discipline", "Cultural appreciation"],
+                "Learning Aids": ["Watercolors", "Footballs", "Local drums"]
+            }
         },
         "P5": {
-            "Set One (Core Academic Subjects)": [
-                "1. English Language: Advanced Tenses, Relative Clauses, Poetry, Formal Letters",
-                "2. Mathematics: 12 Core NCDC Strands (Integers, Percentages, Angles & Polygons, Area/Volume, Basic Algebra)",
-                "3. Integrated Science: States of Matter, Heat Transfer, Circulatory & Respiratory Systems, PHC",
-                "4. Social Studies (SST): Uganda's Physical Geography, Relief Zones, Ethnic Migrations, Early Kingdoms, Constitution",
-                "5. Religious Education (CRE / IRE): Life & Teachings of Jesus/Prophet Muhammad, Worship, Peer Pressure",
-                "6. Local Language Framework"
-            ],
-            "Set Two (CAPE Framework)": [
-                "CAPE 1: Traditional Folk Songs & Dance Formations",
-                "CAPE 2: Gymnastics & Athletic Endurance",
-                "CAPE 3: Functional Craft, Pottery & Weaving"
-            ],
-            "Life Skills Developed": ["Logical deduction", "Proportional reasoning", "Experimental inquiry", "Historical synthesis", "Assertiveness", "Artistic design"],
-            "Core Values Inculcated": ["Precision", "Curiosity", "Responsibility", "National unity", "Compassion", "Cultural preservation"],
-            "Learning Aids / Instructional Materials": ["Percentage grid charts", "Geometric shape models", "Heat sources & metal rods", "Physical maps of Uganda", "Local clay", "Traditional instruments"]
+            "1. Mathematics (12 Core NCDC Strands)": {
+                "Topics / Themes": ["Advanced Sets & Subsets", "Whole Numbers up to 999,999 & Roman Numerals", "BODMAS & Word Problems", "Primes & Sequences", "Fractions, Decimals & Percentages", "Angles on Lines & Polygons", "Statistics (Mean, Median, Mode)", "24-Hour Clock & Speed", "Integers", "Profit & Loss", "Area & Volume", "Basic Algebra & Inequalities"],
+                "Life Skills": ["Logical deduction", "Proportional reasoning", "Statistical interpretation"],
+                "Values": ["Precision", "Curiosity", "Diligence"],
+                "Learning Aids": ["Percentage grid charts", "Geometric shape models", "Statistical survey sheets"]
+            },
+            "2. English Language": {
+                "Topics / Themes": ["Relative Clauses", "Conjunctions (because, although)", "Poetry Analysis", "Formal & Informal Letters", "Summary Writing"],
+                "Life Skills": ["Formal speech", "Advanced reading comprehension"],
+                "Values": ["Respect", "Clarity"],
+                "Learning Aids": ["Poetry anthologies", "Formal letter samples"]
+            },
+            "3. Integrated Science": {
+                "Topics / Themes": ["States of Matter", "Heat Transfer (Conduction, Convection, Radiation)", "Human Circulatory & Respiratory Systems", "Primary Health Care (PHC) & Immunization"],
+                "Life Skills": ["Experimental inquiry", "Health safety management"],
+                "Values": ["Scientific curiosity", "Responsibility"],
+                "Learning Aids": ["Heat sources & metal rods", "Heart and lung anatomical charts", "Immunization schedules"]
+            },
+            "4. Social Studies (SST)": {
+                "Topics / Themes": ["Uganda's Physical Geography & Relief Zones", "Drainage Systems", "Ethnic Migrations (Bantu, Nilotics)", "Early African Kingdoms", "The National Constitution"],
+                "Life Skills": ["Historical synthesis", "Geopolitical awareness", "Civic responsibility"],
+                "Values": ["National unity", "Tolerance", "Patriotism"],
+                "Learning Aids": ["Physical map of Uganda", "Migration arrow maps", "Constitution extracts"]
+            },
+            "5. Religious Education (CRE / IRE)": {
+                "Topics / Themes": ["Life and Teachings of Jesus Christ / Prophet Muhammad", "Compassion and Justice", "Worship Practices", "Resisting Negative Peer Pressure"],
+                "Life Skills": ["Assertiveness", "Ethical decision-making", "Moral fortitude"],
+                "Values": ["Compassion", "Steadfastness", "Justice"],
+                "Learning Aids": ["Scripture text guides", "Peer-pressure role-play cards"]
+            },
+            "6. CAPE (Arts & PE)": {
+                "Topics / Themes": ["CAPE 1: Traditional Folk Songs & Dance Formations", "CAPE 2: Gymnastics & Athletic Endurance", "CAPE 3: Functional Craft, Pottery & Weaving"],
+                "Life Skills": ["Physical stamina", "Artistic craftsmanship"],
+                "Values": ["Cultural preservation", "Perseverance"],
+                "Learning Aids": ["Local clay", "Weaving reeds", "Gym mats"]
+            }
         },
         "P6": {
-            "Set One (Core Academic Subjects)": [
-                "1. English Language: Active/Passive Voice, Direct/Indirect Speech, Conditional Clauses, Reports & Minutes",
-                "2. Mathematics: 12 Core NCDC Strands (Proportions, Speed/Distance/Time, Simple Interest, Circle Properties, Statistics)",
-                "3. Integrated Science: Electricity & Magnetism, Simple Machines (Levers/Pulleys), Friction, Mammalian Reproduction, Immunity",
-                "4. Social Studies (SST): East African Resources, Scramble & Partition, Resistance Movements, Independence",
-                "5. Religious Education (CRE / IRE): Faith in Action, Leadership, Family Values, Work Ethics, Conflict Resolution",
-                "6. Local Language Framework"
-            ],
-            "Set Two (CAPE Framework)": [
-                "CAPE 1: Choral Performance & Drama Scripts",
-                "CAPE 2: First-Aid Safety & Sports Officiating",
-                "CAPE 3: Advanced Sculpture, Tie-and-Dye, Textile Design"
-            ],
-            "Life Skills Developed": ["Logical synthesis", "Financial literacy", "Technical problem solving", "Conflict mediation", "Public speaking", "Emergency response"],
-            "Core Values Inculcated": ["Tenacity", "Prudence", "Safety consciousness", "Pan-African solidarity", "Accountability", "Confidence"],
-            "Learning Aids / Instructional Materials": ["Venn diagram worksheet charts", "Interest calculation tables", "Dry cells & copper wires", "East Africa resource maps", "First aid kits", "Papier-mâché materials"]
+            "1. Mathematics (12 Core NCDC Strands)": {
+                "Topics / Themes": ["Venn Diagram Word Problems (2-Set)", "Place Values in Millions & Number Bases (Base 5 & 2)", "Advanced Operations", "Fibonacci Sequences", "Reciprocals & Simple Interest", "Parallel Lines & Circle Properties", "Pie Charts & Bar-Line Graphs", "Travel Graphs & Time Zones", "Cartesian Plane Coordinates", "Foreign Exchange & Utility Bills", "Area of Trapeziums/Rings & Volume of Cylinders", "Brackets, Factorization & Simultaneous Equations"],
+                "Life Skills": ["Logical synthesis", "Financial literacy", "Spatial visualization"],
+                "Values": ["Tenacity", "Prudence", "Accuracy"],
+                "Learning Aids": ["Venn diagram worksheet charts", "Sample utility bills", "Cylinder models", "Cartesian grid boards"]
+            },
+            "2. English Language": {
+                "Topics / Themes": ["Active and Passive Voice", "Direct and Indirect (Reported) Speech", "Conditional Clauses (First, Second, Third)", "Formal Report Writing", "Meeting Minutes"],
+                "Life Skills": ["Public speaking", "Critical editing", "Persuasion"],
+                "Values": ["Confidence", "Respect for views", "Accuracy"],
+                "Learning Aids": ["Speech transformation charts", "Meeting minute templates"]
+            },
+            "3. Integrated Science": {
+                "Topics / Themes": ["Electricity and Magnetism", "Simple Machines (Levers, Pulleys, Inclined Planes)", "Friction", "Mammalian Reproduction & Adolescence", "Personal Hygiene & Immunity"],
+                "Life Skills": ["Technical problem solving", "Self-protection", "Health maintenance"],
+                "Values": ["Safety consciousness", "Responsibility", "Self-respect"],
+                "Learning Aids": ["Dry cells & copper wires", "Pulley/lever models", "Health education charts"]
+            },
+            "4. Social Studies (SST)": {
+                "Topics / Themes": ["East African Physical Resources", "European Scramble and Partition", "African Resistance Movements", "Path to Independence", "Regional Cooperation (EAC)"],
+                "Life Skills": ["Geopolitical analysis", "Historical synthesis"],
+                "Values": ["Pan-African solidarity", "Patriotism", "Peace advocacy"],
+                "Learning Aids": ["East Africa political & resource maps", "Historical timelines"]
+            },
+            "5. Religious Education (CRE / IRE)": {
+                "Topics / Themes": ["Faith in Action", "Christian/Islamic Leadership Models", "Family Values & Dignity of Work", "Resource Stewardship & Conflict Resolution"],
+                "Life Skills": ["Conflict mediation", "Leadership ethics"],
+                "Values": ["Accountability", "Stewardship", "Peace-building"],
+                "Learning Aids": ["Community leadership case studies", "Scripture guides"]
+            },
+            "6. CAPE (Arts & PE)": {
+                "Topics / Themes": ["CAPE 1: Choral Performance & Drama Scripts", "CAPE 2: First-Aid Safety & Sports Officiating", "CAPE 3: Advanced Sculpture, Tie-and-Dye, Textile Design"],
+                "Life Skills": ["Emergency response", "Dramatic direction"],
+                "Values": ["Safety mindfulness", "Civic responsibility", "Enterprise"],
+                "Learning Aids": ["First aid kits", "Papier-mâché", "Textile dyes"]
+            }
         },
-        "P7 (PLE Examinable Class)": {
-            "Set One (Examinable Subjects)": [
-                "1. English Language: PLE Grammar Consolidation, Phrasal Verbs, Idioms, Summaries, Timed Practice",
-                "2. Mathematics: 12 Core NCDC Strands (3-Set Venn Diagrams, Standard Form, Bases, Compass Construction, Probability, Equations)",
-                "3. Integrated Science: Excretory System (Kidneys/Skin), Nervous System (Brain/Reflex Arc), Agriculture, Livestock & Poultry",
-                "4. Social Studies (SST): Africa Geography, Decolonization, AU, UN, International Trade, Governance",
-                "5. Religious Education (CRE / IRE): Moral Theology, Human Dignity, Social Responsibility, PLE Revision",
-                "6. Local Language Framework"
-            ],
-            "Set Two (CAPE Framework)": [
-                "CAPE 1: Advanced MDD Stage Productions",
-                "CAPE 2: Recreational Sport Management & Fitness",
-                "CAPE 3: Entrepreneurial Craft Exhibitions & Marketing"
-            ],
-            "Life Skills Developed": ["Strategic time management under pressure", "Advanced analytical deduction", "Agricultural entrepreneurship", "Global citizenship", "Ethical discernment", "Sports leadership"],
-            "Core Values Inculcated": ["Resilience", "Excellence", "Environmental accountability", "Global empathy", "Spiritual maturity", "Enterprise"],
-            "Learning Aids / Instructional Materials": ["PLE past paper compilations", "Mathematical sets & blackboard compass", "Kidney/brain anatomical charts", "Wall maps of Africa", "Thematic PLE revision briefs", "Exhibition boards"]
+        "P7": {
+            "1. Mathematics (12 Core NCDC Strands Mastery)": {
+                "Topics / Themes": ["3-Set Venn Diagram Word Problems", "Standard Form & Non-Decimal Base Arithmetic", "PLE Past Paper Problem Solving", "Advanced Progressions & Proofs", "Recurring Decimals & Advanced Commercial Math", "Compass Construction of Angles & Triangles", "Probability & Combined Data Interpretation", "Average Speed for Multi-Stage Journeys", "Linear Inequalities & Graphing", "Simple Interest & Taxation", "Composite Area & Volume of Solids", "Quadratic Expressions & Word Problems"],
+                "Life Skills": ["Strategic time management under pressure", "Advanced analytical deduction", "Risk evaluation"],
+                "Values": ["Resilience", "Excellence", "Analytical honesty"],
+                "Learning Aids": ["PLE past paper compilations", "Mathematical sets", "Probability spinners"]
+            },
+            "2. English Language": {
+                "Topics / Themes": ["PLE Grammar Consolidation", "Phrasal Verbs & Idioms", "Proverb Meanings & Synonyms", "Passage Summary Compression", "Timed Exam Simulation"],
+                "Life Skills": ["Stress control", "Time management under exams", "Rapid comprehension"],
+                "Values": ["Academic integrity", "Perseverance"],
+                "Learning Aids": ["Timed PLE past papers", "Idiom reference sheets"]
+            },
+            "3. Integrated Science": {
+                "Topics / Themes": ["Excretory System (Kidneys, Skin)", "Nervous System (Brain, Spinal Cord, Reflex Arc)", "Agricultural Science & Crop Production", "Livestock & Poultry Management", "Environmental Conservation"],
+                "Life Skills": ["Scientific synthesis", "Agricultural entrepreneurship", "Environmental advocacy"],
+                "Values": ["Environmental accountability", "Diligence", "Hard work"],
+                "Learning Aids": ["Kidney/brain anatomical charts", "Livestock feed samples", "Conservation posters"]
+            },
+            "4. Social Studies (SST)": {
+                "Topics / Themes": ["Continental Geography of Africa", "Decolonization Struggles in Africa", "African Union (AU) & United Nations (UN)", "International Trade & Global Governance", "Holistic PLE SST Revision"],
+                "Life Skills": ["Global citizenship", "International relations evaluation"],
+                "Values": ["Global empathy", "Peace advocacy", "Civic pride"],
+                "Learning Aids": ["Wall map of Africa", "AU/UN organizational charts", "Revision briefs"]
+            },
+            "5. Religious Education (CRE / IRE)": {
+                "Topics / Themes": ["Moral Theology & Human Dignity", "Ethical Responses to Modern Challenges", "Social Responsibility", "Comprehensive PLE CRE/IRE Revision"],
+                "Life Skills": ["Ethical discernment", "Holistic self-evaluation"],
+                "Values": ["Spiritual maturity", "Moral integrity", "Justice"],
+                "Learning Aids": ["Thematic PLE revision briefs", "Ethical dilemma discussion cards"]
+            },
+            "6. CAPE (Arts & PE)": {
+                "Topics / Themes": ["CAPE 1: Advanced MDD Stage Productions", "CAPE 2: Recreational Sport Management & Fitness", "CAPE 3: Entrepreneurial Craft Exhibitions & Marketing"],
+                "Life Skills": ["Sports leadership", "Event organization", "Entrepreneurship"],
+                "Values": ["Enterprise", "Cultural leadership", "Teamwork"],
+                "Learning Aids": ["Sports officiating gear", "Exhibition boards", "Craft marketing tags"]
+            }
         }
     }
 }
 
-# Official NCDC Mathematics 12 Primary Strands
+# Official NCDC Mathematics 12 Core Strands Reference
 NCDC_MATH_STRANDS = [
     "1. Set Concepts (Venn Diagrams, Subsets, Probability)",
     "2. Whole Numbers (Place Values, Roman Numerals, Non-Decimal Bases)",
@@ -333,48 +455,28 @@ elif page == "NCDC Official Syllabus Reference":
     st.title("📖 Complete NCDC Primary Curriculum Reference")
     st.caption("National Curriculum Development Centre (Uganda) Official Framework (P1–P7)")
     
-    cycle_sel = st.selectbox("Select Curriculum Cycle", list(NCDC_OFFICIAL_FRAMEWORK.keys()))
-    class_sel = st.selectbox("Select Class Level", list(NCDC_OFFICIAL_FRAMEWORK[cycle_sel].keys()))
+    cycle_sel = st.selectbox("1. Select Curriculum Cycle", list(NCDC_OFFICIAL_FRAMEWORK.keys()))
+    class_sel = st.selectbox("2. Select Class Level", list(NCDC_OFFICIAL_FRAMEWORK[cycle_sel].keys()))
+    
+    class_subjects = NCDC_OFFICIAL_FRAMEWORK[cycle_sel][class_sel]
+    subject_sel = st.selectbox("3. Select Subject / Learning Area", list(class_subjects.keys()))
     
     st.markdown("---")
-    st.subheader(f"Official Syllabus Framework for {class_sel}")
+    st.subheader(f"Official Syllabus Details: {class_sel} — {subject_sel}")
     
-    class_info = NCDC_OFFICIAL_FRAMEWORK[cycle_sel][class_sel]
-    
-    # Display Life Skills, Values, and Learning Aids prominently
-    if "Life Skills Developed" in class_info:
-        st.markdown("### **🧠 Life Skills Developed**")
-        for skill in class_info["Life Skills Developed"]:
-            st.write(f"- {skill}")
+    sub_data = class_subjects[subject_sel]
+    for key, val in sub_data.items():
+        st.markdown(f"### **{key}**")
+        if isinstance(val, list):
+            for item in val:
+                st.write(f"- {item}")
+        else:
+            st.info(val)
             
-    if "Core Values Inculcated" in class_info:
-        st.markdown("### **⭐ Core Values Inculcated**")
-        for val in class_info["Core Values Inculcated"]:
-            st.write(f"- {val}")
-            
-    if "Learning Aids / Instructional Materials" in class_info:
-        st.markdown("### **🛠️ Learning Aids / Instructional Materials**")
-        for aid in class_info["Learning Aids / Instructional Materials"]:
-            st.write(f"- {aid}")
-            
-    st.markdown("---")
-    for section_title, items in class_info.items():
-        if section_title not in ["Life Skills Developed", "Core Values Inculcated", "Learning Aids / Instructional Materials"]:
-            st.markdown(f"### **{section_title}**")
-            if isinstance(items, list):
-                for item in items:
-                    st.write(f"- {item}")
-            elif isinstance(items, dict):
-                for sub_k, sub_v in items.items():
-                    st.markdown(f"**{sub_k}:**")
-                    if isinstance(sub_v, list):
-                        for sub_item in sub_v:
-                            st.write(f"  - {sub_item}")
-                            
-    if "P4" in class_sel or "P5" in class_sel or "P6" in class_sel or "P7" in class_sel:
+    if "Mathematics" in subject_sel:
         st.markdown("---")
         st.subheader("📐 Official NCDC Mathematics 12 Core Strands")
-        st.write("Upper primary mathematics is structured precisely around these 12 national strands:")
+        st.write("Mathematics across upper primary is structured precisely around these 12 national strands:")
         for strand in NCDC_MATH_STRANDS:
             st.write(f"✅ {strand}")
 
