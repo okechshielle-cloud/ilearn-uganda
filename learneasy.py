@@ -10,71 +10,67 @@ TEACHER_PASSWORD = st.secrets.get("TEACHER_PASSWORD", "iLearnUganda123")
 CSV_FILE = "results.csv"
 SHEET_URL = st.secrets.get("SHEET_URL", "")
 
-# Comprehensive NCDC Curriculum Framework Overview
+# Official NCDC Framework Structure (Thematic P1-P3, Subject-Based P4-P7 Set 1 & 2)
 NCDC_CURRICULUM = {
     "Lower Primary (Cycle 1: Thematic Approach P1-P3)": {
         "P1": {
-            "Term 1: Our School / Our Home": "Literacy in local language, early numeracy (1-10), personal hygiene, and family roles.",
-            "Term 2: Our Community / Human Body": "Community helpers, health & sanitation habits, and addition/subtraction up to 20.",
-            "Term 3: Plants, Animals & Environment": "Local plants/animals, simple reading sentences, and road/environmental safety."
+            "Term 1: Our School / Our Home": "Focuses on literacy in local language, early numeracy (1-10), personal hygiene, school rules, and family member roles.",
+            "Term 2: Our Community / Human Body": "Focuses on community helpers, body parts, five senses, health & sanitation habits, and addition/subtraction up to 20.",
+            "Term 3: Plants, Animals & Environment": "Focuses on local plants, domestic/wild animals, weather changes, and road/environmental safety awareness."
         },
         "P2": {
-            "Term 1: Food and Nutrition": "Food classification, hygiene, safe water, and addition/subtraction up to 50.",
-            "Term 2: Transport & Communication": "Local transport/communication systems, weather changes, and multiplication/division basics.",
-            "Term 3: Peace, Security & Changes": "Conflict resolution, child rights, and non-standard measurements."
+            "Term 1: Food and Nutrition": "Focuses on food classification (local food groups), food hygiene, kitchen safety, safe drinking water, and numbers up to 50.",
+            "Term 2: Transport & Communication": "Focuses on road/water/air transport, road safety rules, traditional/modern communication, and basic multiplication.",
+            "Term 3: Peace, Security & Changes": "Focuses on peaceful coexistence, conflict resolution, child rights and responsibilities, and non-standard measurement."
         },
         "P3": {
-            "Term 1: Our Sub-county / Division": "Sub-county physical features, landmarks, graded reading, and multiplication tables.",
-            "Term 2: Energy, Water and Sanitation": "Sources of energy, safe water chain, vectors/diseases, and standard metric units.",
-            "Term 3: Transition Foundations": "Transition from mother tongue to English-medium instruction and creative arts."
+            "Term 1: Our Sub-county / Division": "Focuses on sub-county physical features, hills, valleys, swamps, landmarks, economic activities, and multiplication tables.",
+            "Term 2: Energy, Water and Sanitation": "Focuses on sources of light/heat/sound, safe water chain, refuse disposal, vector control, and standard metric units.",
+            "Term 3: Transition Foundations": "Focuses on consolidating literacy/numeracy for transition into English-medium instruction and lower primary exit competencies."
         }
     },
-    "Upper Primary (Cycle 2 & 3: Subject-Based P4-P7)": {
+    "Upper Primary (Cycle 2 & 3: Subject-Based P4-P7 Set 1 & 2)": {
         "P4": {
-            "English": "Transition to English medium; nouns, pronouns, simple tenses, and guided compositions.",
-            "Mathematics": "Place values up to 10,000, equivalent fractions, decimals, and metric units.",
-            "Integrated Science": "Plant anatomy, crop growing, human digestive system, teeth, and weather instruments.",
-            "Social Studies": "Map reading (compass, scale, key), district physical geography, and governance.",
-            "Religious Education": "Sacred scriptures (Bible/Quran), covenants, and moral decision-making.",
-            "Kiswahili": "Phonetic spelling, noun classes (M-WA, KI-VI), and basic present tense (na-).",
-            "Creative Arts & PE": "Sports rules (football/netball), color mixing, folk songs, and traditional dance."
+            "English": "Grammar, comprehension, composition, punctuation, nouns, pronouns, and guided letter writing.",
+            "Mathematics": "Place values up to 10,000, equivalent fractions, decimals, metric units, perimeter, and area.",
+            "Integrated Science": "Plant anatomy, crop growing practices, human digestive system, teeth structures, and weather measurement.",
+            "Social Studies (SST)": "Map reading (compass, scale, key), district physical geography, vegetation, climate, and local governance.",
+            "Religious Education (CRE/IRE)": "Sacred scriptures (Bible/Quran), foundational covenants, prophetic traditions, and moral decision-making.",
+            "Creative Arts & Physical Education (CAPE)": "CAPE 1 (Music, Dance & Drama), CAPE 2 (Physical Education & sports rules), CAPE 3 (Art, color mixing & craft)."
         },
         "P5": {
-            "English": "Complex tenses, conjunctions, relative clauses, poetry analysis, and formal debates.",
-            "Mathematics": "Integers, percentages, area, volume of cuboids, basic algebra, and bar graphs.",
-            "Integrated Science": "States of matter, heat transfer, circulatory/respiratory systems, and primary health care.",
-            "Social Studies": "Physical geography of Uganda, pre-colonial kingdoms, ethnic migrations, and constitution.",
-            "Religious Education": "Life and teachings of Jesus Christ / Prophet Muhammad, worship, and peer pressure.",
-            "Kiswahili": "Past (li-), present (na-), and future (ta-) tenses; market and travel vocabulary.",
-            "Creative Arts & PE": "Sports tactics, sportsmanship, functional crafts, and traditional instruments."
+            "English": "Complex tenses, conjunctions, relative clauses, poem analysis, summary writing, and formal speeches.",
+            "Mathematics": "Integers, percentages, area, volume of cuboids, basic algebra, and data interpretation (bar graphs).",
+            "Integrated Science": "States of matter, heat transfer (conduction, convection, radiation), human circulatory/respiratory systems, and PHC.",
+            "Social Studies (SST)": "Uganda's physical geography, relief zones, ethnic migrations (Bantu, Nilotics), early African kingdoms, and the Constitution.",
+            "Religious Education (CRE/IRE)": "Life and teachings of Jesus Christ / Prophet Muhammad, justice, compassion, worship practices, and peer pressure.",
+            "Creative Arts & Physical Education (CAPE)": "CAPE 1 (Folk songs & traditional dance), CAPE 2 (Athletics & physical endurance), CAPE 3 (Functional craft & pottery)."
         },
         "P6": {
-            "English": "Active/passive voice, direct/indirect speech, conditional clauses, and formal report writing.",
-            "Mathematics": "Proportions, speed/distance/time, simple interest, pie charts, and statistics.",
-            "Integrated Science": "Electricity, magnetism, simple machines, friction, mammalian reproduction, and immunity.",
-            "Social Studies": "East African resources, colonial administration, and independence struggles.",
-            "Religious Education": "Faith in action, leadership, family values, work ethics, and reconciliation.",
-            "Kiswahili": "Additional noun classes, adjectives, prepositions, negation, and story summaries.",
-            "Creative Arts & PE": "Athletics, first-aid safety, sculpture, and civic-themed drama."
+            "English": "Active and passive voice, direct/indirect speech, conditional clauses, formal report writing, and minutes.",
+            "Mathematics": "Proportions, speed, distance, time, simple interest, pie charts, mean, median, and mode.",
+            "Integrated Science": "Electricity, magnetism, simple machines (levers, pulleys), friction, mammalian reproduction, adolescence, and immunity.",
+            "Social Studies (SST)": "East African physical resources, European scramble and partition, resistance movements, and independence struggles.",
+            "Religious Education (CRE/IRE)": "Faith in action, leadership, family values, work ethics, resource stewardship, and conflict resolution.",
+            "Creative Arts & Physical Education (CAPE)": "CAPE 1 (Choral performance & drama), CAPE 2 (First-aid safety & sports officiating), CAPE 3 (Advanced sculpture & textile design)."
         },
         "P7": {
-            "English": "Comprehensive grammar consolidation, idioms, summary compression, and PLE exam readiness.",
-            "Mathematics": "Advanced geometry, circle theorems, sets (Venn diagrams), and simultaneous equations.",
-            "Integrated Science": "Human excretory & nervous systems, livestock/poultry, and environmental management.",
-            "Social Studies": "Geography of Africa, Pan-Africanism, AU, UN, and global economic integration.",
-            "Religious Education": "Moral theology, human dignity, social responsibility, and spiritual maturity.",
-            "Kiswahili": "Formal letter writing, conversational fluency, and secondary transition readiness.",
-            "Creative Arts & PE": "Sports leadership, entrepreneurial crafts, and cultural exhibitions."
+            "English": "Comprehensive grammar consolidation, phrasal verbs, idioms, summary compression, and timed PLE exam preparation.",
+            "Mathematics": "Advanced geometry, circle theorems, set theory (Venn diagrams), simultaneous equations, and profit/loss calculations.",
+            "Integrated Science": "Human excretory and nervous systems, agricultural science, livestock/poultry management, and environmental conservation.",
+            "Social Studies (SST)": "Continental geography of Africa, decolonization, African Union (AU), United Nations (UN), and global economic integration.",
+            "Religious Education (CRE/IRE)": "Moral theology, human dignity, social responsibility, ethical responses to modern challenges, and holistic PLE revision.",
+            "Creative Arts & Physical Education (CAPE)": "CAPE 1 (Advanced MDD productions), CAPE 2 (Recreational sport management & fitness), CAPE 3 (Entrepreneurial craft exhibitions).-0"
         }
     }
 }
 
-# Complete Class-by-Class Topical Breakdown (P1 to P7 across all subjects)
+# Accurate NCDC Topical Breakdown (P1 to P7 across all subjects and learning areas)
 TOPICAL_BREAKDOWN = {
     "P1": {
         "Literacy & Language (Thematic)": {
             "Topic 1: Our School": {
-                "Subtopics": "People in our school, things in our classroom, school rules, school buildings.",
+                "Subtopics": "People in our school, classroom objects, school rules, school environment.",
                 "Learning Outcome": "Learner identifies school members, names classroom objects, and follows basic instructions.",
                 "Learning Aids": "Classroom realia, name flashcards, picture charts of school buildings.",
                 "Life Skills": "Effective communication, self-awareness, interpersonal relationships.",
@@ -111,13 +107,6 @@ TOPICAL_BREAKDOWN = {
                 "Learning Aids": "Human body chart, soap, clean water, toothbrush, basin.",
                 "Life Skills": "Self-care, health awareness.",
                 "Values": "Cleanliness, self-respect."
-            },
-            "Topic 2: Plants and Animals in Our Environment": {
-                "Subtopics": "Common local plants, uses of plants, domestic vs. wild animals.",
-                "Learning Outcome": "Learner distinguishes domestic from wild animals and names common plants.",
-                "Learning Aids": "Real leaves/flowers, animal flashcards, nature walk.",
-                "Life Skills": "Observation, environmental care.",
-                "Values": "Kindness to animals, stewardship."
             }
         }
     },
@@ -145,13 +134,6 @@ TOPICAL_BREAKDOWN = {
                 "Learning Aids": "Place value tins, abacus, bundles of tens.",
                 "Life Skills": "Analytical thinking, problem solving.",
                 "Values": "Precision, diligence."
-            },
-            "Topic 2: Introduction to Multiplication and Division": {
-                "Subtopics": "Repeated addition (2s, 3s, 5s), equal sharing of concrete objects.",
-                "Learning Outcome": "Learner multiplies by 2, 3, and 5 and divides items equally.",
-                "Learning Aids": "Counters, multiplication tables chart, small containers.",
-                "Life Skills": "Fairness in sharing, logical reasoning.",
-                "Values": "Fairness, cooperation, accuracy."
             }
         }
     },
@@ -170,15 +152,6 @@ TOPICAL_BREAKDOWN = {
                 "Learning Aids": "Tippy-tap, charcoal stove, solar panel picture, water filter.",
                 "Life Skills": "Resource conservation, problem solving.",
                 "Values": "Responsibility, cleanliness, resourcefulness."
-            }
-        },
-        "Mathematics": {
-            "Topic 1: Numbers up to 1,000 and Fractions": {
-                "Subtopics": "Hundreds, tens, ones; halves, quarters, thirds; metric units (m, kg, l).",
-                "Learning Outcome": "Learner works with 3-digit numbers and compares simple fractions.",
-                "Learning Aids": "Fraction strips, meter ruler, weighing scale, measuring jugs.",
-                "Life Skills": "Measurement accuracy, financial literacy.",
-                "Values": "Honesty in trade, precision."
             }
         }
     },
@@ -231,7 +204,7 @@ TOPICAL_BREAKDOWN = {
                 "Values": "Self-care, hygiene."
             }
         },
-        "Social Studies": {
+        "Social Studies (SST)": {
             "Topic 1: Location and Physical Features of Our District": {
                 "Subtopics": "Map elements (title, key, compass, scale), hills, lakes, rivers, vegetation.",
                 "Learning Outcome": "Learner uses a compass and map key to locate features in their district.",
@@ -240,22 +213,22 @@ TOPICAL_BREAKDOWN = {
                 "Values": "Patriotism, environmental care."
             }
         },
-        "Kiswahili": {
-            "Topic 1: Salamu na Ngeli za Nomino (M-WA, KI-VI)": {
-                "Subtopics": "Polite greetings, phonetic spelling, singular/plural in M-WA and KI-VI classes.",
-                "Learning Outcome": "Learner greets appropriately and constructs simple sentences in M-WA and KI-VI.",
-                "Learning Aids": "Kiswahili greeting charts, noun class flashcards.",
-                "Life Skills": "Cross-cultural communication, linguistic adaptability.",
-                "Values": "Respect, regional unity."
-            }
-        },
-        "Religious Education": {
+        "Religious Education (CRE/IRE)": {
             "Topic 1: God's Covenant and Moral Integrity": {
                 "Subtopics": "Creation, covenants (Abraham/Noah/Prophetic traditions), honesty and service.",
                 "Learning Outcome": "Learner demonstrates moral integrity and respect for sacred scriptures.",
                 "Learning Aids": "Bible, Quran, moral scenario flashcards.",
                 "Life Skills": "Moral reasoning, empathy.",
                 "Values": "Integrity, truthfulness, reverence."
+            }
+        },
+        "Creative Arts & Physical Education (CAPE)": {
+            "Topic 1: Fundamentals of Music, Art and Physical Education": {
+                "Subtopics": "Color mixing, basic traditional dance steps, ball games, and safety rules.",
+                "Learning Outcome": "Learner executes basic physical movements, rhythm patterns, and art designs.",
+                "Learning Aids": "Watercolors, footballs, local drums.",
+                "Life Skills": "Motor coordination, teamwork.",
+                "Values": "Discipline, sportsmanship."
             }
         }
     },
@@ -287,7 +260,7 @@ TOPICAL_BREAKDOWN = {
                 "Values": "Scientific curiosity, responsibility."
             }
         },
-        "Social Studies": {
+        "Social Studies (SST)": {
             "Topic 1: Geography and Pre-Colonial History of Uganda": {
                 "Subtopics": "Relief zones, drainage, ethnic migrations (Bantu, Nilotics), early kingdoms, Constitution.",
                 "Learning Outcome": "Learner traces ethnic migration routes and explains Uganda's governance structure.",
@@ -296,22 +269,22 @@ TOPICAL_BREAKDOWN = {
                 "Values": "National unity, tolerance, patriotism."
             }
         },
-        "Kiswahili": {
-            "Topic 1: Nyakati (li-, na-, ta-) na Msamiati wa Masoko": {
-                "Subtopics": "Past, present, and future verb tenses; market buying/selling dialogues.",
-                "Learning Outcome": "Learner converses in past, present, and future tenses in market role-plays.",
-                "Learning Aids": "Tense conjugation chart, market item flashcards.",
-                "Life Skills": "Negotiation, practical communication.",
-                "Values": "Honesty in trade, cultural integration."
-            }
-        },
-        "Religious Education": {
+        "Religious Education (CRE/IRE)": {
             "Topic 1: Teachings of Jesus / Prophet Muhammad & Peer Pressure": {
                 "Subtopics": "Compassion, justice, pillars of worship, resisting negative peer pressure.",
                 "Learning Outcome": "Learner applies religious teachings to make ethical choices against peer pressure.",
                 "Learning Aids": "Scripture texts, peer-pressure role-play cards.",
                 "Life Skills": "Assertiveness, ethical decision-making.",
                 "Values": "Compassion, steadfastness, justice."
+            }
+        },
+        "Creative Arts & Physical Education (CAPE)": {
+            "Topic 1: Intermediate Sports Tactics & Functional Crafts": {
+                "Subtopics": "Athletic endurance, pottery, sign-making, folk songs.",
+                "Learning Outcome": "Learner performs intermediate physical drills and creates functional craft items.",
+                "Learning Aids": "Local clay, poster paints, traditional instruments.",
+                "Life Skills": "Physical stamina, artistic design.",
+                "Values": "Cultural preservation, perseverance."
             }
         }
     },
@@ -343,7 +316,7 @@ TOPICAL_BREAKDOWN = {
                 "Values": "Safety consciousness, responsibility."
             }
         },
-        "Social Studies": {
+        "Social Studies (SST)": {
             "Topic 1: East African Geography & Independence Struggles": {
                 "Subtopics": "EAC countries, resources, European scramble/partition, resistance movements, path to independence.",
                 "Learning Outcome": "Learner analyzes East African resource distribution and independence milestones.",
@@ -352,22 +325,22 @@ TOPICAL_BREAKDOWN = {
                 "Values": "Pan-African solidarity, patriotism."
             }
         },
-        "Kiswahili": {
-            "Topic 1: Vivumishi, Vihusishi na Ufupisho wa Hadithi": {
-                "Subtopics": "Adjectives, prepositions, negative verb forms, summarizing short passages.",
-                "Learning Outcome": "Learner summarizes short Kiswahili texts using accurate adjectives and prepositions.",
-                "Learning Aids": "Kiswahili readers, grammar summary tables.",
-                "Life Skills": "Summarization, reading comprehension.",
-                "Values": "Diligence, linguistic pride."
-            }
-        },
-        "Religious Education": {
+        "Religious Education (CRE/IRE)": {
             "Topic 1: Faith in Action, Work Ethics & Reconciliation": {
                 "Subtopics": "Stewardship of resources, dignity of work, marriage/family values, conflict resolution.",
                 "Learning Outcome": "Learner demonstrates responsible stewardship and peaceful conflict mediation.",
                 "Learning Aids": "Community leadership case studies, scripture guides.",
                 "Life Skills": "Conflict mediation, leadership ethics.",
                 "Values": "Accountability, peace-building, stewardship."
+            }
+        },
+        "Creative Arts & Physical Education (CAPE)": {
+            "Topic 1: Athletics, Sculpture and Drama": {
+                "Subtopics": "Track events, first aid procedures, papier-mâché, and issue-based drama.",
+                "Learning Outcome": "Learner applies athletic rules, first-aid techniques, and produces advanced sculptures.",
+                "Learning Aids": "First aid kits, papier-mâché materials, scripts.",
+                "Life Skills": "Emergency response, dramatic direction.",
+                "Values": "Safety mindfulness, civic responsibility."
             }
         }
     },
@@ -399,7 +372,7 @@ TOPICAL_BREAKDOWN = {
                 "Values": "Environmental accountability, diligence."
             }
         },
-        "Social Studies": {
+        "Social Studies (SST)": {
             "Topic 1: Geography of Africa, Pan-Africanism & Global Bodies": {
                 "Subtopics": "Climate/vegetation of Africa, decolonization, African Union (AU), United Nations (UN), global trade.",
                 "Learning Outcome": "Learner evaluates Africa's physical regions and international cooperation roles.",
@@ -408,22 +381,22 @@ TOPICAL_BREAKDOWN = {
                 "Values": "Global empathy, peace advocacy, civic pride."
             }
         },
-        "Kiswahili": {
-            "Topic 1: Barua Rasmi na Mawasiliano Fasaha": {
-                "Subtopics": "Formal letter format in Kiswahili, advanced sentence structures, oral fluency.",
-                "Learning Outcome": "Learner writes formal Kiswahili letters and communicates fluently for secondary entry.",
-                "Learning Aids": "Formal letter samples, conversational assessment prompts.",
-                "Life Skills": "Formal administrative communication, bilingual readiness.",
-                "Values": "Excellence, respect for regional languages."
-            }
-        },
-        "Religious Education": {
+        "Religious Education (CRE/IRE)": {
             "Topic 1: Moral Theology, Human Dignity & Social Responsibility": {
                 "Subtopics": "Ethical responses to modern challenges, human rights/dignity, comprehensive PLE revision.",
                 "Learning Outcome": "Learner synthesizes scriptural principles to uphold human dignity and civic duty.",
                 "Learning Aids": "Thematic PLE revision briefs, ethical dilemma discussions.",
                 "Life Skills": "Ethical discernment, holistic self-evaluation.",
                 "Values": "Moral integrity, spiritual maturity, justice."
+            }
+        },
+        "Creative Arts & Physical Education (CAPE)": {
+            "Topic 1: Leadership, Fitness Management & Entrepreneurial Crafts": {
+                "Subtopics": "Sports officiating, marketing crafts, and practical art exhibitions.",
+                "Learning Outcome": "Learner organizes sporting events and displays entrepreneurial art products.",
+                "Learning Aids": "Sports officiating equipment, exhibition boards.",
+                "Life Skills": "Sports leadership, event organization.",
+                "Values": "Enterprise, cultural leadership."
             }
         }
     }
@@ -632,8 +605,8 @@ if page == "Take Quiz":
 
 elif page == "Topical Breakdown":
     st.title("🗂️ NCDC Class-by-Class Topical Breakdown (P1–P7)")
-    st.caption("Integrated Learning Environment — Select Class, Subject & Topic")
-    st.write("Browse individual syllabus topics across all primary classes, along with subtopics, learning outcomes, learning aids, life skills, and values.")
+    st.caption("Integrated Learning Environment — Official NCDC Syllabus Structure")
+    st.write("Select a class to explore its subjects/learning areas and official syllabus topics.")
     
     col1, col2 = st.columns(2)
     with col1:
@@ -659,7 +632,7 @@ elif page == "Topical Breakdown":
 
 elif page == "NCDC Curriculum Overview":
     st.title("📚 NCDC Curriculum Overview")
-    st.caption("Integrated Learning Environment — Thematic (P1–P3) & Subject-Based (P4–P7) Cycles")
+    st.caption("Integrated Learning Environment — Thematic (P1–P3) & Subject-Based (P4–P7) Frameworks")
     
     cycle_choice = st.selectbox("Select Cycle", list(NCDC_CURRICULUM.keys()))
     
