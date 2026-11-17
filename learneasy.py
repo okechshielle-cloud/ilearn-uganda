@@ -10,7 +10,7 @@ TEACHER_PASSWORD = st.secrets.get("TEACHER_PASSWORD", "iLearnUganda123")
 CSV_FILE = "results.csv"
 SHEET_URL = st.secrets.get("SHEET_URL", "")
 
-# Full NCDC Primary Curriculum Framework (P1-P7 Booklets) - Strictly Primary Level
+# Full NCDC Primary Curriculum Framework (P1-P7 Booklets) - All Subjects Covered
 NCDC_COMPLETE_CURRICULUM = {
     "Lower Primary Cycle (P1–P3: Thematic Approach)": {
         "Primary One (P1) - 12 National Themes": [
@@ -56,71 +56,91 @@ NCDC_COMPLETE_CURRICULUM = {
             "12. Transition Foundations to Upper Primary"
         ]
     },
-    "Upper Primary Cycle (P4–P7: Subject-Based Framework)": {
+    "Upper Primary Cycle (P4–P7: Comprehensive Subject Syllabi)": {
         "Primary Four (P4) - Transition Year": {
-            "Set One (Core Academic Subjects)": [
-                "English Language (Comprehension, Grammar, Guided Writing)",
-                "Mathematics (12 Core NCDC Strands)",
-                "Integrated Science (Plant/Animal Life, Human Body, Weather)",
-                "Social Studies / SST (Map Reading, District Geography, History)",
-                "Religious Education (Christian / Islamic Religious Education)",
-                "Local Language Framework"
+            "1. Mathematics (12 Core NCDC Strands)": [
+                "Sets, Whole Numbers, Operations, Patterns & Sequences, Fractions, Geometry, Data Handling, Time, Integers, Money, Length/Mass/Capacity, Basic Algebra"
             ],
-            "Set Two (CAPE Framework)": [
-                "CAPE 1: Music, Dance and Drama (MDD)",
-                "CAPE 2: Physical Education (PE & Athletics)",
-                "CAPE 3: Art, Craft and Technology"
+            "2. English Language": [
+                "Nouns, pronouns, verbs, adjectives, tenses (Present Simple/Continuous), punctuation, composition writing, comprehension, guided letter writing"
+            ],
+            "3. Integrated Science": [
+                "Plant life (parts, uses), crop growing, human digestive system, types of teeth and dental care, weather instruments, common vectors and sanitation"
+            ],
+            "4. Social Studies (SST)": [
+                "Map reading (compass, scale, key), district physical features, vegetation and climate, economic activities, local administrative leadership"
+            ],
+            "5. Religious Education (CRE / IRE)": [
+                "Creation, covenants (Noah/Abraham), major prophets, pillars of faith/worship, moral integrity, honesty, and service to the community"
+            ],
+            "6. Creative Arts & Physical Education (CAPE)": [
+                "CAPE 1 (Music, Dance & Drama), CAPE 2 (Athletics & ball games rules), CAPE 3 (Color mixing, paper craft, and modelling)"
             ]
         },
         "Primary Five (P5)": {
-            "Set One (Core Academic Subjects)": [
-                "English Language (Advanced Tenses, Poetry, Debates)",
-                "Mathematics (Integers, Percentages, Geometry, Basic Algebra)",
-                "Integrated Science (Matter, Heat, Circulatory/Respiratory Systems)",
-                "Social Studies / SST (Uganda's Physical Geography, Kingdoms, Constitution)",
-                "Religious Education (CRE / IRE - Teachings, Worship, Ethics)",
-                "Local Language Framework"
+            "1. Mathematics (12 Core NCDC Strands)": [
+                "Advanced Sets, Large Numbers, BODMAS, Prime/Composite Numbers, Fractions/Decimals/Percentages, Angles & Polygons, Statistics (Mean/Median/Mode), 24-hour Clock & Speed, Integers, Profit & Loss, Area & Volume, Simple Equations"
             ],
-            "Set Two (CAPE Framework)": [
-                "CAPE 1: Music, Dance and Drama",
-                "CAPE 2: Physical Education & Sports Tactics",
-                "CAPE 3: Functional Craft & Pottery"
+            "2. English Language": [
+                "Past continuous & future tenses, conjunctions (because, although), relative clauses, poetry analysis, summary writing, formal speech writing"
+            ],
+            "3. Integrated Science": [
+                "States of matter, heat transfer (conduction/convection/radiation), human circulatory and respiratory systems, primary health care (PHC), immunization"
+            ],
+            "4. Social Studies (SST)": [
+                "Uganda's physical geography, relief zones, drainage systems, ethnic migrations (Bantu, Nilotics, Hamites), early African kingdoms, the Constitution"
+            ],
+            "5. Religious Education (CRE / IRE)": [
+                "Life and ministry of Jesus Christ / Prophet Muhammad, compassion, justice, worship practices, peer pressure, and decision making"
+            ],
+            "6. Creative Arts & Physical Education (CAPE)": [
+                "CAPE 1 (Traditional folk songs & dance formations), CAPE 2 (Gymnastics & endurance), CAPE 3 (Pottery, weaving, and functional craft)"
             ]
         },
         "Primary Six (P6)": {
-            "Set One (Core Academic Subjects)": [
-                "English Language (Active/Passive Voice, Direct/Indirect Speech)",
-                "Mathematics (Proportions, Speed/Distance/Time, Simple Interest, Statistics)",
-                "Integrated Science (Electricity, Magnetism, Simple Machines, Reproduction)",
-                "Social Studies / SST (East African Resources, Scramble & Partition, Independence)",
-                "Religious Education (CRE / IRE - Faith in Action, Leadership, Family Values)",
-                "Local Language Framework"
+            "1. Mathematics (12 Core NCDC Strands)": [
+                "Venn diagram word problems, Place values in millions & Bases, Advanced operations, Fibonacci & patterns, Reciprocals & percentages, Parallel lines & circle properties, Pie charts, Travel graphs, Cartesian coordinates, Foreign exchange & utility bills, Cylinders, Brackets & factorization"
             ],
-            "Set Two (CAPE Framework)": [
-                "CAPE 1: Choral Performance & Drama",
-                "CAPE 2: First-Aid Safety & Sports Officiating",
-                "CAPE 3: Advanced Sculpture & Textile Design"
+            "2. English Language": [
+                "Active and passive voice, direct and indirect (reported) speech, conditional clauses (First, Second, Third), formal report writing, meeting minutes"
+            ],
+            "3. Integrated Science": [
+                "Electricity and magnetism, simple machines (levers, inclined planes, pulleys), friction, mammalian reproduction, adolescence, personal hygiene, immunity"
+            ],
+            "4. Social Studies (SST)": [
+                "East African physical resources, European scramble and partition, resistance movements, road to independence, regional cooperation"
+            ],
+            "5. Religious Education (CRE / IRE)": [
+                "Faith in action, leadership models, Christian/Islamic family values, work ethics, environmental stewardship, conflict resolution"
+            ],
+            "6. Creative Arts & Physical Education (CAPE)": [
+                "CAPE 1 (Choral performance & drama scripts), CAPE 2 (First-aid safety & sports officiating), CAPE 3 (Sculpture, tie-and-dye, and textile design)"
             ]
         },
         "Primary Seven (P7) - PLE Examinable Class": {
-            "Set One (Core Examinable Subjects)": [
-                "English Language (PLE Revision, Phrasal Verbs, Idioms, Summaries)",
-                "Mathematics (Advanced Strands: Set Theory, Bases, Geometric Construction)",
-                "Integrated Science (Excretory/Nervous Systems, Agriculture, Environment)",
-                "Social Studies / SST (Africa Geography, Pan-Africanism, UN, AU, Governance)",
-                "Religious Education (CRE / IRE - Moral Theology, Human Dignity)",
-                "Local Language Framework"
+            "1. Mathematics (12 Core NCDC Strands Mastery)": [
+                "3-Set Venn diagrams, Standard form & non-decimal bases, PLE past paper arithmetic, Advanced progressions, Recurring decimals & commercial math, Compass construction of angles/triangles, Probability & data interpretation, Average speed for multi-stage journeys, Inequalities, Advanced profit/loss & simple interest, Composite area & volume, Linear equations"
             ],
-            "Set Two (CAPE Framework)": [
-                "CAPE 1: Advanced MDD Productions",
-                "CAPE 2: Recreational Sport Management & Fitness",
-                "CAPE 3: Entrepreneurial Craft Exhibitions"
+            "2. English Language": [
+                "PLE grammar consolidation, phrasal verbs, idioms, proverb meanings, passage summary compression, and timed exam revision"
+            ],
+            "3. Integrated Science": [
+                "Excretory system (kidneys, skin), nervous system (brain, reflex arc), agricultural science, livestock & poultry management, environmental conservation"
+            ],
+            "4. Social Studies (SST)": [
+                "Continental geography of Africa, decolonization struggles, African Union (AU), United Nations (UN), international trade, and governance"
+            ],
+            "5. Religious Education (CRE / IRE)": [
+                "Moral theology, human dignity, social responsibility, ethical responses to modern challenges, and holistic PLE exam preparation"
+            ],
+            "6. Creative Arts & Physical Education (CAPE)": [
+                "CAPE 1 (Advanced MDD stage productions), CAPE 2 (Recreational sport management & fitness), CAPE 3 (Entrepreneurial craft exhibitions & marketing)"
             ]
         }
     }
 }
 
-# Official NCDC Mathematics 12 Core Strands (Primary Level Accurate)
+# Official NCDC Mathematics 12 Core Strands Reference
 NCDC_MATH_STRANDS = [
     "1. Set Concepts (Venn Diagrams, Subsets, Probability)",
     "2. Whole Numbers (Place Values, Roman Numerals, Non-Decimal Bases)",
@@ -335,20 +355,13 @@ elif page == "NCDC Official Syllabus Structure":
     
     class_info = NCDC_COMPLETE_CURRICULUM[cycle_sel][class_sel]
     if isinstance(class_info, dict):
-        for subject_group, details in class_info.items():
-            st.markdown(f"### **{subject_group}**")
-            for item in details:
-                st.write(f"- {item}")
+        for subject_name, subject_topics in class_info.items():
+            st.markdown(f"### **{subject_name}**")
+            for topic in subject_topics:
+                st.write(f"- {topic}")
     elif isinstance(class_info, list):
         for theme in class_info:
             st.write(f"- {theme}")
-            
-    if "P4" in class_sel or "P5" in class_sel or "P6" in class_sel or "P7" in class_sel:
-        st.markdown("---")
-        st.subheader("📐 Official NCDC Mathematics 12 Core Strands")
-        st.write("Mathematics across upper primary is standardized around these 12 core NCDC strands:")
-        for strand in NCDC_MATH_STRANDS:
-            st.write(f"✅ {strand}")
 
 elif page == "Teacher Dashboard":
     st.title("iLearn-Uganda Teacher Dashboard - Locked")
