@@ -10,7 +10,7 @@ TEACHER_PASSWORD = st.secrets.get("TEACHER_PASSWORD", "iLearnUganda123")
 CSV_FILE = "results.csv"
 SHEET_URL = st.secrets.get("SHEET_URL", "")
 
-# Full NCDC Primary Curriculum Framework (P1-P7 Booklets)
+# Full NCDC Primary Curriculum Framework (P1-P7 Booklets) - Strictly Primary Level
 NCDC_COMPLETE_CURRICULUM = {
     "Lower Primary Cycle (P1–P3: Thematic Approach)": {
         "Primary One (P1) - 12 National Themes": [
@@ -75,7 +75,7 @@ NCDC_COMPLETE_CURRICULUM = {
         "Primary Five (P5)": {
             "Set One (Core Academic Subjects)": [
                 "English Language (Advanced Tenses, Poetry, Debates)",
-                "Mathematics (Integers, Percentages, Geometry, Algebra)",
+                "Mathematics (Integers, Percentages, Geometry, Basic Algebra)",
                 "Integrated Science (Matter, Heat, Circulatory/Respiratory Systems)",
                 "Social Studies / SST (Uganda's Physical Geography, Kingdoms, Constitution)",
                 "Religious Education (CRE / IRE - Teachings, Worship, Ethics)",
@@ -120,7 +120,7 @@ NCDC_COMPLETE_CURRICULUM = {
     }
 }
 
-# Official NCDC Mathematics 12 Core Strands Database
+# Official NCDC Mathematics 12 Core Strands (Primary Level Accurate)
 NCDC_MATH_STRANDS = [
     "1. Set Concepts (Venn Diagrams, Subsets, Probability)",
     "2. Whole Numbers (Place Values, Roman Numerals, Non-Decimal Bases)",
@@ -131,9 +131,9 @@ NCDC_MATH_STRANDS = [
     "7. Data Handling (Statistics, Mean, Median, Mode, Pie Charts, Bar Graphs)",
     "8. Time (Speed, Distance, Timetables, Average Speed, Travel Graphs)",
     "9. Integers (Number Line Operations, Cartesian Plane Coordinates)",
-    "10. Money (Profit, Loss, Discount, Simple/Compound Interest, Utility Bills)",
-    "11. Length, Mass and Capacity (Perimeter, Area, Volume, Surface Area, Density)",
-    "12. Algebra (Linear Equations, Inequalities, Simultaneous Equations)"
+    "10. Money (Profit, Loss, Discount, Simple Interest, Utility Bills)",
+    "11. Length, Mass and Capacity (Perimeter, Area, Volume, Surface Area)",
+    "12. Algebra (Linear Equations, Inequalities)"
 ]
 
 CLASS_QUESTIONS = {
