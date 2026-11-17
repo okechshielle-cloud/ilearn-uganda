@@ -10,7 +10,7 @@ TEACHER_PASSWORD = st.secrets.get("TEACHER_PASSWORD", "LearnEasy123")
 CSV_FILE = "results.csv"
 SHEET_URL = st.secrets.get("SHEET_URL", "")
 
-# Integrated NCDC Curriculum Dataset (P1-P7)
+# Complete Integrated NCDC Curriculum Dataset (P1-P7 across all components)
 NCDC_CURRICULUM = {
     "English": {
         "P1": {
@@ -273,7 +273,6 @@ NCDC_CURRICULUM = {
     }
 }
 
-# Class-Specific Question Banks (P1 to P7)
 CLASS_QUESTIONS = {
     "P1": [
         ("Q1. [Maths] What is 2 + 3?", ["4", "5", "6", "3"], "5", "2 plus 3 equals 5."),
@@ -291,7 +290,7 @@ CLASS_QUESTIONS = {
         ("Q1. [Maths] What is 6 multiplied by 4?", ["20", "24", "18", "28"], "24", "6 x 4 = 24."),
         ("Q2. [Science] Which soil type holds the most water?", ["Sandy soil", "Loam soil", "Clay soil", "Topsoil"], "Clay soil", "Clay soil has fine particles that hold water best."),
         ("Q3. [SST] What is the title of the political head of a sub-county?", ["LC III Chairperson", "LC I Chairperson", "RDC", "Mayor"], "LC III Chairperson", "An LC III Chairperson heads a sub-county."),
-        ("Q4. [English] Fill in the gap: She ........ to school every day walk.", ["walk", "walks", "walking", "walked"], "walks", "Third-person singular uses 'walks'."),
+        ("Q4. [English] Fill in the gap: She ........ to school every day.", ["walk", "walks", "walking", "walked"], "walks", "Third-person singular uses 'walks'."),
     ],
     "P4": [
         ("Q1. [Maths] Express 1/2 as a percentage.", ["25%", "50%", "75%", "100%"], "50%", "1/2 x 100% = 50%."),
@@ -393,7 +392,6 @@ if page == "Take Quiz":
     school = st.text_input("Your School", key="school")
     learner_class = st.selectbox("Your Class", [f"P{i}" for i in range(1, 8)], key="learner_class")
     
-    # Load class-specific questions
     questions = CLASS_QUESTIONS.get(learner_class, [])
     
     st.markdown(f"### Assessment for {learner_class}")
@@ -472,7 +470,7 @@ if page == "Take Quiz":
 
 elif page == "NCDC Curriculum Explorer":
     st.title("📚 NCDC Primary Curriculum Explorer")
-    st.write("Explore official learning outcomes from Primary One (P1) to Primary Seven (P7) across all subjects including Kiswahili, Religious Education, and Creative Arts & PE.")
+    st.write("Explore official learning outcomes from Primary One (P1) to Primary Seven (P7) across all core subjects, Kiswahili, Religious Education, and Creative Arts & PE.")
     
     col1, col2 = st.columns(2)
     with col1:
@@ -521,47 +519,4 @@ elif page == "Teacher Dashboard":
             st.session_state.results = load_results()
             st.rerun()
             
-    results = st.session_state.get("results", [])
-    st.write(f"Total attempts: {len(results)}")
-    
-    if len(results) == 0:
-        st.info("No results yet. Let a child take the quiz first.")
-    else:
-        df = pd.DataFrame(results)
-        
-        # Class Filter for Teacher View
-        if "Class" in df.columns:
-            all_classes = ["All"] + sorted(df["Class"].unique().tolist())
-            selected_filter_class = st.selectbox("Filter Leaderboard by Class", all_classes)
-            if selected_filter_class != "All":
-                df = df[df["Class"] == selected_filter_class]
-
-        df = df.sort_values(by="Percentage", ascending=False).reset_index(drop=True)
-        medals = []
-        for idx in range(len(df)):
-            if idx == 0:
-                medals.append("🥇 Gold")
-            elif idx == 1:
-                medals.append("🥈 Silver")
-            elif idx == 2:
-                medals.append("🥉 Bronze")
-            else:
-                medals.append("")
-        df.insert(0, "Medal", medals)
-        df.insert(0, "Rank", range(1, len(df) + 1))
-        
-        st.subheader("🏆 Top 3 Medal Winners")
-        for idx in range(min(3, len(df))):
-            row = df.iloc[idx]
-            if idx == 0:
-                st.success(f"🥇 GOLD - {row['Name']} ({row.get('Class', 'N/A')}) - {row['School']} - {row['Score']} = {row['Percentage']}%")
-            elif idx == 1:
-                st.info(f"🥈 SILVER - {row['Name']} ({row.get('Class', 'N/A')}) - {row['School']} - {row['Score']} = {row['Percentage']}%")
-            elif idx == 2:
-                st.warning(f"🥉 BRONZE - {row['Name']} ({row.get('Class', 'N/A')}) - {row['School']} - {row['Score']} = {row['Percentage']}%")
-                
-        st.subheader("Learner Leaderboard")
-        st.dataframe(df)
-        
-        csv = df.to_csv(index=False).encode("utf-8")
-        st.download_button("Download Results CSV", csv, "learneasy_results.csv", "text/csv")
+    results = st.session_state
