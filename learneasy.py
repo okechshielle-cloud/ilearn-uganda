@@ -4,271 +4,67 @@ import os
 import requests
 import json
 
-st.set_page_config(page_title="LearnEasy", layout="centered")
+st.set_page_config(page_title="iLearn-Uganda", layout="centered")
 
-TEACHER_PASSWORD = st.secrets.get("TEACHER_PASSWORD", "LearnEasy123")
+TEACHER_PASSWORD = st.secrets.get("TEACHER_PASSWORD", "iLearnUganda123")
 CSV_FILE = "results.csv"
 SHEET_URL = st.secrets.get("SHEET_URL", "")
 
-# Complete Integrated NCDC Curriculum Dataset (P1-P7 across all components)
+# Official NCDC Curriculum Dataset structured by cycles and subjects/themes
 NCDC_CURRICULUM = {
-    "English": {
+    "Lower Primary (Cycle 1: Thematic Approach P1-P3)": {
         "P1": {
-            "term_1": "Develop basic listening and speaking skills using simple greetings, commands, and classroom vocabulary.",
-            "term_2": "Identify common objects, family members, and body parts in spoken English; begin recognizing letter sounds.",
-            "term_3": "Construct simple oral sentences and read basic two- and three-letter words."
+            "Term 1 (Themes: Our School / Our Home)": "Develop basic listening, speaking, reading, and writing literacy in a familiar local language; acquire early numeracy (counting 1-10) and personal hygiene values.",
+            "Term 2 (Themes: Our Community / Human Body)": "Recognize immediate community roles, practice health and sanitation habits, and extend numeracy (addition/subtraction up to 20).",
+            "Term 3 (Themes: Environment & Animals)": "Identify plants, domestic and wild animals in the local environment; build early reading sentence structures and safety awareness."
         },
         "P2": {
-            "term_1": "Read short, simple sentences and build vocabulary around food, home, and school routines.",
-            "term_2": "Use basic prepositions, plurals, and simple present tense in oral and written descriptions of weather and transport.",
-            "term_3": "Write short guided sentences and comprehend brief, illustrated stories."
+            "Term 1 (Themes: Food & Nutrition)": "Consolidate foundational literacy fluency, classify local food sources, and perform addition/subtraction up to 50 with regrouping aids.",
+            "Term 2 (Themes: Transport, Communication & Weather)": "Identify major local transport/communication systems and describe weather changes affecting daily human clothing and activities.",
+            "Term 3 (Themes: Peace, Security & Changes)": "Demonstrate cooperative living, conflict resolution, and practical measurements using non-standard units."
         },
         "P3": {
-            "term_1": "Read and comprehend short paragraphs; apply basic punctuation (capital letters, full stops, question marks).",
-            "term_2": "Expand vocabulary on community, health, and environment; write simple descriptive sentences.",
-            "term_3": "Demonstrate foundational reading fluency and written grammar readiness for upper-primary English-medium instruction."
-        },
-        "P4": {
-            "term_1": "Transition fully to English as the medium of instruction; master nouns, pronouns, and simple tenses.",
-            "term_2": "Construct coherent paragraphs, guided compositions, and informal/formal letters.",
-            "term_3": "Comprehend longer passages, extract main ideas, and use adjectives and adverbs accurately."
-        },
-        "P5": {
-            "term_1": "Apply complex tenses, conjunctions, and relative clauses in structured composition writing.",
-            "term_2": "Analyze short stories and poems for vocabulary, tone, and comprehension.",
-            "term_3": "Engage in structured debates, formal speeches, and summary writing."
-        },
-        "P6": {
-            "term_1": "Master active and passive voice, direct and indirect speech, and conditional sentences.",
-            "term_2": "Write persuasive essays, formal reports, and functional documents (notices, minutes).",
-            "term_3": "Demonstrate advanced reading comprehension and critical inference across varied texts."
-        },
-        "P7": {
-            "term_1": "Consolidate all primary grammar, vocabulary, and comprehension skills for national assessment standards.",
-            "term_2": "Refine analytical writing, editing, and rapid comprehension under timed conditions.",
-            "term_3": "Demonstrate full linguistic competence for Primary Leaving Examination (PLE) and secondary school entry."
+            "Term 1 (Themes: Our Sub-county / Division)": "Map out physical features and significant landmarks within the sub-county; read graded paragraphs and perform multiplication/division foundations.",
+            "Term 2 (Themes: Energy, Water & Sanitation)": "Identify sources/safe uses of energy and water; apply basic scientific inquiry properties to air, soil, and water.",
+            "Term 3 (Themes: Transition Foundations)": "Consolidate all literacy and numeracy required for transition into upper-primary English-medium instruction; express creative arts and physical coordination."
         }
     },
-    "Mathematics": {
-        "P1": {
-            "term_1": "Sort, match, count, and write whole numbers from 1 to 10 using concrete objects.",
-            "term_2": "Perform basic addition and subtraction of numbers up to 20; identify basic 2D shapes.",
-            "term_3": "Count up to 99, compare lengths and weights using non-standard units, and recognize local currency notes/coins."
-        },
-        "P2": {
-            "term_1": "Understand place value (tens and ones) and perform addition and subtraction up to 50 with regrouping.",
-            "term_2": "Introduce basic multiplication as repeated addition and division as equal sharing.",
-            "term_3": "Solve practical word problems involving length, mass, capacity, and telling time by the hour/half-hour."
-        },
-        "P3": {
-            "term_1": "Work with numbers up to 1,000; master multiplication tables and basic division facts.",
-            "term_2": "Introduce simple fractions (halves, quarters, thirds) and standard metric units (meters, kilograms, liters).",
-            "term_3": "Apply arithmetic operations to money transactions, calendars, and basic pictographs."
-        },
+    "Upper Primary (Cycle 2 & 3: Subject-Based P4-P7)": {
         "P4": {
-            "term_1": "Master place values up to ten thousands; perform operations with equivalent fractions and decimals.",
-            "term_2": "Calculate perimeter and area of simple rectangles and squares; convert standard metric units.",
-            "term_3": "Solve multi-step word problems involving money, time intervals, and basic geometric angles."
+            "English": "Transition fully to English as the medium of instruction; master nouns, pronouns, guided compositions, and letter-writing.",
+            "Mathematics": "Master place values up to ten thousands, operations with fractions, decimals, and metric units of measurement.",
+            "Integrated Science": "Investigate plant anatomy, crop growing, the human digestive system, teeth structures, and weather measurement instruments.",
+            "Social Studies": "Use map-reading skills (compass directions, keys, scale) to study the local district history, physical geography, and governance.",
+            "Religious Education": "Study sacred scriptures (Bible/Quran), foundational covenants, and moral decision-making for community service.",
+            "Kiswahili": "Master phonetic spelling, noun classes (M-WA, KI-VI), basic present tense (na-), and short graded reading passages.",
+            "Creative Arts & PE": "Learn structured rules and techniques for major sports, visual arts (color mixing, shapes), and traditional dances."
         },
         "P5": {
-            "term_1": "Perform operations with integers, decimals, percentages, and basic algebraic expressions.",
-            "term_2": "Calculate area, perimeter, and volume of standard shapes; interpret bar graphs and line graphs.",
-            "term_3": "Apply ratios, averages, and geometric construction skills using a compass and protractor."
+            "English": "Apply complex tenses, conjunctions, relative clauses, poem analysis, and structured debate/speech delivery.",
+            "Mathematics": "Perform operations with integers, decimals, percentages, area, volume, and basic algebraic expressions.",
+            "Integrated Science": "Explore states of matter, heat transfer, human circulatory/respiratory systems, and primary health care.",
+            "Social Studies": "Examine the physical geography, climate, vegetation zones, pre-colonial history, and governance of Uganda.",
+            "Religious Education": "Analyze the life and teachings of Jesus Christ (CRE) or Prophet Muhammad (IRE) regarding justice, compassion, and discipline.",
+            "Kiswahili": "Apply past (li-), present (na-), and future (ta-) tenses; expand vocabulary on markets, travel, and East African ties.",
+            "Creative Arts & PE": "Develop intermediate sports tactics, sportsmanship, functional craft designs, and traditional musical arrangements."
         },
         "P6": {
-            "term_1": "Solve problems involving proportions, speed, distance, time, and simple interest.",
-            "term_2": "Master algebraic equations, inequalities, and advanced data interpretation (pie charts, mean, median, mode).",
-            "term_3": "Apply geometry theorems (angles on parallel lines, triangles, circles) and scale drawing."
+            "English": "Master active/passive voice, direct/indirect speech, conditional sentences, persuasive essays, and formal report writing.",
+            "Mathematics": "Solve problems involving proportions, speed, distance, time, simple interest, and advanced data interpretation (pie charts).",
+            "Integrated Science": "Examine electricity, magnetism, simple machines, friction, mammalian reproduction, adolescence, and immunity.",
+            "Social Studies": "Examine the physical geography, resources, colonial administration, and struggles for independence in East Africa.",
+            "Religious Education": "Study faith in action, leadership, family values, work ethics, and reconciliation from a religious perspective.",
+            "Kiswahili": "Master additional noun classes, adjectives, prepositions, negation forms, and summaries of short stories or dialogues.",
+            "Creative Arts & PE": "Refine athletic skills, first-aid safety practices, advanced sculpture projects, and civic-themed drama pieces."
         },
         "P7": {
-            "term_1": "Consolidate arithmetic, algebra, geometry, and set theory across upper-primary competencies.",
-            "term_2": "Solve complex, multi-concept application problems and interpret statistical datasets.",
-            "term_3": "Demonstrate comprehensive mathematical problem-solving readiness for PLE."
-        }
-    },
-    "Integrated Science": {
-        "P1": {
-            "term_1": "Identify parts of the human body and practice basic personal hygiene (handwashing, dental care).",
-            "term_2": "Recognize common foods, clean water sources, and basic sanitation habits at home and school.",
-            "term_3": "Observe and name common local plants, domestic animals, and basic weather conditions."
-        },
-        "P2": {
-            "term_1": "Classify foods into basic groups and understand safe food handling and storage.",
-            "term_2": "Explore basic properties of air, water, and soil through simple observation.",
-            "term_3": "Identify common accidents at home/school and practice basic safety and first-aid awareness."
-        },
-        "P3": {
-            "term_1": "Investigate soil types, plant growth requirements, and local ecosystems.",
-            "term_2": "Identify common vectors, communicable diseases, and methods of disease prevention.",
-            "term_3": "Explore sources of light, heat, and sound energy in the immediate environment."
-        },
-        "P4": {
-            "term_1": "Examine plant anatomy (roots, stems, leaves, flowers) and crop growing practices.",
-            "term_2": "Study the human digestive system, teeth structure, and nutritional deficiency diseases.",
-            "term_3": "Investigate weather elements, measurement instruments, and basic environmental conservation."
-        },
-        "P5": {
-            "term_1": "Explore states of matter, heat transfer, and basic poultry/livestock management.",
-            "term_2": "Study human body systems (circulatory and respiratory) and primary health care practices.",
-            "term_3": "Investigate soil conservation, immunization, and prevention of common tropical diseases."
-        },
-        "P6": {
-            "term_1": "Examine electricity, magnetism, simple machines, and friction.",
-            "term_2": "Study mammalian reproduction, adolescence, reproductive health, and immunity.",
-            "term_3": "Analyze sound and light energy, water purification, and environmental degradation."
-        },
-        "P7": {
-            "term_1": "Consolidate human anatomy (excretory, nervous, muscular-skeletal systems) and energy resources.",
-            "term_2": "Apply scientific inquiry to agriculture, population health, and sustainable resource management.",
-            "term_3": "Demonstrate mastery of practical science concepts and health education for PLE."
-        }
-    },
-    "Social Studies": {
-        "P1": {
-            "term_1": "Identify family members, home roles, and school rules and leadership.",
-            "term_2": "Recognize immediate neighborhood landmarks, community helpers, and basic needs.",
-            "term_3": "Practice peaceful coexistence, sharing, and respect for elders and peers."
-        },
-        "P2": {
-            "term_1": "Describe local community services (health centers, markets, places of worship).",
-            "term_2": "Identify local means of transport and communication and their importance.",
-            "term_3": "Understand basic child rights, responsibilities, and community safety rules."
-        },
-        "P3": {
-            "term_1": "Locate physical features, administrative units, and economic activities in the local sub-county/division.",
-            "term_2": "Examine cultural traditions, customs, and basic resource management in the community.",
-            "term_3": "Understand local leadership structures and civic responsibilities."
-        },
-        "P4": {
-            "term_1": "Use map-reading skills (compass direction, key, scale) to study the local district.",
-            "term_2": "Examine the physical geography, climate, vegetation, and early history of the district.",
-            "term_3": "Analyze social services, district governance, and economic activities."
-        },
-        "P5": {
-            "term_1": "Study the physical geography, climate, and vegetation zones of Uganda.",
-            "term_2": "Examine pre-colonial Uganda, ethnic migrations, early kingdoms, and foreign influence.",
-            "term_3": "Analyze Uganda's governance, constitution, citizenship, and post-independence development."
-        },
-        "P6": {
-            "term_1": "Examine the physical geography, resources, and economic development of East Africa.",
-            "term_2": "Analyze colonial administration, resistance movements, and struggles for independence in East Africa.",
-            "term_3": "Evaluate regional cooperation (East African Community), trade, and environmental management."
-        },
-        "P7": {
-            "term_1": "Study the physical geography, climate, and major economic regions of Africa.",
-            "term_2": "Analyze Pan-Africanism, decolonization, governance challenges, and international organizations (AU, UN).",
-            "term_3": "Synthesize geographical, historical, and civic competencies for PLE."
-        }
-    },
-    "Religious Education": {
-        "P1": {
-            "term_1": "Recognize God/Allah as the Creator and appreciate the gift of life, family, and nature.",
-            "term_2": "Practice basic values of love, obedience, honesty, and respect at home and school.",
-            "term_3": "Participate in simple prayers, songs, and stories about kindness and sharing."
-        },
-        "P2": {
-            "term_1": "Understand the importance of worship, prayer, and sacred spaces (Church/Mosque).",
-            "term_2": "Learn foundational stories of faith, forgiveness, and helping those in need.",
-            "term_3": "Demonstrate fairness, truthfulness, and peaceful play with peers."
-        },
-        "P3": {
-            "term_1": "Explore major religious festivals, traditions, and community celebrations.",
-            "term_2": "Understand moral responsibility, stewardship of the environment, and care for the vulnerable.",
-            "term_3": "Identify key religious leaders and early foundational teachings (CRE/IRE)."
-        },
-        "P4": {
-            "term_1": "Study sacred scriptures (Bible/Quran) and foundational covenants/prophetic traditions.",
-            "term_2": "Examine moral decision-making, personal integrity, and service to the community.",
-            "term_3": "Appreciate religious diversity and practice tolerance and peaceful coexistence."
-        },
-        "P5": {
-            "term_1": "Analyze the life and teachings of Jesus Christ (CRE) or Prophet Muhammad (IRE) regarding justice and compassion.",
-            "term_2": "Explore worship practices, sacraments/pillars of faith, and spiritual discipline.",
-            "term_3": "Apply ethical principles to contemporary issues such as peer pressure and honesty."
-        },
-        "P6": {
-            "term_1": "Examine faith in action, leadership, and social responsibility in the modern community.",
-            "term_2": "Study marriage, family values, work ethics, and stewardship of resources from a religious perspective.",
-            "term_3": "Analyze conflict resolution, reconciliation, and interfaith harmony."
-        },
-        "P7": {
-            "term_1": "Consolidate scriptural knowledge, moral theology/ethics, and civic responsibility.",
-            "term_2": "Reflect on personal values, human dignity, and ethical responses to societal challenges.",
-            "term_3": "Demonstrate comprehensive mastery of CRE/IRE competencies for PLE."
-        }
-    },
-    "Kiswahili": {
-        "P1": {
-            "term_1": "Introduced orally through songs, rhymes, and basic greetings (e.g., Shikamoo, Habari).",
-            "term_2": "Recognize and respond to simple classroom instructions and polite expressions.",
-            "term_3": "Name common family members, numbers 1-10, and everyday classroom objects orally."
-        },
-        "P2": {
-            "term_1": "Expand oral vocabulary for body parts, domestic animals, and basic foods.",
-            "term_2": "Form simple two- and three-word oral phrases using basic nouns and verbs.",
-            "term_3": "Participate in short conversational dialogues and action songs."
-        },
-        "P3": {
-            "term_1": "Transition from oral listening/speaking to recognizing Kiswahili vowels, syllables, and simple words.",
-            "term_2": "Read and write basic words and short simple sentences about home and school.",
-            "term_3": "Count up to 50 and describe days of the week and simple daily activities."
-        },
-        "P4": {
-            "term_1": "Master Kiswahili phonetic spelling, noun classes (M-WA, KI-VI), and basic present tense (na-).",
-            "term_2": "Read short graded passages and answer basic comprehension questions.",
-            "term_3": "Write simple guided sentences describing people, places, and weather."
-        },
-        "P5": {
-            "term_1": "Apply past (li-), present (na-), and future (ta-) tenses in spoken and written sentences.",
-            "term_2": "Expand vocabulary on travel, markets, health, and East African cultural ties.",
-            "term_3": "Write short paragraphs and engage in structured conversational role-plays."
-        },
-        "P6": {
-            "term_1": "Master additional noun classes, adjectives, prepositions, and negation forms.",
-            "term_2": "Read and summarize short stories, dialogues, and informational texts.",
-            "term_3": "Write informal letters and descriptive compositions using accurate grammar."
-        },
-        "P7": {
-            "term_1": "Consolidate upper-primary grammar, vocabulary, and comprehension across thematic topics.",
-            "term_2": "Demonstrate fluent oral communication and structured essay writing for regional integration.",
-            "term_3": "Exhibit functional proficiency in listening, speaking, reading, and writing Kiswahili."
-        }
-    },
-    "Creative Arts & PE": {
-        "P1": {
-            "term_1": "Develop gross motor skills through running, jumping, balancing, and rhythmic movement.",
-            "term_2": "Explore basic drawing, coloring, modeling with clay, and singing simple local songs.",
-            "term_3": "Participate in cooperative group games and simple traditional dances."
-        },
-        "P2": {
-            "term_1": "Improve hand-eye coordination through ball games, skipping, and basic gymnastics.",
-            "term_2": "Create simple crafts using locally available materials (fibers, paper, clay).",
-            "term_3": "Perform rhythmic songs, storytelling, and dramatization."
-        },
-        "P3": {
-            "term_1": "Practice foundational athletics, team game rules, and personal physical fitness.",
-            "term_2": "Develop basic weaving, printing, and musical rhythm patterns.",
-            "term_3": "Participate in school cultural performances and cooperative sports."
-        },
-        "P4": {
-            "term_1": "Learn structured rules and techniques for major sports (football, netball, athletics).",
-            "term_2": "Explore elements of visual art (line, shape, texture, color mixing) and basic music notation.",
-            "term_3": "Perform traditional Ugandan dances and dramatic skits on social themes."
-        },
-        "P5": {
-            "term_1": "Develop intermediate sports tactics, physical endurance, and sportsmanship.",
-            "term_2": "Design functional crafts, posters, and decorative patterns using local resources.",
-            "term_3": "Compose simple songs, play basic traditional instruments, and perform choral pieces."
-        },
-        "P6": {
-            "term_1": "Refine athletic and team sport skills alongside first-aid and sports safety practices.",
-            "term_2": "Produce advanced visual art projects, sculpture, and textile designs.",
-            "term_3": "Direct and perform drama and music pieces addressing community health and civic values."
-        },
-        "P7": {
-            "term_1": "Demonstrate leadership, teamwork, and fitness management in competitive and recreational sports.",
-            "term_2": "Integrate entrepreneurial skills into craft production and performing arts.",
-            "term_3": "Exhibit well-rounded physical, creative, and cultural competencies upon primary completion."
+            "English": "Consolidate all primary grammar, vocabulary, editing, and rapid comprehension under timed conditions for PLE readiness.",
+            "Mathematics": "Consolidate arithmetic, algebra, geometry, and set theory to solve complex multi-concept application problems.",
+            "Integrated Science": "Master human anatomy (excretory, nervous systems), agricultural applications, population health, and sustainable resource management.",
+            "Social Studies": "Analyze Pan-Africanism, decolonization, governance challenges, and international organizations (AU, UN) across Africa.",
+            "Religious Education": "Synthesize scriptural knowledge, moral theology, ethical responses to societal challenges, and human dignity for PLE.",
+            "Kiswahili": "Demonstrate fluent oral communication, structured essay writing, and functional proficiency for regional integration.",
+            "Creative Arts & PE": "Demonstrate leadership, fitness management, entrepreneurial craft production, and well-rounded cultural competencies."
         }
     }
 }
@@ -373,10 +169,13 @@ if "last_submit_key" not in st.session_state:
 if "dashboard_unlocked" not in st.session_state:
     st.session_state.dashboard_unlocked = False
 
+st.sidebar.title("iLearn-Uganda")
+st.sidebar.caption("Integrated Learning Environment")
 page = st.sidebar.selectbox("Go to", ["Take Quiz", "NCDC Curriculum Explorer", "Teacher Dashboard"])
 
 if page == "Take Quiz":
-    st.title("LearnEasy Quiz")
+    st.title("iLearn-Uganda Quiz")
+    st.caption("Integrated Learning Environment — Primary Assessment")
     st.write("Select your class, answer the questions for your level, then click Submit.")
     
     if st.button("Next Child - Clear for New Learner"):
@@ -469,29 +268,31 @@ if page == "Take Quiz":
                     st.write("---")
 
 elif page == "NCDC Curriculum Explorer":
-    st.title("📚 NCDC Primary Curriculum Explorer")
-    st.write("Explore official learning outcomes from Primary One (P1) to Primary Seven (P7) across all core subjects, Kiswahili, Religious Education, and Creative Arts & PE.")
+    st.title("📚 iLearn-Uganda Curriculum Explorer")
+    st.caption("Integrated Learning Environment — Official NCDC Framework")
+    st.write("Explore learning outcomes mirroring NCDC frameworks: Lower Primary Thematic Approach (P1–P3) and Upper Primary Subject-Based Structure (P4–P7).")
     
-    col1, col2 = st.columns(2)
-    with col1:
-        selected_subject = st.selectbox("Select Subject", list(NCDC_CURRICULUM.keys()))
-    with col2:
-        selected_class = st.selectbox("Select Class", [f"P{i}" for i in range(1, 8)])
-        
-    st.markdown("---")
-    st.subheader(f"Learning Outcomes for {selected_subject} ({selected_class})")
+    cycle_choice = st.selectbox("Select Cycle", list(NCDC_CURRICULUM.keys()))
     
-    class_data = NCDC_CURRICULUM.get(selected_subject, {}).get(selected_class, {})
-    if class_data:
-        for term, outcome in class_data.items():
-            term_name = term.replace("_", " ").title()
-            st.markdown(f"**{term_name}:**")
-            st.info(outcome)
+    if "Thematic" in cycle_choice:
+        selected_class = st.selectbox("Select Class", ["P1", "P2", "P3"])
+        st.markdown("---")
+        st.subheader(f"Thematic Curriculum Outcomes for {selected_class}")
+        terms_data = NCDC_CURRICULUM[cycle_choice].get(selected_class, {})
+        for term, desc in terms_data.items():
+            st.markdown(f"**{term}:**")
+            st.info(desc)
     else:
-        st.write("No outcomes found for this combination.")
+        selected_class = st.selectbox("Select Class", ["P4", "P5", "P6", "P7"])
+        st.markdown("---")
+        st.subheader(f"Subject-Based Curriculum Outcomes for {selected_class} (Set One & Set Two)")
+        subjects_data = NCDC_CURRICULUM[cycle_choice].get(selected_class, {})
+        for subj, desc in subjects_data.items():
+            st.markdown(f"**{subj}:**")
+            st.info(desc)
 
 elif page == "Teacher Dashboard":
-    st.title("Teacher Dashboard - Locked")
+    st.title("iLearn-Uganda Teacher Dashboard - Locked")
     if not st.session_state.dashboard_unlocked:
         st.write("This page is for teachers only. Enter your password.")
         pwd = st.text_input("Teacher Password", type="password", key="teacher_pwd")
@@ -503,7 +304,8 @@ elif page == "Teacher Dashboard":
                 st.error("Wrong password. Try again.")
         st.stop()
         
-    st.title("Teacher Dashboard")
+    st.title("iLearn-Uganda Teacher Dashboard")
+    st.caption("Integrated Learning Environment — Analytics & Leaderboard")
     if SHEET_URL:
         st.success("Google Sheets Link is set ✅")
     else:
@@ -519,4 +321,46 @@ elif page == "Teacher Dashboard":
             st.session_state.results = load_results()
             st.rerun()
             
-    results = st.session_state
+    results = st.session_state.get("results", [])
+    st.write(f"Total attempts: {len(results)}")
+    
+    if len(results) == 0:
+        st.info("No results yet. Let a child take the quiz first.")
+    else:
+        df = pd.DataFrame(results)
+        
+        if "Class" in df.columns:
+            all_classes = ["All"] + sorted(df["Class"].unique().tolist())
+            selected_filter_class = st.selectbox("Filter Leaderboard by Class", all_classes)
+            if selected_filter_class != "All":
+                df = df[df["Class"] == selected_filter_class]
+
+        df = df.sort_values(by="Percentage", ascending=False).reset_index(drop=True)
+        medals = []
+        for idx in range(len(df)):
+            if idx == 0:
+                medals.append("🥇 Gold")
+            elif idx == 1:
+                medals.append("🥈 Silver")
+            elif idx == 2:
+                medals.append("🥉 Bronze")
+            else:
+                medals.append("")
+        df.insert(0, "Medal", medals)
+        df.insert(0, "Rank", range(1, len(df) + 1))
+        
+        st.subheader("🏆 Top 3 Medal Winners")
+        for idx in range(min(3, len(df))):
+            row = df.iloc[idx]
+            if idx == 0:
+                st.success(f"🥇 GOLD - {row['Name']} ({row.get('Class', 'N/A')}) - {row['School']} - {row['Score']} = {row['Percentage']}%")
+            elif idx == 1:
+                st.info(f"🥈 SILVER - {row['Name']} ({row.get('Class', 'N/A')}) - {row['School']} - {row['Score']} = {row['Percentage']}%")
+            elif idx == 2:
+                st.warning(f"🥉 BRONZE - {row['Name']} ({row.get('Class', 'N/A')}) - {row['School']} - {row['Score']} = {row['Percentage']}%")
+                
+        st.subheader("Learner Leaderboard")
+        st.dataframe(df)
+        
+        csv = df.to_csv(index=False).encode("utf-8")
+        st.download_button("Download Results CSV", csv, "ilearn_uganda_results.csv", "text/csv")
