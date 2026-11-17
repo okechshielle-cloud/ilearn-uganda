@@ -10,97 +10,129 @@ TEACHER_PASSWORD = st.secrets.get("TEACHER_PASSWORD", "iLearnUganda123")
 CSV_FILE = "results.csv"
 SHEET_URL = st.secrets.get("SHEET_URL", "")
 
-# Official NCDC Curriculum Framework Mapped Directly from Booklets
-NCDC_OFFICIAL_CURRICULUM = {
+# Full NCDC Primary Curriculum Framework (P1-P7 Booklets)
+NCDC_COMPLETE_CURRICULUM = {
     "Lower Primary Cycle (P1–P3: Thematic Approach)": {
-        "P1 (12 National Themes)": [
-            "1. Our School", "2. Our Home and Community", "3. The Human Body and Health", 
-            "4. Food and Nutrition", "5. Our Environment", "6. Plants", 
-            "7. Animals", "8. Weather", "9. Transport", 
-            "10. Communication", "11. Peace and Security", "12. Occupations"
+        "Primary One (P1) - 12 National Themes": [
+            "1. Our School", 
+            "2. Our Home and Community", 
+            "3. The Human Body and Health", 
+            "4. Food and Nutrition", 
+            "5. Our Environment", 
+            "6. Plants in Our Environment", 
+            "7. Animals in Our Environment", 
+            "8. Weather Changes", 
+            "9. Transport in Our Community", 
+            "10. Communication", 
+            "11. Peace and Security", 
+            "12. Occupations and Economic Activities"
         ],
-        "P2 (12 National Themes)": [
-            "1. Our Community", "2. Food and Nutrition", "3. Changes in the Environment", 
-            "4. Sanitation and Hygiene", "5. Transport and Communication", "6. Peace and Security", 
-            "7. Accidents and Safety", "8. Child Rights", "9. Energy", 
-            "10. Leisure Time", "11. Keeping Animals and Plants", "12. Our Leaders"
+        "Primary Two (P2) - 12 National Themes": [
+            "1. Our Community", 
+            "2. Food and Nutrition", 
+            "3. Changes in the Environment", 
+            "4. Sanitation and Personal Hygiene", 
+            "5. Transport and Communication", 
+            "6. Peace and Security", 
+            "7. Accidents and Safety", 
+            "8. Child Rights and Responsibilities", 
+            "9. Sources of Energy", 
+            "10. Leisure Time and Play", 
+            "11. Keeping Animals and Plants", 
+            "12. Our Leaders in the Community"
         ],
-        "P3 (12 National Themes & Transition Foundations)": [
-            "1. Our Sub-county / Division", "2. Living Together", "3. Environment and Weather", 
-            "4. Food and Nutrition", "5. Sanitation and Water", "6. Transport", 
-            "7. Communication", "8. Energy", "9. Occupations and Trade", 
-            "10. Security and Peace", "11. Culture", "12. Transition Foundations"
+        "Primary Three (P3) - 12 National Themes & Transition": [
+            "1. Our Sub-county / Division", 
+            "2. Living Together in Our Sub-county", 
+            "3. Environment and Weather in Our Sub-county", 
+            "4. Food and Nutrition in Our Sub-county", 
+            "5. Sanitation and Water", 
+            "6. Transport in Our Sub-county", 
+            "7. Communication Systems", 
+            "8. Energy Resources", 
+            "9. Occupations and Trade", 
+            "10. Security and Peace", 
+            "11. Cultural Practices", 
+            "12. Transition Foundations to Upper Primary"
         ]
     },
-    "Upper Primary Cycle (P4–P7: Subject-Based Sets)": {
-        "P4 (Transition Year)": {
-            "Set One Subjects": [
-                "English (Grammar, Comprehension, Composition)", 
-                "Mathematics (12 Core NCDC Strands)", 
-                "Integrated Science", 
-                "Social Studies (SST)", 
-                "Religious Education (CRE / IRE)", 
+    "Upper Primary Cycle (P4–P7: Subject-Based Framework)": {
+        "Primary Four (P4) - Transition Year": {
+            "Set One (Core Academic Subjects)": [
+                "English Language (Comprehension, Grammar, Guided Writing)",
+                "Mathematics (12 Core NCDC Strands)",
+                "Integrated Science (Plant/Animal Life, Human Body, Weather)",
+                "Social Studies / SST (Map Reading, District Geography, History)",
+                "Religious Education (Christian / Islamic Religious Education)",
                 "Local Language Framework"
             ],
             "Set Two (CAPE Framework)": [
-                "CAPE 1: Music, Dance and Drama (MDD)", 
-                "CAPE 2: Physical Education (PE & Sports)", 
+                "CAPE 1: Music, Dance and Drama (MDD)",
+                "CAPE 2: Physical Education (PE & Athletics)",
                 "CAPE 3: Art, Craft and Technology"
             ]
         },
-        "P5": {
-            "Set One Subjects": [
-                "English", "Mathematics", "Integrated Science", 
-                "Social Studies (Uganda's Geography, Kingdoms, Constitution)", 
-                "Religious Education (CRE / IRE)", "Local Language"
+        "Primary Five (P5)": {
+            "Set One (Core Academic Subjects)": [
+                "English Language (Advanced Tenses, Poetry, Debates)",
+                "Mathematics (Integers, Percentages, Geometry, Algebra)",
+                "Integrated Science (Matter, Heat, Circulatory/Respiratory Systems)",
+                "Social Studies / SST (Uganda's Physical Geography, Kingdoms, Constitution)",
+                "Religious Education (CRE / IRE - Teachings, Worship, Ethics)",
+                "Local Language Framework"
             ],
             "Set Two (CAPE Framework)": [
-                "CAPE 1: Music, Dance and Drama", 
-                "CAPE 2: Physical Education", 
-                "CAPE 3: Art and Technology"
+                "CAPE 1: Music, Dance and Drama",
+                "CAPE 2: Physical Education & Sports Tactics",
+                "CAPE 3: Functional Craft & Pottery"
             ]
         },
-        "P6": {
-            "Set One Subjects": [
-                "English", "Mathematics", "Integrated Science", 
-                "Social Studies (East Africa, Scramble & Partition, Independence)", 
-                "Religious Education (CRE / IRE)", "Local Language"
+        "Primary Six (P6)": {
+            "Set One (Core Academic Subjects)": [
+                "English Language (Active/Passive Voice, Direct/Indirect Speech)",
+                "Mathematics (Proportions, Speed/Distance/Time, Simple Interest, Statistics)",
+                "Integrated Science (Electricity, Magnetism, Simple Machines, Reproduction)",
+                "Social Studies / SST (East African Resources, Scramble & Partition, Independence)",
+                "Religious Education (CRE / IRE - Faith in Action, Leadership, Family Values)",
+                "Local Language Framework"
             ],
             "Set Two (CAPE Framework)": [
-                "CAPE 1: Music, Dance and Drama", 
-                "CAPE 2: Physical Education", 
-                "CAPE 3: Art and Technology"
+                "CAPE 1: Choral Performance & Drama",
+                "CAPE 2: First-Aid Safety & Sports Officiating",
+                "CAPE 3: Advanced Sculpture & Textile Design"
             ]
         },
-        "P7 (PLE Class)": {
-            "Set One Subjects (Examinable for PLE)": [
-                "English", "Mathematics (Advanced Strands & Past Papers)", 
-                "Integrated Science (Excretory/Nervous Systems, Agriculture)", 
-                "Social Studies (Africa, International Bodies, Governance)", 
-                "Religious Education (CRE / IRE)", "Local Language Framework"
+        "Primary Seven (P7) - PLE Examinable Class": {
+            "Set One (Core Examinable Subjects)": [
+                "English Language (PLE Revision, Phrasal Verbs, Idioms, Summaries)",
+                "Mathematics (Advanced Strands: Set Theory, Bases, Geometric Construction)",
+                "Integrated Science (Excretory/Nervous Systems, Agriculture, Environment)",
+                "Social Studies / SST (Africa Geography, Pan-Africanism, UN, AU, Governance)",
+                "Religious Education (CRE / IRE - Moral Theology, Human Dignity)",
+                "Local Language Framework"
             ],
             "Set Two (CAPE Framework)": [
-                "CAPE 1: Music, Dance and Drama", 
-                "CAPE 2: Physical Education", 
-                "CAPE 3: Art and Technology"
+                "CAPE 1: Advanced MDD Productions",
+                "CAPE 2: Recreational Sport Management & Fitness",
+                "CAPE 3: Entrepreneurial Craft Exhibitions"
             ]
         }
     }
 }
 
-# Official NCDC Mathematics 12 Strands Database for Upper Primary
+# Official NCDC Mathematics 12 Core Strands Database
 NCDC_MATH_STRANDS = [
     "1. Set Concepts (Venn Diagrams, Subsets, Probability)",
-    "2. Whole Numbers (Place Values, Roman Numerals, Bases)",
-    "3. Operations on Whole Numbers (BODMAS, Word Problems)",
-    "4. Patterns and Sequences (Progressions, Primes, Squares)",
+    "2. Whole Numbers (Place Values, Roman Numerals, Non-Decimal Bases)",
+    "3. Operations on Whole Numbers (BODMAS, Multi-step Word Problems)",
+    "4. Patterns and Sequences (Progressions, Primes, Squares, Cubes)",
     "5. Fractions, Decimals and Percentages (Ratios, Commercial Arithmetic)",
-    "6. Lines, Angles and Geometric Figures (Constructions, Properties)",
-    "7. Data Handling (Statistics, Mean, Median, Mode, Graphs)",
-    "8. Time (Speed, Distance, Timetables, Travel Graphs)",
-    "9. Integers (Number Line Operations, Coordinates)",
-    "10. Money (Profit, Loss, Simple/Compound Interest, Utility Bills)",
-    "11. Length, Mass and Capacity (Perimeter, Area, Volume, Density)",
+    "6. Lines, Angles and Geometric Figures (Constructions, Polygon Properties)",
+    "7. Data Handling (Statistics, Mean, Median, Mode, Pie Charts, Bar Graphs)",
+    "8. Time (Speed, Distance, Timetables, Average Speed, Travel Graphs)",
+    "9. Integers (Number Line Operations, Cartesian Plane Coordinates)",
+    "10. Money (Profit, Loss, Discount, Simple/Compound Interest, Utility Bills)",
+    "11. Length, Mass and Capacity (Perimeter, Area, Volume, Surface Area, Density)",
     "12. Algebra (Linear Equations, Inequalities, Simultaneous Equations)"
 ]
 
@@ -292,31 +324,28 @@ if page == "Take Quiz":
                     st.markdown("---")
 
 elif page == "NCDC Official Syllabus Structure":
-    st.title("📖 NCDC Official Primary Curriculum Booklets")
-    st.caption("National Curriculum Development Centre (Uganda) Official Framework Index")
+    st.title("📖 Complete NCDC Primary Curriculum Framework")
+    st.caption("National Curriculum Development Centre (Uganda) Official Syllabus Index (P1–P7)")
     
-    cycle_sel = st.selectbox("Select Curriculum Cycle", list(NCDC_OFFICIAL_CURRICULUM.keys()))
-    class_sel = st.selectbox("Select Class Level", list(NCDC_OFFICIAL_CURRICULUM[cycle_sel].keys()))
+    cycle_sel = st.selectbox("Select Curriculum Cycle", list(NCDC_COMPLETE_CURRICULUM.keys()))
+    class_sel = st.selectbox("Select Class Level", list(NCDC_COMPLETE_CURRICULUM[cycle_sel].keys()))
     
     st.markdown("---")
-    st.subheader(f"Curriculum Details for {class_sel}")
+    st.subheader(f"Official Syllabus Framework for {class_sel}")
     
-    class_info = NCDC_OFFICIAL_CURRICULUM[cycle_sel][class_sel]
+    class_info = NCDC_COMPLETE_CURRICULUM[cycle_sel][class_sel]
     if isinstance(class_info, dict):
-        for key, val in class_info.items():
-            st.markdown(f"### **{key}**")
-            if isinstance(val, list):
-                for item in val:
-                    st.write(f"- {item}")
-            else:
-                st.info(val)
+        for subject_group, details in class_info.items():
+            st.markdown(f"### **{subject_group}**")
+            for item in details:
+                st.write(f"- {item}")
     elif isinstance(class_info, list):
-        for item in class_info:
-            st.write(f"- {item}")
+        for theme in class_info:
+            st.write(f"- {theme}")
             
     if "P4" in class_sel or "P5" in class_sel or "P6" in class_sel or "P7" in class_sel:
         st.markdown("---")
-        st.subheader("📐 Official NCDC Mathematics 12 Core Strands Structure")
+        st.subheader("📐 Official NCDC Mathematics 12 Core Strands")
         st.write("Mathematics across upper primary is standardized around these 12 core NCDC strands:")
         for strand in NCDC_MATH_STRANDS:
             st.write(f"✅ {strand}")
