@@ -10,282 +10,420 @@ TEACHER_PASSWORD = st.secrets.get("TEACHER_PASSWORD", "iLearnUganda123")
 CSV_FILE = "results.csv"
 SHEET_URL = st.secrets.get("SHEET_URL", "")
 
-# Comprehensive NCDC Curriculum Dataset with Topics, Subtopics, Learning Aids, Life Skills, and Values
+# 1. General Curriculum Framework Overview
 NCDC_CURRICULUM = {
     "Lower Primary (Cycle 1: Thematic Approach P1-P3)": {
         "P1": {
-            "Term 1: Our School / Our Home": {
-                "Topics": "1. Our School, 2. Our Home and Community",
-                "Subtopics": "School environment, classroom objects, school rules, family members, roles of people at home, personal hygiene practices.",
-                "Learning Aids": "Chart of classroom objects, realia (pencils, books), charts showing family members, cleaning tools (brooms, water basins).",
-                "Life Skills": "Effective communication, self-awareness, empathy, cooperation.",
-                "Values": "Respect, obedience, love, cleanliness, responsibility."
-            },
-            "Term 2: Our Community / Human Body": {
-                "Topics": "1. Human Body and Health, 2. Community Helpers",
-                "Subtopics": "Body parts and senses, keeping our bodies clean, common diseases, neighbors, local authority roles, market places.",
-                "Learning Aids": "Human body charts, mirrors, soap, clean water, flashcards of community helpers (teachers, nurses, police).",
-                "Life Skills": "Critical thinking, problem solving, interpersonal relationships, coping with emotions.",
-                "Values": "Appreciation, hygiene, helpfulness, care for others."
-            },
-            "Term 3: Plants, Animals & Environment": {
-                "Topics": "1. Plants in Our Environment, 2. Animals and Weather",
-                "Subtopics": "Parts of plants, uses of plants, domestic and wild animals, weather changes, safe water sources, road safety.",
-                "Learning Aids": "Real plant leaves/roots, pictures of domestic and wild animals, weather charts, flashcards on road signs.",
-                "Life Skills": "Decision making, environmental observation, creative thinking.",
-                "Values": "Environmental conservation, kindness to animals, safety consciousness."
-            }
+            "Term 1: Our School / Our Home": "Literacy in local language, early numeracy (1-10), personal hygiene, and family roles.",
+            "Term 2: Our Community / Human Body": "Community helpers, health & sanitation habits, and addition/subtraction up to 20.",
+            "Term 3: Plants, Animals & Environment": "Local plants/animals, simple reading sentences, and road/environmental safety."
         },
         "P2": {
-            "Term 1: Food and Nutrition": {
-                "Topics": "1. Sources of Food, 2. Food Hygiene and Safety",
-                "Subtopics": "Types of food (local food groups), food storage, kitchen hygiene, clean and safe drinking water, signs of malnutrition.",
-                "Learning Aids": "Real food items (maize, cassava, beans), food group charts, clean containers for safe drinking water.",
-                "Life Skills": "Critical thinking about nutrition, decision making, health management.",
-                "Values": "Appreciation of food, hygiene, honesty, sharing."
-            },
-            "Term 2: Transport & Communication": {
-                "Topics": "1. Means of Transport, 2. Communication Systems & Weather",
-                "Subtopics": "Road, water, and air transport; safety on the road; traditional and modern communication methods; weather conditions.",
-                "Learning Aids": "Toy cars, model boats, pictures of aeroplanes, old radios, mobile phone mockups, rain gauges.",
-                "Life Skills": "Effective communication, creative thinking, safety awareness.",
-                "Values": "Caution, patience, appreciation of technology."
-            },
-            "Term 3: Peace, Security & Changes": {
-                "Topics": "1. Peace and Security in the Community, 2. Changes in the Environment",
-                "Subtopics": "Promoting peace, resolving conflicts, child rights and responsibilities, environmental changes (deforestation, soil erosion).",
-                "Learning Aids": "Storybooks on peace, pictures showing tree planting, charts on children's rights.",
-                "Life Skills": "Conflict resolution, negotiation, empathy, civic responsibility.",
-                "Values": "Peacefulness, tolerance, justice, love for one another."
-            }
+            "Term 1: Food and Nutrition": "Food classification, hygiene, safe water, and addition/subtraction up to 50.",
+            "Term 2: Transport & Communication": "Local transport/communication systems, weather changes, and multiplication/division basics.",
+            "Term 3: Peace, Security & Changes": "Conflict resolution, child rights, and non-standard measurements."
         },
         "P3": {
-            "Term 1: Our Sub-county / Division": {
-                "Topics": "1. Physical Features, 2. Location and Landmarks",
-                "Subtopics": "Locating the sub-county, hills, valleys, swamps, rivers, economic activities, administrative units.",
-                "Learning Aids": "Local sketch maps, physical feature charts, clay models of hills and valleys.",
-                "Life Skills": "Spatial orientation, environmental awareness, research skills.",
-                "Values": "Patriotism, cooperation, community pride."
-            },
-            "Term 2: Energy, Water and Sanitation": {
-                "Topics": "1. Sources of Energy, 2. Water and Environmental Sanitation",
-                "Subtopics": "Sources of light/heat/sound, saving energy, safe water chain, proper disposal of refuse, vector control.",
-                "Learning Aids": "Solar panels, firewood samples, charcoal stoves, clean jerrycans, tippy-taps.",
-                "Life Skills": "Resource conservation, problem-solving, critical thinking.",
-                "Values": "Responsibility, resourcefulness, cleanliness."
-            },
-            "Term 3: Transition Foundations": {
-                "Topics": "1. Transition Foundations, 2. Creative Arts & Crafts",
-                "Subtopics": "Consolidation of lower primary literacy/numeracy, transition to English medium, local art, physical education coordination.",
-                "Learning Aids": "Bilingual storybooks, transition assessment cards, local musical instruments, skipping ropes.",
-                "Life Skills": "Adaptability, self-confidence, teamwork, physical coordination.",
-                "Values": "Perseverance, creativity, sportsmanship."
-            }
+            "Term 1: Our Sub-county / Division": "Sub-county physical features, landmarks, graded reading, and multiplication tables.",
+            "Term 2: Energy, Water and Sanitation": "Sources of energy, safe water chain, vectors/diseases, and standard metric units.",
+            "Term 3: Transition Foundations": "Transition from mother tongue to English-medium instruction and creative arts."
         }
     },
     "Upper Primary (Cycle 2 & 3: Subject-Based P4-P7)": {
         "P4": {
-            "English": {
-                "Topics": "1. School and Community, 2. Weather and Transport, 3. Health and Environment",
-                "Subtopics": "Nouns, pronouns, present simple tense, guided compositions, informal letters, punctuation marks.",
-                "Learning Aids": "Grammar flashcards, sample friendly letters, vocabulary charts.",
-                "Life Skills": "Written communication, creative writing, active listening.",
-                "Values": "Accuracy, neatness, respect in communication."
-            },
-            "Mathematics": {
-                "Topics": "1. Whole Numbers & Place Values, 2. Fractions and Decimals, 3. Measurement and Geometry",
-                "Subtopics": "Operations up to ten thousands, equivalent fractions, metric conversions, perimeter and area, basic angles.",
-                "Learning Aids": "Abacus, base-ten blocks, fraction cut-out charts, rulers, protractors.",
-                "Life Skills": "Logical reasoning, problem-solving, numerical estimation.",
-                "Values": "Precision, honesty in calculation, patience."
-            },
-            "Integrated Science": {
-                "Topics": "1. Plant Anatomy & Crops, 2. The Human Digestive System, 3. Weather Instruments",
-                "Subtopics": "Roots, stems, leaves, flowers, crop growing practices, human teeth structure, deficiency diseases, rain gauges.",
-                "Learning Aids": "Actual flowering plants, model of human teeth, rain gauge model, thermometer.",
-                "Life Skills": "Scientific inquiry, observation, data recording, health hygiene management.",
-                "Values": "Curiosity, environmental stewardship, self-care."
-            },
-            "Social Studies": {
-                "Topics": "1. Map Reading, 2. Physical Geography of District, 3. District Governance",
-                "Subtopics": "Compass directions, scale and keys, relief features, vegetation, climate, district leadership structures.",
-                "Learning Aids": "Topographical maps, magnetic compasses, district administrative charts.",
-                "Life Skills": "Map reading, critical thinking about governance, civic awareness.",
-                "Values": "Civic responsibility, respect for leaders, national unity."
-            },
-            "Religious Education": {
-                "Topics": "1. Sacred Scriptures (Bible/Quran), 2. Moral Decision Making",
-                "Subtopics": "Foundational covenants, prophetic traditions, personal integrity, honesty, community service.",
-                "Learning Aids": "Bibles, Qurans, moral dilemma scenario cards.",
-                "Life Skills": "Moral reasoning, decision-making, empathy.",
-                "Values": "Integrity, truthfulness, reverence, kindness."
-            },
-            "Kiswahili": {
-                "Topics": "1. Matamshi na Herufi, 2. Ngeli za Nomino (M-WA, KI-VI)",
-                "Subtopics": "Phonetic spelling, greetings, vocabulary for home/school, basic present tense (na-), short reading passages.",
-                "Learning Aids": "Kiswahili vocabulary charts, conversational audio prompts.",
-                "Life Skills": "Linguistic adaptability, cross-cultural communication.",
-                "Values": "Regional integration appreciation, respect for languages."
-            },
-            "Creative Arts & PE": {
-                "Topics": "1. Visual Arts & Craft, 2. Music, Dance & Drama, 3. Physical Education",
-                "Subtopics": "Color mixing, line and texture, folk songs, traditional dance steps, major sports rules (football/netball).",
-                "Learning Aids": "Watercolors, drawing books, footballs, netballs, local drums.",
-                "Life Skills": "Creative expression, motor skill coordination, teamwork.",
-                "Values": "Appreciation of culture, sportsmanship, discipline."
-            }
+            "English": "Transition to English medium; nouns, pronouns, simple tenses, and guided compositions.",
+            "Mathematics": "Place values up to 10,000, equivalent fractions, decimals, and metric units.",
+            "Integrated Science": "Plant anatomy, crop growing, human digestive system, teeth, and weather instruments.",
+            "Social Studies": "Map reading (compass, scale, key), district physical geography, and governance.",
+            "Religious Education": "Sacred scriptures (Bible/Quran), covenants, and moral decision-making.",
+            "Kiswahili": "Phonetic spelling, noun classes (M-WA, KI-VI), and basic present tense (na-).",
+            "Creative Arts & PE": "Sports rules (football/netball), color mixing, folk songs, and traditional dance."
         },
         "P5": {
-            "English": {
-                "Topics": "1. Advanced Tenses & Conjunctions, 2. Poetry and Literature Analysis, 3. Speeches & Debates",
-                "Subtopics": "Relative clauses, comparative adjectives, poem interpretation, summary writing, formal speeches.",
-                "Learning Aids": "Anthologies of poems, debate motion cards, structural grammar charts.",
-                "Life Skills": "Public speaking, critical literary analysis, persuasive communication.",
-                "Values": "Confidence, open-mindedness, respect for opposing views."
-            },
-            "Mathematics": {
-                "Topics": "1. Integers & Percentages, 2. Area, Volume and Capacity, 3. Algebra & Statistics",
-                "Subtopics": "Operations with negative numbers, percentage calculations, volume of cuboids, basic algebraic expressions, bar graphs.",
-                "Learning Aids": "Integer number lines, 3D rectangular blocks, graph paper, mathematical sets.",
-                "Life Skills": "Analytical thinking, financial calculation, data interpretation.",
-                "Values": "Logical discipline, perseverance."
-            },
-            "Integrated Science": {
-                "Topics": "1. States of Matter & Heat Transfer, 2. Human Circulatory & Respiratory Systems, 3. Primary Health Care",
-                "Subtopics": "Conduction, convection, radiation, blood circulation, lung functions, immunization, water-borne diseases.",
-                "Learning Aids": "Beakers, burners, charts of the heart and lungs, vaccination schedules.",
-                "Life Skills": "Experimental design, health safety evaluation, critical thinking.",
-                "Values": "Health consciousness, scientific rigor, responsibility."
-            },
-            "Social Studies": {
-                "Topics": "1. Physical Geography of Uganda, 2. Pre-colonial Uganda & Kingdoms, 3. Governance and Constitution",
-                "Subtopics": "Relief zones, lakes, ethnic migrations, early African kingdoms, foreign influence, the Ugandan constitution.",
-                "Learning Aids": "Relief map of Uganda, historical timeline charts, copy of the National Constitution.",
-                "Life Skills": "Historical analysis, civic participation, critical evaluation.",
-                "Values": "National heritage appreciation, patriotism, tolerance."
-            },
-            "Religious Education": {
-                "Topics": "1. Life and Teachings of Jesus Christ / Prophet Muhammad, 2. Worship and Spiritual Discipline",
-                "Subtopics": "Justice, compassion, pillars of faith, sacraments, dealing with peer pressure.",
-                "Learning Aids": "Scriptural passages, reflective journals, peer pressure case studies.",
-                "Life Skills": "Spiritual resilience, assertiveness against peer pressure, ethical decision-making.",
-                "Values": "Compassion, justice, piety, steadfastness."
-            },
-            "Kiswahili": {
-                "Topics": "1. Nyakati (Nyakati zilizopita, za sasa, na zijazo), 2. Msamiati wa Masoko na Usafiri",
-                "Subtopics": "Past (li-), present (na-), and future (ta-) tenses; market transactions; travel vocabulary; role-plays.",
-                "Learning Aids": "Market dialogue scripts, tense conjugation tables.",
-                "Life Skills": "Practical language application, negotiation skills.",
-                "Values": "Cultural integration, confidence."
-            },
-            "Creative Arts & PE": {
-                "Topics": "1. Intermediate Sports Tactics, 2. Functional Craft & Posters, 3. Traditional Instruments",
-                "Subtopics": "Sports endurance, sportsmanship, sign-making, pottery, local musical instruments (drums, xylophones).",
-                "Learning Aids": "Local clay, poster paints, traditional instruments (endingidi, adungu).",
-                "Life Skills": "Artistic design, physical endurance, teamwork.",
-                "Values": "Cultural preservation, perseverance, collaboration."
-            }
+            "English": "Complex tenses, conjunctions, relative clauses, poetry analysis, and formal debates.",
+            "Mathematics": "Integers, percentages, area, volume of cuboids, basic algebra, and bar graphs.",
+            "Integrated Science": "States of matter, heat transfer, circulatory/respiratory systems, and primary health care.",
+            "Social Studies": "Physical geography of Uganda, pre-colonial kingdoms, ethnic migrations, and constitution.",
+            "Religious Education": "Life and teachings of Jesus Christ / Prophet Muhammad, worship, and peer pressure.",
+            "Kiswahili": "Past (li-), present (na-), and future (ta-) tenses; market and travel vocabulary.",
+            "Creative Arts & PE": "Sports tactics, sportsmanship, functional crafts, and traditional instruments."
         },
         "P6": {
-            "English": {
-                "Topics": "1. Active and Passive Voice, 2. Direct and Indirect Speech, 3. Persuasive Essays & Reports",
-                "Subtopics": "Conditional clauses, formal letters, minutes of meetings, report writing, advanced inference.",
-                "Learning Aids": "Sample meeting minutes, formal letter templates, advanced grammar workbooks.",
-                "Life Skills": "Technical writing, formal communication, critical inference.",
-                "Values": "Professionalism, integrity in reporting, thoroughness."
-            },
-            "Mathematics": {
-                "Topics": "1. Proportions, Speed, Distance & Time, 2. Simple Interest, 3. Advanced Data Handling",
-                "Subtopics": "Speed formulas, financial literacy, pie charts, mean, median, mode, probability foundations.",
-                "Learning Aids": "Stopwatches, financial interest tables, statistical survey data charts.",
-                "Life Skills": "Problem-solving under time constraints, financial literacy, statistical analysis.",
-                "Values": "Prudence, accuracy, analytical honesty."
-            },
-            "Integrated Science": {
-                "Topics": "1. Electricity & Magnetism, 2. Simple Machines & Friction, 3. Mammalian Reproduction & Immunity",
-                "Subtopics": "Circuits, conductors, levers, pulleys, reproductive health, STIs/HIV prevention, human immunity systems.",
-                "Learning Aids": "Wires, dry cells, bulbs, levers, pulleys, HIV prevention awareness charts.",
-                "Life Skills": "Technical problem-solving, self-protection, health counseling awareness.",
-                "Values": "Safety mindfulness, responsibility, empathy for the sick."
-            },
-            "Social Studies": {
-                "Topics": "1. East African Physical Resources, 2. Colonial Rule & Independence Struggles",
-                "Subtopics": "Mining, agriculture, European scramble, partition of East Africa, independence movements, nationalism.",
-                "Learning Aids": "Map of East Africa, historical portraits of independence heroes, resource distribution charts.",
-                "Life Skills": "Historical synthesis, geopolitical awareness, critical thinking.",
-                "Values": "Pan-African solidarity, patriotism, appreciation of freedom."
-            },
-            "Religious Education": {
-                "Topics": "1. Faith in Action & Leadership, 2. Family Values & Work Ethics, 3. Conflict Resolution",
-                "Subtopics": "Stewardship of resources, marriage values, interfaith harmony, reconciliation processes.",
-                "Learning Aids": "Case studies on community leadership, family code guidelines.",
-                "Life Skills": "Leadership ethics, conflict mediation, responsible stewardship.",
-                "Values": "Stewardship, accountability, peace-building."
-            },
-            "Kiswahili": {
-                "Topics": "1. Ngeli za Ziada na Vivumishi, 2. Ufupisho wa Hadithi",
-                "Subtopics": "Adjectives, prepositions, negation forms, reading and summarizing dialogues and short stories.",
-                "Learning Aids": "Kiswahili story booklets, grammar exercise cards.",
-                "Life Skills": "Text summarization, advanced linguistic comprehension.",
-                "Values": "Diligence, linguistic pride."
-            },
-            "Creative Arts & PE": {
-                "Topics": "1. Athletics and Safety Rules, 2. Advanced Sculpture, 3. Drama for Civic Education",
-                "Subtopics": "Track events, first aid procedures, papier-mâché, textile design, directing issue-based drama pieces.",
-                "Learning Aids": "First aid kits, papier-mâché materials, script excerpts for civic drama.",
-                "Life Skills": "Emergency response awareness, dramatic direction, advanced motor coordination.",
-                "Values": "Safety consciousness, civic responsibility, aesthetic appreciation."
-            }
+            "English": "Active/passive voice, direct/indirect speech, conditional clauses, and formal report writing.",
+            "Mathematics": "Proportions, speed/distance/time, simple interest, pie charts, and statistics.",
+            "Integrated Science": "Electricity, magnetism, simple machines, friction, mammalian reproduction, and immunity.",
+            "Social Studies": "East African resources, colonial administration, and independence struggles.",
+            "Religious Education": "Faith in action, leadership, family values, work ethics, and reconciliation.",
+            "Kiswahili": "Additional noun classes, adjectives, prepositions, negation, and story summaries.",
+            "Creative Arts & PE": "Athletics, first-aid safety, sculpture, and civic-themed drama."
         },
         "P7": {
-            "English": {
-                "Topics": "1. Comprehensive Exam Revision, 2. Advanced Vocabulary & Idioms, 3. Timed Composition Editing",
-                "Subtopics": "Synonyms, antonyms, phrasal verbs, summary compression, rapid comprehension for PLE standards.",
-                "Learning Aids": "PLE past paper booklets, idiom dictionaries, timed practice sheets.",
-                "Life Skills": "Time management, stress management, high-stakes exam strategy, critical editing.",
-                "Values": "Resilience, self-discipline, academic honesty."
+            "English": "Comprehensive grammar consolidation, idioms, summary compression, and PLE exam readiness.",
+            "Mathematics": "Advanced geometry, circle theorems, sets (Venn diagrams), and simultaneous equations.",
+            "Integrated Science": "Human excretory & nervous systems, livestock/poultry, and environmental management.",
+            "Social Studies": "Geography of Africa, Pan-Africanism, AU, UN, and global economic integration.",
+            "Religious Education": "Moral theology, human dignity, social responsibility, and spiritual maturity.",
+            "Kiswahili": "Formal letter writing, conversational fluency, and secondary transition readiness.",
+            "Creative Arts & PE": "Sports leadership, entrepreneurial crafts, and cultural exhibitions."
+        }
+    }
+}
+
+# 2. Dedicated Class-by-Class NCDC Topical Breakdown (with Topic Selector data)
+TOPICAL_BREAKDOWN = {
+    "P1": {
+        "Literacy & Language (Thematic)": {
+            "Topic 1: Our School": {
+                "Subtopics": "People in our school, things in our classroom, school rules, school buildings.",
+                "Learning Outcome": "Learner identifies school members, names classroom objects, and follows basic instructions.",
+                "Learning Aids": "Classroom realia, name flashcards, picture charts of school buildings.",
+                "Life Skills": "Effective communication, self-awareness, interpersonal relationships.",
+                "Values": "Obedience, respect, neatness."
             },
-            "Mathematics": {
-                "Topics": "1. Advanced Geometry & Sets, 2. Simultaneous Equations, 3. Comprehensive PLE Past Paper Drill",
-                "Subtopics": "Circle theorems, Venn diagrams, algebraic word problems, profit and loss calculations, matrix foundations.",
-                "Learning Aids": "Geometrical instruments, sets visualizer, past paper compilations.",
-                "Life Skills": "Complex problem-solving, strategic thinking, perseverance.",
-                "Values": "Excellence, precision, tenacity."
+            "Topic 2: Our Home and Community": {
+                "Subtopics": "Family members, roles of family members, basic needs, neighbors.",
+                "Learning Outcome": "Learner describes family relationships and appreciates roles played at home.",
+                "Learning Aids": "Family tree charts, storybooks, puppets.",
+                "Life Skills": "Empathy, cooperation, sharing.",
+                "Values": "Love, responsibility, unity."
+            }
+        },
+        "Numeracy (Mathematics)": {
+            "Topic 1: Sorting, Counting and Number Concepts (1-10)": {
+                "Subtopics": "Sorting by color/size, counting concrete objects 1-10, writing number symbols.",
+                "Learning Outcome": "Learner counts, matches, and writes whole numbers from 1 to 10 accurately.",
+                "Learning Aids": "Bottle tops, sticks, stones, number cards, abacus.",
+                "Life Skills": "Logical thinking, accuracy, decision making.",
+                "Values": "Patience, orderliness, honesty."
             },
-            "Integrated Science": {
-                "Topics": "1. Human Excretory & Nervous Systems, 2. Agricultural Science & Livestock, 3. Environmental Management",
-                "Subtopics": "Kidneys, skin, brain reflex actions, poultry management, soil conservation, pollution control for PLE.",
-                "Learning Aids": "Nervous system anatomy charts, livestock feed samples, environmental conservation models.",
-                "Life Skills": "Scientific synthesis, agricultural entrepreneurship planning, ecological conservation.",
-                "Values": "Environmental accountability, respect for biological life, diligence."
+            "Topic 2: Addition and Subtraction up to 20": {
+                "Subtopics": "Putting together (addition), taking away (subtraction), simple word problems.",
+                "Learning Outcome": "Learner adds and subtracts single- and two-digit numbers up to 20.",
+                "Learning Aids": "Counters, number lines, bundle of sticks.",
+                "Life Skills": "Problem solving, critical thinking.",
+                "Values": "Perseverance, accuracy."
+            }
+        },
+        "Health, Science & Environment": {
+            "Topic 1: The Human Body and Personal Hygiene": {
+                "Subtopics": "External body parts, five senses, washing hands, brushing teeth.",
+                "Learning Outcome": "Learner names body parts and demonstrates daily personal hygiene habits.",
+                "Learning Aids": "Human body chart, soap, clean water, toothbrush, basin.",
+                "Life Skills": "Self-care, health awareness.",
+                "Values": "Cleanliness, self-respect."
             },
-            "Social Studies": {
-                "Topics": "1. Continental Geography of Africa, 2. Pan-Africanism & International Organizations, 3. Global Trade & Challenges",
-                "Subtopics": "African regions, AU, UN, Common Wealth, economic integration, population challenges, PLE mapping.",
-                "Learning Aids": "Wall map of Africa, UN charter summaries, trade flow diagrams.",
-                "Life Skills": "Global citizenship awareness, geopolitical analysis, international cooperation understanding.",
-                "Values": "Global empathy, international peace advocacy, civic pride."
+            "Topic 2: Plants and Animals in Our Environment": {
+                "Subtopics": "Common local plants, uses of plants, domestic vs. wild animals.",
+                "Learning Outcome": "Learner distinguishes domestic from wild animals and names common plants.",
+                "Learning Aids": "Real leaves/flowers, animal flashcards, nature walk.",
+                "Life Skills": "Observation, environmental care.",
+                "Values": "Kindness to animals, stewardship."
+            }
+        }
+    },
+    "P2": {
+        "Literacy & Language (Thematic)": {
+            "Topic 1: Food and Nutrition": {
+                "Subtopics": "Common foods, sources of food, food hygiene, balanced diet basics.",
+                "Learning Outcome": "Learner classifies local foods and explains safe food handling.",
+                "Learning Aids": "Real food samples (beans, maize, greens), food group charts.",
+                "Life Skills": "Decision making, health consciousness.",
+                "Values": "Gratitude, cleanliness, sharing."
             },
-            "Religious Education": {
-                "Topics": "1. Moral Theology & Ethics, 2. Human Dignity & Social Responsibility, 3. PLE Revision Framework",
-                "Subtopics": "Comprehensive scripture application, ethical responses to modern dilemmas, spiritual preparedness.",
-                "Learning Aids": "Thematic revision guides, ethical case study briefs.",
-                "Life Skills": "Ethical discernment, holistic self-evaluation, principled decision-making.",
-                "Values": "Ultimate moral integrity, spiritual maturity, human dignity advocacy."
+            "Topic 2: Transport and Communication": {
+                "Subtopics": "Means of road/water/air transport, road safety, local communication tools.",
+                "Learning Outcome": "Learner identifies transport modes and demonstrates safe road crossing.",
+                "Learning Aids": "Toy vehicles, road sign flashcards, mobile phone/radio models.",
+                "Life Skills": "Safety awareness, effective communication.",
+                "Values": "Caution, patience, discipline."
+            }
+        },
+        "Numeracy (Mathematics)": {
+            "Topic 1: Place Value and Operations up to 50": {
+                "Subtopics": "Tens and ones, addition with regrouping, subtraction up to 50.",
+                "Learning Outcome": "Learner identifies place values and solves addition/subtraction up to 50.",
+                "Learning Aids": "Place value tins, abacus, bundles of tens.",
+                "Life Skills": "Analytical thinking, problem solving.",
+                "Values": "Precision, diligence."
             },
-            "Kiswahili": {
-                "Topics": "1. Upigaji Chapa na Barua Rasmi, 2. Ufasaha wa Lugha na Mawasiliano",
-                "Subtopics": "Formal letter writing in Kiswahili, conversational fluency, advanced sentence structuring for secondary transition.",
-                "Learning Aids": "Formal letter templates in Kiswahili, conversational evaluation rubrics.",
-                "Life Skills": "Formal administrative writing fluency, bilingual professional readiness.",
-                "Values": "Excellence in regional communication, respect for linguistic standards."
+            "Topic 2: Introduction to Multiplication and Division": {
+                "Subtopics": "Repeated addition (2s, 3s, 5s), equal sharing of concrete objects.",
+                "Learning Outcome": "Learner multiplies by 2, 3, and 5 and divides items equally.",
+                "Learning Aids": "Counters, multiplication tables chart, small containers.",
+                "Life Skills": "Fairness in sharing, logical reasoning.",
+                "Values": "Fairness, cooperation, accuracy."
+            }
+        }
+    },
+    "P3": {
+        "Thematic Environment & Social Studies": {
+            "Topic 1: Our Sub-county / Division": {
+                "Subtopics": "Location, physical features (hills, swamps, rivers), administrative leadership.",
+                "Learning Outcome": "Learner locates major landmarks and describes economic activities in the sub-county.",
+                "Learning Aids": "Sub-county sketch map, clay physical models, compass.",
+                "Life Skills": "Spatial orientation, civic awareness.",
+                "Values": "Patriotism, community pride."
             },
-            "Creative Arts & PE": {
-                "Topics": "1. Leadership & Fitness Management, 2. Entrepreneurial Craft Production, 3. Cultural Competency",
-                "Subtopics": "Recreational sport management, marketing local crafts, comprehensive practical art exhibitions for PLE.",
-                "Learning Aids": "Sports officiating equipment, craft exhibition display boards.",
-                "Life Skills": "Sports leadership, entrepreneurial marketing, event organization.",
-                "Values": "Enterprise, cultural leadership, collaborative achievement."
+            "Topic 2: Energy, Water and Sanitation": {
+                "Subtopics": "Sources of energy, safe water chain, refuse disposal, vector control.",
+                "Learning Outcome": "Learner practices water purification and safe energy conservation.",
+                "Learning Aids": "Tippy-tap, charcoal stove, solar panel picture, water filter.",
+                "Life Skills": "Resource conservation, problem solving.",
+                "Values": "Responsibility, cleanliness, resourcefulness."
+            }
+        },
+        "Mathematics": {
+            "Topic 1: Numbers up to 1,000 and Fractions": {
+                "Subtopics": "Hundreds, tens, ones; halves, quarters, thirds; metric units (m, kg, l).",
+                "Learning Outcome": "Learner works with 3-digit numbers and compares simple fractions.",
+                "Learning Aids": "Fraction strips, meter ruler, weighing scale, measuring jugs.",
+                "Life Skills": "Measurement accuracy, financial literacy.",
+                "Values": "Honesty in trade, precision."
+            }
+        }
+    },
+    "P4": {
+        "English": {
+            "Topic 1: Describing People and Objects": {
+                "Subtopics": "Adjectives, pronouns, present simple tense, descriptive sentences.",
+                "Learning Outcome": "Learner writes coherent descriptive paragraphs using accurate adjectives.",
+                "Learning Aids": "Picture cards, grammar charts, sentence strips.",
+                "Life Skills": "Creative expression, effective communication.",
+                "Values": "Respect, neatness."
+            },
+            "Topic 2: Giving Directions and Letter Writing": {
+                "Subtopics": "Prepositions of place, imperative verbs, parts of an informal letter.",
+                "Learning Outcome": "Learner gives clear directions and writes a well-structured friendly letter.",
+                "Learning Aids": "Local area map, sample informal letter chart.",
+                "Life Skills": "Clear communication, spatial guidance.",
+                "Values": "Helpfulness, courtesy."
+            }
+        },
+        "Mathematics": {
+            "Topic 1: Whole Numbers up to 10,000 & Fractions": {
+                "Subtopics": "Place values up to ten thousands, equivalent fractions, addition/subtraction of decimals.",
+                "Learning Outcome": "Learner performs operations with large numbers, fractions, and decimals.",
+                "Learning Aids": "Abacus, fraction charts, decimal grids.",
+                "Life Skills": "Logical reasoning, numerical problem solving.",
+                "Values": "Accuracy, perseverance."
+            },
+            "Topic 2: Perimeter, Area and Metric Units": {
+                "Subtopics": "Perimeter and area of squares/rectangles, converting km/m/cm and kg/g.",
+                "Learning Outcome": "Learner calculates area/perimeter and converts standard metric units.",
+                "Learning Aids": "Rulers, tape measures, square grid paper.",
+                "Life Skills": "Spatial estimation, practical measurement.",
+                "Values": "Precision, diligence."
+            }
+        },
+        "Integrated Science": {
+            "Topic 1: Plant Life and Crop Growing": {
+                "Subtopics": "Parts of a flowering plant, functions of roots/stems/leaves, garden tools, crop care.",
+                "Learning Outcome": "Learner identifies plant parts and demonstrates basic crop husbandry.",
+                "Learning Aids": "Real uprooted flowering plant, hoe, watering can, seed samples.",
+                "Life Skills": "Scientific observation, agricultural skills.",
+                "Values": "Environmental stewardship, hard work."
+            },
+            "Topic 2: The Human Digestive System & Teeth": {
+                "Subtopics": "Types of teeth, tooth structure, digestive organs, deficiency diseases (kwashiorkor, marasmus).",
+                "Learning Outcome": "Learner explains digestion and practices proper dental and nutritional care.",
+                "Learning Aids": "Model of human teeth, digestive system chart, food samples.",
+                "Life Skills": "Health management, critical thinking.",
+                "Values": "Self-care, hygiene."
+            }
+        },
+        "Social Studies": {
+            "Topic 1: Location and Physical Features of Our District": {
+                "Subtopics": "Map elements (title, key, compass, scale), hills, lakes, rivers, vegetation.",
+                "Learning Outcome": "Learner uses a compass and map key to locate features in their district.",
+                "Learning Aids": "District wall map, magnetic compass, relief models.",
+                "Life Skills": "Map reading, environmental observation.",
+                "Values": "Patriotism, environmental care."
+            }
+        },
+        "Kiswahili": {
+            "Topic 1: Salamu na Ngeli za Nomino (M-WA, KI-VI)": {
+                "Subtopics": "Polite greetings, phonetic spelling, singular/plural in M-WA and KI-VI classes.",
+                "Learning Outcome": "Learner greets appropriately and constructs simple sentences in M-WA and KI-VI.",
+                "Learning Aids": "Kiswahili greeting charts, noun class flashcards.",
+                "Life Skills": "Cross-cultural communication, linguistic adaptability.",
+                "Values": "Respect, regional unity."
+            }
+        },
+        "Religious Education": {
+            "Topic 1: God's Covenant and Moral Integrity": {
+                "Subtopics": "Creation, covenants (Abraham/Noah/Prophetic traditions), honesty and service.",
+                "Learning Outcome": "Learner demonstrates moral integrity and respect for sacred scriptures.",
+                "Learning Aids": "Bible, Quran, moral scenario flashcards.",
+                "Life Skills": "Moral reasoning, empathy.",
+                "Values": "Integrity, truthfulness, reverence."
+            }
+        }
+    },
+    "P5": {
+        "English": {
+            "Topic 1: Vehicle Repair, Travel & Letter Writing": {
+                "Subtopics": "Technical vocabulary, past continuous tense, relative clauses, formal vs. informal letters.",
+                "Learning Outcome": "Learner uses relative clauses accurately and writes structured letters.",
+                "Learning Aids": "Vehicle parts chart, sample formal letter templates.",
+                "Life Skills": "Formal communication, problem solving.",
+                "Values": "Courtesy, clarity."
+            }
+        },
+        "Mathematics": {
+            "Topic 1: Integers, Percentages and Algebra": {
+                "Subtopics": "Adding/subtracting negative numbers, converting fractions to percentages, simple algebraic equations.",
+                "Learning Outcome": "Learner solves integer operations, percentage word problems, and basic equations.",
+                "Learning Aids": "Integer number line, percentage grids, algebra balance cards.",
+                "Life Skills": "Analytical thinking, financial literacy.",
+                "Values": "Logical discipline, honesty."
+            }
+        },
+        "Integrated Science": {
+            "Topic 1: Matter, Heat Transfer & Human Systems": {
+                "Subtopics": "States of matter, conduction/convection/radiation, heart and lung functions, immunization.",
+                "Learning Outcome": "Learner demonstrates heat transfer methods and explains circulatory/respiratory health.",
+                "Learning Aids": "Heat source, metal rod, chart of human heart/lungs, immunization card.",
+                "Life Skills": "Experimental inquiry, health safety.",
+                "Values": "Scientific curiosity, responsibility."
+            }
+        },
+        "Social Studies": {
+            "Topic 1: Geography and Pre-Colonial History of Uganda": {
+                "Subtopics": "Relief zones, drainage, ethnic migrations (Bantu, Nilotics), early kingdoms, Constitution.",
+                "Learning Outcome": "Learner traces ethnic migration routes and explains Uganda's governance structure.",
+                "Learning Aids": "Physical map of Uganda, migration arrow map, Constitution extract.",
+                "Life Skills": "Historical analysis, civic participation.",
+                "Values": "National unity, tolerance, patriotism."
+            }
+        },
+        "Kiswahili": {
+            "Topic 1: Nyakati (li-, na-, ta-) na Msamiati wa Masoko": {
+                "Subtopics": "Past, present, and future verb tenses; market buying/selling dialogues.",
+                "Learning Outcome": "Learner converses in past, present, and future tenses in market role-plays.",
+                "Learning Aids": "Tense conjugation chart, market item flashcards.",
+                "Life Skills": "Negotiation, practical communication.",
+                "Values": "Honesty in trade, cultural integration."
+            }
+        },
+        "Religious Education": {
+            "Topic 1: Teachings of Jesus / Prophet Muhammad & Peer Pressure": {
+                "Subtopics": "Compassion, justice, pillars of worship, resisting negative peer pressure.",
+                "Learning Outcome": "Learner applies religious teachings to make ethical choices against peer pressure.",
+                "Learning Aids": "Scripture texts, peer-pressure role-play cards.",
+                "Life Skills": "Assertiveness, ethical decision-making.",
+                "Values": "Compassion, steadfastness, justice."
+            }
+        }
+    },
+    "P6": {
+        "English": {
+            "Topic 1: Reported Speech, Passive Voice & Debating": {
+                "Subtopics": "Direct to indirect speech, active to passive voice, conditional sentences (If 1, 2, 3), debate motions.",
+                "Learning Outcome": "Learner transforms sentences accurately and presents structured debate arguments.",
+                "Learning Aids": "Speech transformation charts, debate rubric cards.",
+                "Life Skills": "Public speaking, critical thinking, persuasion.",
+                "Values": "Confidence, respect for differing views."
+            }
+        },
+        "Mathematics": {
+            "Topic 1: Proportions, Speed, Simple Interest & Data": {
+                "Subtopics": "Direct/inverse proportion, Speed = Distance/Time, Simple Interest (PRT/100), pie charts, mean/median/mode.",
+                "Learning Outcome": "Learner calculates speed, interest, and interprets statistical pie charts.",
+                "Learning Aids": "Stopwatches, interest rate tables, protractors for pie charts.",
+                "Life Skills": "Financial planning, time management, data analysis.",
+                "Values": "Prudence, accuracy."
+            }
+        },
+        "Integrated Science": {
+            "Topic 1: Electricity, Simple Machines & Reproduction": {
+                "Subtopics": "Simple electric circuits, levers/pulleys/friction, mammalian reproduction, adolescence, HIV/AIDS immunity.",
+                "Learning Outcome": "Learner constructs a simple circuit, classifies levers, and explains reproductive health.",
+                "Learning Aids": "Dry cells, copper wires, bulbs, pulley/lever models, health charts.",
+                "Life Skills": "Technical problem solving, self-protection, empathy.",
+                "Values": "Safety consciousness, responsibility."
+            }
+        },
+        "Social Studies": {
+            "Topic 1: East African Geography & Independence Struggles": {
+                "Subtopics": "EAC countries, resources, European scramble/partition, resistance movements, path to independence.",
+                "Learning Outcome": "Learner analyzes East African resource distribution and independence milestones.",
+                "Learning Aids": "East Africa political/resource map, historical timelines.",
+                "Life Skills": "Geopolitical awareness, historical synthesis.",
+                "Values": "Pan-African solidarity, patriotism."
+            }
+        },
+        "Kiswahili": {
+            "Topic 1: Vivumishi, Vihusishi na Ufupisho wa Hadithi": {
+                "Subtopics": "Adjectives, prepositions, negative verb forms, summarizing short passages.",
+                "Learning Outcome": "Learner summarizes short Kiswahili texts using accurate adjectives and prepositions.",
+                "Learning Aids": "Kiswahili readers, grammar summary tables.",
+                "Life Skills": "Summarization, reading comprehension.",
+                "Values": "Diligence, linguistic pride."
+            }
+        },
+        "Religious Education": {
+            "Topic 1: Faith in Action, Work Ethics & Reconciliation": {
+                "Subtopics": "Stewardship of resources, dignity of work, marriage/family values, conflict resolution.",
+                "Learning Outcome": "Learner demonstrates responsible stewardship and peaceful conflict mediation.",
+                "Learning Aids": "Community leadership case studies, scripture guides.",
+                "Life Skills": "Conflict mediation, leadership ethics.",
+                "Values": "Accountability, peace-building, stewardship."
+            }
+        }
+    },
+    "P7": {
+        "English": {
+            "Topic 1: PLE Grammar Consolidation, Idioms & Summary": {
+                "Subtopics": "Phrasal verbs, idioms, synonyms/antonyms, passage summary writing, timed comprehension.",
+                "Learning Outcome": "Learner completes comprehension and composition tasks within PLE time standards.",
+                "Learning Aids": "PLE past papers, idiom reference sheets, stopwatch.",
+                "Life Skills": "Time management, stress control, critical editing.",
+                "Values": "Resilience, academic integrity."
+            }
+        },
+        "Mathematics": {
+            "Topic 1: Set Theory, Geometry & Simultaneous Equations": {
+                "Subtopics": "Venn diagrams (2 and 3 sets), angle properties on parallel lines/circles, algebraic equations.",
+                "Learning Outcome": "Learner solves multi-step set problems, geometric angles, and equations.",
+                "Learning Aids": "Mathematical sets, Venn diagram templates, past paper drills.",
+                "Life Skills": "Complex analytical reasoning, strategic problem solving.",
+                "Values": "Precision, perseverance, excellence."
+            }
+        },
+        "Integrated Science": {
+            "Topic 1: Excretory & Nervous Systems, Livestock & Environment": {
+                "Subtopics": "Kidneys, skin, brain/spinal cord reflex actions, poultry/cattle management, pollution control.",
+                "Learning Outcome": "Learner explains excretion/nervous coordination and sustainable farming practices.",
+                "Learning Aids": "Kidney/brain anatomical charts, livestock feed samples.",
+                "Life Skills": "Scientific synthesis, agricultural entrepreneurship.",
+                "Values": "Environmental accountability, diligence."
+            }
+        },
+        "Social Studies": {
+            "Topic 1: Geography of Africa, Pan-Africanism & Global Bodies": {
+                "Subtopics": "Climate/vegetation of Africa, decolonization, African Union (AU), United Nations (UN), global trade.",
+                "Learning Outcome": "Learner evaluates Africa's physical regions and international cooperation roles.",
+                "Learning Aids": "Wall map of Africa, AU/UN organization charts.",
+                "Life Skills": "Global citizenship, geopolitical evaluation.",
+                "Values": "Global empathy, peace advocacy, civic pride."
+            }
+        },
+        "Kiswahili": {
+            "Topic 1: Barua Rasmi na Mawasiliano Fasaha": {
+                "Subtopics": "Formal letter format in Kiswahili, advanced sentence structures, oral fluency.",
+                "Learning Outcome": "Learner writes formal Kiswahili letters and communicates fluently for secondary entry.",
+                "Learning Aids": "Formal letter samples, conversational assessment prompts.",
+                "Life Skills": "Formal administrative communication, bilingual readiness.",
+                "Values": "Excellence, respect for regional languages."
+            }
+        },
+        "Religious Education": {
+            "Topic 1: Moral Theology, Human Dignity & Social Responsibility": {
+                "Subtopics": "Ethical responses to modern challenges, human rights/dignity, comprehensive PLE revision.",
+                "Learning Outcome": "Learner synthesizes scriptural principles to uphold human dignity and civic duty.",
+                "Learning Aids": "Thematic PLE revision briefs, ethical dilemma discussions.",
+                "Life Skills": "Ethical discernment, holistic self-evaluation.",
+                "Values": "Moral integrity, spiritual maturity, justice."
             }
         }
     }
@@ -393,7 +531,10 @@ if "dashboard_unlocked" not in st.session_state:
 
 st.sidebar.title("iLearn-Uganda")
 st.sidebar.caption("Integrated Learning Environment")
-page = st.sidebar.selectbox("Go to", ["Take Quiz", "NCDC Curriculum Explorer", "Teacher Dashboard"])
+page = st.sidebar.selectbox(
+    "Go to",
+    ["Take Quiz", "Topical Breakdown", "NCDC Curriculum Overview", "Teacher Dashboard"]
+)
 
 if page == "Take Quiz":
     st.title("iLearn-Uganda Quiz")
@@ -489,45 +630,55 @@ if page == "Take Quiz":
                     st.write(f"Explanation: {explain}")
                     st.write("---")
 
-elif page == "NCDC Curriculum Explorer":
-    st.title("📚 iLearn-Uganda Curriculum Explorer")
-    st.caption("Integrated Learning Environment — Complete NCDC Framework with Topics, Subtopics, Learning Aids, Life Skills & Values")
-    st.write("Explore complete syllabus structures mirroring NCDC frameworks: Lower Primary Thematic Approach (P1–P3) and Upper Primary Subject-Based Structure (P4–P7).")
+elif page == "Topical Breakdown":
+    st.title("🗂️ NCDC Class-by-Class Topical Breakdown")
+    st.caption("Integrated Learning Environment — Select Class, Subject & Topic")
+    st.write("Browse individual syllabus topics class by class, along with subtopics, learning outcomes, learning aids, life skills, and values.")
+    
+    col1, col2 = st.columns(2)
+    with col1:
+        selected_class = st.selectbox("1. Select Class", [f"P{i}" for i in range(1, 8)], key="tb_class")
+    
+    class_subjects = TOPICAL_BREAKDOWN.get(selected_class, {})
+    with col2:
+        selected_subject = st.selectbox("2. Select Subject / Learning Area", list(class_subjects.keys()), key="tb_subject")
+    
+    subject_topics = class_subjects.get(selected_subject, {})
+    selected_topic = st.selectbox("3. Select Topic", list(subject_topics.keys()), key="tb_topic")
+    
+    st.markdown("---")
+    topic_details = subject_topics.get(selected_topic, {})
+    if topic_details:
+        st.subheader(f"{selected_class} • {selected_subject}")
+        st.markdown(f"### 📌 {selected_topic}")
+        st.info(f"**Learning Outcome:** {topic_details.get('Learning Outcome', '')}")
+        st.markdown(f"**Subtopics:** {topic_details.get('Subtopics', '')}")
+        st.markdown(f"**Learning Aids / Instructional Materials:** {topic_details.get('Learning Aids', '')}")
+        st.markdown(f"**Life Skills Acquired:** {topic_details.get('Life Skills', '')}")
+        st.markdown(f"**Core Values Inculcated:** {topic_details.get('Values', '')}")
+
+elif page == "NCDC Curriculum Overview":
+    st.title("📚 NCDC Curriculum Overview")
+    st.caption("Integrated Learning Environment — Thematic (P1–P3) & Subject-Based (P4–P7) Cycles")
     
     cycle_choice = st.selectbox("Select Cycle", list(NCDC_CURRICULUM.keys()))
     
     if "Thematic" in cycle_choice:
         selected_class = st.selectbox("Select Class", ["P1", "P2", "P3"])
         st.markdown("---")
-        st.subheader(f"Thematic Curriculum Breakdown for {selected_class}")
+        st.subheader(f"Thematic Curriculum Summary for {selected_class}")
         terms_data = NCDC_CURRICULUM[cycle_choice].get(selected_class, {})
-        for term, details in terms_data.items():
-            st.markdown(f"### 🗓️ {term}")
-            if isinstance(details, dict):
-                st.markdown(f"**Topics Covered:** {details.get('Topics', '')}")
-                st.markdown(f"**Subtopics:** {details.get('Subtopics', '')}")
-                st.markdown(f"**Learning Aids / Instructional Materials:** {details.get('Learning Aids', '')}")
-                st.markdown(f"**Life Skills Acquired:** {details.get('Life Skills', '')}")
-                st.markdown(f"**Core Values Inculcated:** {details.get('Values', '')}")
-            else:
-                st.info(details)
-            st.markdown("---")
+        for term, desc in terms_data.items():
+            st.markdown(f"**{term}:**")
+            st.info(desc)
     else:
         selected_class = st.selectbox("Select Class", ["P4", "P5", "P6", "P7"])
         st.markdown("---")
-        st.subheader(f"Subject-Based Breakdown for {selected_class}")
+        st.subheader(f"Subject-Based Summary for {selected_class}")
         subjects_data = NCDC_CURRICULUM[cycle_choice].get(selected_class, {})
-        for subj, details in subjects_data.items():
-            st.markdown(f"### 📘 {subj}")
-            if isinstance(details, dict):
-                st.markdown(f"**Topics Covered:** {details.get('Topics', '')}")
-                st.markdown(f"**Subtopics:** {details.get('Subtopics', '')}")
-                st.markdown(f"**Learning Aids / Instructional Materials:** {details.get('Learning Aids', '')}")
-                st.markdown(f"**Life Skills Acquired:** {details.get('Life Skills', '')}")
-                st.markdown(f"**Core Values Inculcated:** {details.get('Values', '')}")
-            else:
-                st.info(details)
-            st.markdown("---")
+        for subj, desc in subjects_data.items():
+            st.markdown(f"**{subj}:**")
+            st.info(desc)
 
 elif page == "Teacher Dashboard":
     st.title("iLearn-Uganda Teacher Dashboard - Locked")
