@@ -6,12 +6,320 @@ import json
 
 st.set_page_config(page_title="LearnEasy", layout="centered")
 
-TEACHER_PASSWORD = "LearnEasy123"
+TEACHER_PASSWORD = st.secrets.get("TEACHER_PASSWORD", "LearnEasy123")
 CSV_FILE = "results.csv"
 SHEET_URL = st.secrets.get("SHEET_URL", "")
 
+# Integrated NCDC Curriculum Dataset (P1-P7)
+NCDC_CURRICULUM = {
+    "English": {
+        "P1": {
+            "term_1": "Develop basic listening and speaking skills using simple greetings, commands, and classroom vocabulary.",
+            "term_2": "Identify common objects, family members, and body parts in spoken English; begin recognizing letter sounds.",
+            "term_3": "Construct simple oral sentences and read basic two- and three-letter words."
+        },
+        "P2": {
+            "term_1": "Read short, simple sentences and build vocabulary around food, home, and school routines.",
+            "term_2": "Use basic prepositions, plurals, and simple present tense in oral and written descriptions of weather and transport.",
+            "term_3": "Write short guided sentences and comprehend brief, illustrated stories."
+        },
+        "P3": {
+            "term_1": "Read and comprehend short paragraphs; apply basic punctuation (capital letters, full stops, question marks).",
+            "term_2": "Expand vocabulary on community, health, and environment; write simple descriptive sentences.",
+            "term_3": "Demonstrate foundational reading fluency and written grammar readiness for upper-primary English-medium instruction."
+        },
+        "P4": {
+            "term_1": "Transition fully to English as the medium of instruction; master nouns, pronouns, and simple tenses.",
+            "term_2": "Construct coherent paragraphs, guided compositions, and informal/formal letters.",
+            "term_3": "Comprehend longer passages, extract main ideas, and use adjectives and adverbs accurately."
+        },
+        "P5": {
+            "term_1": "Apply complex tenses, conjunctions, and relative clauses in structured composition writing.",
+            "term_2": "Analyze short stories and poems for vocabulary, tone, and comprehension.",
+            "term_3": "Engage in structured debates, formal speeches, and summary writing."
+        },
+        "P6": {
+            "term_1": "Master active and passive voice, direct and indirect speech, and conditional sentences.",
+            "term_2": "Write persuasive essays, formal reports, and functional documents (notices, minutes).",
+            "term_3": "Demonstrate advanced reading comprehension and critical inference across varied texts."
+        },
+        "P7": {
+            "term_1": "Consolidate all primary grammar, vocabulary, and comprehension skills for national assessment standards.",
+            "term_2": "Refine analytical writing, editing, and rapid comprehension under timed conditions.",
+            "term_3": "Demonstrate full linguistic competence for Primary Leaving Examination (PLE) and secondary school entry."
+        }
+    },
+    "Mathematics": {
+        "P1": {
+            "term_1": "Sort, match, count, and write whole numbers from 1 to 10 using concrete objects.",
+            "term_2": "Perform basic addition and subtraction of numbers up to 20; identify basic 2D shapes.",
+            "term_3": "Count up to 99, compare lengths and weights using non-standard units, and recognize local currency notes/coins."
+        },
+        "P2": {
+            "term_1": "Understand place value (tens and ones) and perform addition and subtraction up to 50 with regrouping.",
+            "term_2": "Introduce basic multiplication as repeated addition and division as equal sharing.",
+            "term_3": "Solve practical word problems involving length, mass, capacity, and telling time by the hour/half-hour."
+        },
+        "P3": {
+            "term_1": "Work with numbers up to 1,000; master multiplication tables and basic division facts.",
+            "term_2": "Introduce simple fractions (halves, quarters, thirds) and standard metric units (meters, kilograms, liters).",
+            "term_3": "Apply arithmetic operations to money transactions, calendars, and basic pictographs."
+        },
+        "P4": {
+            "term_1": "Master place values up to ten thousands; perform operations with equivalent fractions and decimals.",
+            "term_2": "Calculate perimeter and area of simple rectangles and squares; convert standard metric units.",
+            "term_3": "Solve multi-step word problems involving money, time intervals, and basic geometric angles."
+        },
+        "P5": {
+            "term_1": "Perform operations with integers, decimals, percentages, and basic algebraic expressions.",
+            "term_2": "Calculate area, perimeter, and volume of standard shapes; interpret bar graphs and line graphs.",
+            "term_3": "Apply ratios, averages, and geometric construction skills using a compass and protractor."
+        },
+        "P6": {
+            "term_1": "Solve problems involving proportions, speed, distance, time, and simple interest.",
+            "term_2": "Master algebraic equations, inequalities, and advanced data interpretation (pie charts, mean, median, mode).",
+            "term_3": "Apply geometry theorems (angles on parallel lines, triangles, circles) and scale drawing."
+        },
+        "P7": {
+            "term_1": "Consolidate arithmetic, algebra, geometry, and set theory across upper-primary competencies.",
+            "term_2": "Solve complex, multi-concept application problems and interpret statistical datasets.",
+            "term_3": "Demonstrate comprehensive mathematical problem-solving readiness for PLE."
+        }
+    },
+    "Integrated Science": {
+        "P1": {
+            "term_1": "Identify parts of the human body and practice basic personal hygiene (handwashing, dental care).",
+            "term_2": "Recognize common foods, clean water sources, and basic sanitation habits at home and school.",
+            "term_3": "Observe and name common local plants, domestic animals, and basic weather conditions."
+        },
+        "P2": {
+            "term_1": "Classify foods into basic groups and understand safe food handling and storage.",
+            "term_2": "Explore basic properties of air, water, and soil through simple observation.",
+            "term_3": "Identify common accidents at home/school and practice basic safety and first-aid awareness."
+        },
+        "P3": {
+            "term_1": "Investigate soil types, plant growth requirements, and local ecosystems.",
+            "term_2": "Identify common vectors, communicable diseases, and methods of disease prevention.",
+            "term_3": "Explore sources of light, heat, and sound energy in the immediate environment."
+        },
+        "P4": {
+            "term_1": "Examine plant anatomy (roots, stems, leaves, flowers) and crop growing practices.",
+            "term_2": "Study the human digestive system, teeth structure, and nutritional deficiency diseases.",
+            "term_3": "Investigate weather elements, measurement instruments, and basic environmental conservation."
+        },
+        "P5": {
+            "term_1": "Explore states of matter, heat transfer, and basic poultry/livestock management.",
+            "term_2": "Study human body systems (circulatory and respiratory) and primary health care practices.",
+            "term_3": "Investigate soil conservation, immunization, and prevention of common tropical diseases."
+        },
+        "P6": {
+            "term_1": "Examine electricity, magnetism, simple machines, and friction.",
+            "term_2": "Study mammalian reproduction, adolescence, reproductive health, and immunity.",
+            "term_3": "Analyze sound and light energy, water purification, and environmental degradation."
+        },
+        "P7": {
+            "term_1": "Consolidate human anatomy (excretory, nervous, muscular-skeletal systems) and energy resources.",
+            "term_2": "Apply scientific inquiry to agriculture, population health, and sustainable resource management.",
+            "term_3": "Demonstrate mastery of practical science concepts and health education for PLE."
+        }
+    },
+    "Social Studies": {
+        "P1": {
+            "term_1": "Identify family members, home roles, and school rules and leadership.",
+            "term_2": "Recognize immediate neighborhood landmarks, community helpers, and basic needs.",
+            "term_3": "Practice peaceful coexistence, sharing, and respect for elders and peers."
+        },
+        "P2": {
+            "term_1": "Describe local community services (health centers, markets, places of worship).",
+            "term_2": "Identify local means of transport and communication and their importance.",
+            "term_3": "Understand basic child rights, responsibilities, and community safety rules."
+        },
+        "P3": {
+            "term_1": "Locate physical features, administrative units, and economic activities in the local sub-county/division.",
+            "term_2": "Examine cultural traditions, customs, and basic resource management in the community.",
+            "term_3": "Understand local leadership structures and civic responsibilities."
+        },
+        "P4": {
+            "term_1": "Use map-reading skills (compass direction, key, scale) to study the local district.",
+            "term_2": "Examine the physical geography, climate, vegetation, and early history of the district.",
+            "term_3": "Analyze social services, district governance, and economic activities."
+        },
+        "P5": {
+            "term_1": "Study the physical geography, climate, and vegetation zones of Uganda.",
+            "term_2": "Examine pre-colonial Uganda, ethnic migrations, early kingdoms, and foreign influence.",
+            "term_3": "Analyze Uganda's governance, constitution, citizenship, and post-independence development."
+        },
+        "P6": {
+            "term_1": "Examine the physical geography, resources, and economic development of East Africa.",
+            "term_2": "Analyze colonial administration, resistance movements, and struggles for independence in East Africa.",
+            "term_3": "Evaluate regional cooperation (East African Community), trade, and environmental management."
+        },
+        "P7": {
+            "term_1": "Study the physical geography, climate, and major economic regions of Africa.",
+            "term_2": "Analyze Pan-Africanism, decolonization, governance challenges, and international organizations (AU, UN).",
+            "term_3": "Synthesize geographical, historical, and civic competencies for PLE."
+        }
+    },
+    "Religious Education": {
+        "P1": {
+            "term_1": "Recognize God/Allah as the Creator and appreciate the gift of life, family, and nature.",
+            "term_2": "Practice basic values of love, obedience, honesty, and respect at home and school.",
+            "term_3": "Participate in simple prayers, songs, and stories about kindness and sharing."
+        },
+        "P2": {
+            "term_1": "Understand the importance of worship, prayer, and sacred spaces (Church/Mosque).",
+            "term_2": "Learn foundational stories of faith, forgiveness, and helping those in need.",
+            "term_3": "Demonstrate fairness, truthfulness, and peaceful play with peers."
+        },
+        "P3": {
+            "term_1": "Explore major religious festivals, traditions, and community celebrations.",
+            "term_2": "Understand moral responsibility, stewardship of the environment, and care for the vulnerable.",
+            "term_3": "Identify key religious leaders and early foundational teachings (CRE/IRE)."
+        },
+        "P4": {
+            "term_1": "Study sacred scriptures (Bible/Quran) and foundational covenants/prophetic traditions.",
+            "term_2": "Examine moral decision-making, personal integrity, and service to the community.",
+            "term_3": "Appreciate religious diversity and practice tolerance and peaceful coexistence."
+        },
+        "P5": {
+            "term_1": "Analyze the life and teachings of Jesus Christ (CRE) or Prophet Muhammad (IRE) regarding justice and compassion.",
+            "term_2": "Explore worship practices, sacraments/pillars of faith, and spiritual discipline.",
+            "term_3": "Apply ethical principles to contemporary issues such as peer pressure and honesty."
+        },
+        "P6": {
+            "term_1": "Examine faith in action, leadership, and social responsibility in the modern community.",
+            "term_2": "Study marriage, family values, work ethics, and stewardship of resources from a religious perspective.",
+            "term_3": "Analyze conflict resolution, reconciliation, and interfaith harmony."
+        },
+        "P7": {
+            "term_1": "Consolidate scriptural knowledge, moral theology/ethics, and civic responsibility.",
+            "term_2": "Reflect on personal values, human dignity, and ethical responses to societal challenges.",
+            "term_3": "Demonstrate comprehensive mastery of CRE/IRE competencies for PLE."
+        }
+    },
+    "Kiswahili": {
+        "P1": {
+            "term_1": "Introduced orally through songs, rhymes, and basic greetings (e.g., Shikamoo, Habari).",
+            "term_2": "Recognize and respond to simple classroom instructions and polite expressions.",
+            "term_3": "Name common family members, numbers 1-10, and everyday classroom objects orally."
+        },
+        "P2": {
+            "term_1": "Expand oral vocabulary for body parts, domestic animals, and basic foods.",
+            "term_2": "Form simple two- and three-word oral phrases using basic nouns and verbs.",
+            "term_3": "Participate in short conversational dialogues and action songs."
+        },
+        "P3": {
+            "term_1": "Transition from oral listening/speaking to recognizing Kiswahili vowels, syllables, and simple words.",
+            "term_2": "Read and write basic words and short simple sentences about home and school.",
+            "term_3": "Count up to 50 and describe days of the week and simple daily activities."
+        },
+        "P4": {
+            "term_1": "Master Kiswahili phonetic spelling, noun classes (M-WA, KI-VI), and basic present tense (na-).",
+            "term_2": "Read short graded passages and answer basic comprehension questions.",
+            "term_3": "Write simple guided sentences describing people, places, and weather."
+        },
+        "P5": {
+            "term_1": "Apply past (li-), present (na-), and future (ta-) tenses in spoken and written sentences.",
+            "term_2": "Expand vocabulary on travel, markets, health, and East African cultural ties.",
+            "term_3": "Write short paragraphs and engage in structured conversational role-plays."
+        },
+        "P6": {
+            "term_1": "Master additional noun classes, adjectives, prepositions, and negation forms.",
+            "term_2": "Read and summarize short stories, dialogues, and informational texts.",
+            "term_3": "Write informal letters and descriptive compositions using accurate grammar."
+        },
+        "P7": {
+            "term_1": "Consolidate upper-primary grammar, vocabulary, and comprehension across thematic topics.",
+            "term_2": "Demonstrate fluent oral communication and structured essay writing for regional integration.",
+            "term_3": "Exhibit functional proficiency in listening, speaking, reading, and writing Kiswahili."
+        }
+    },
+    "Creative Arts & PE": {
+        "P1": {
+            "term_1": "Develop gross motor skills through running, jumping, balancing, and rhythmic movement.",
+            "term_2": "Explore basic drawing, coloring, modeling with clay, and singing simple local songs.",
+            "term_3": "Participate in cooperative group games and simple traditional dances."
+        },
+        "P2": {
+            "term_1": "Improve hand-eye coordination through ball games, skipping, and basic gymnastics.",
+            "term_2": "Create simple crafts using locally available materials (fibers, paper, clay).",
+            "term_3": "Perform rhythmic songs, storytelling, and dramatization."
+        },
+        "P3": {
+            "term_1": "Practice foundational athletics, team game rules, and personal physical fitness.",
+            "term_2": "Develop basic weaving, printing, and musical rhythm patterns.",
+            "term_3": "Participate in school cultural performances and cooperative sports."
+        },
+        "P4": {
+            "term_1": "Learn structured rules and techniques for major sports (football, netball, athletics).",
+            "term_2": "Explore elements of visual art (line, shape, texture, color mixing) and basic music notation.",
+            "term_3": "Perform traditional Ugandan dances and dramatic skits on social themes."
+        },
+        "P5": {
+            "term_1": "Develop intermediate sports tactics, physical endurance, and sportsmanship.",
+            "term_2": "Design functional crafts, posters, and decorative patterns using local resources.",
+            "term_3": "Compose simple songs, play basic traditional instruments, and perform choral pieces."
+        },
+        "P6": {
+            "term_1": "Refine athletic and team sport skills alongside first-aid and sports safety practices.",
+            "term_2": "Produce advanced visual art projects, sculpture, and textile designs.",
+            "term_3": "Direct and perform drama and music pieces addressing community health and civic values."
+        },
+        "P7": {
+            "term_1": "Demonstrate leadership, teamwork, and fitness management in competitive and recreational sports.",
+            "term_2": "Integrate entrepreneurial skills into craft production and performing arts.",
+            "term_3": "Exhibit well-rounded physical, creative, and cultural competencies upon primary completion."
+        }
+    }
+}
+
+# Class-Specific Question Banks (P1 to P7)
+CLASS_QUESTIONS = {
+    "P1": [
+        ("Q1. [Maths] What is 2 + 3?", ["4", "5", "6", "3"], "5", "2 plus 3 equals 5."),
+        ("Q2. [English] What is the opposite of day?", ["Sun", "Night", "Morning", "Dark"], "Night", "The opposite of day is night."),
+        ("Q3. [Science] Which body part do we use for seeing?", ["Nose", "Eyes", "Ears", "Mouth"], "Eyes", "We use eyes for seeing."),
+        ("Q4. [SST] Who heads a family at home?", ["Teacher", "Father/Mother", "Doctor", "Driver"], "Father/Mother", "Parents or guardians head the family."),
+    ],
+    "P2": [
+        ("Q1. [Maths] What is 15 - 7?", ["7", "8", "9", "6"], "8", "15 minus 7 equals 8."),
+        ("Q2. [English] Choose the correct plural of 'cat':", ["Cats", "Cates", "Cat", "Catie"], "Cats", "The plural of cat is cats."),
+        ("Q3. [Science] Which food group gives us energy?", ["Proteins", "Carbohydrates", "Vitamins", "Water"], "Carbohydrates", "Carbohydrates give the body energy."),
+        ("Q4. [SST] Name the place where we buy things in our community.", ["School", "Market", "Hospital", "Well"], "Market", "We buy goods from the market."),
+    ],
+    "P3": [
+        ("Q1. [Maths] What is 6 multiplied by 4?", ["20", "24", "18", "28"], "24", "6 x 4 = 24."),
+        ("Q2. [Science] Which soil type holds the most water?", ["Sandy soil", "Loam soil", "Clay soil", "Topsoil"], "Clay soil", "Clay soil has fine particles that hold water best."),
+        ("Q3. [SST] What is the title of the political head of a sub-county?", ["LC III Chairperson", "LC I Chairperson", "RDC", "Mayor"], "LC III Chairperson", "An LC III Chairperson heads a sub-county."),
+        ("Q4. [English] Fill in the gap: She ........ to school every day walk.", ["walk", "walks", "walking", "walked"], "walks", "Third-person singular uses 'walks'."),
+    ],
+    "P4": [
+        ("Q1. [Maths] Express 1/2 as a percentage.", ["25%", "50%", "75%", "100%"], "50%", "1/2 x 100% = 50%."),
+        ("Q2. [Science] Which part of a plant manufactures food?", ["Root", "Stem", "Leaf", "Flower"], "Leaf", "Leaves perform photosynthesis to make food."),
+        ("Q3. [SST] What instrument is used to show directions on a map?", ["Windsock", "Compass", "Thermometer", "Barometer"], "Compass", "A compass shows cardinal directions."),
+        ("Q4. [English] Give the plural of 'baby':", ["Babys", "Babies", "Babyies", "Babs"], "Babies", "Words ending in 'y' preceded by a consonant change to 'ies'."),
+    ],
+    "P5": [
+        ("Q1. [Maths] Simplify: -5 - (-6)", ["-11", "1", "11", "-1"], "1", "-5 + 6 = 1. Minus a minus becomes plus."),
+        ("Q2. [Science] What gas is used by plants during photosynthesis?", ["Oxygen", "Carbon dioxide", "Nitrogen", "Hydrogen"], "Carbon dioxide", "Plants absorb carbon dioxide from the air."),
+        ("Q3. [SST] Which is the largest country in East Africa by land area?", ["Uganda", "Kenya", "Tanzania", "Rwanda"], "Tanzania", "Tanzania is the largest East African country."),
+        ("Q4. [CRE] Who was sold by his brothers into Egypt?", ["Joseph", "Moses", "David", "Abraham"], "Joseph", "Joseph was sold into slavery by his brothers."),
+    ],
+    "P6": [
+        ("Q1. [Maths] Find the area of a rectangle of length 10cm and width 5cm.", ["15cm²", "50cm²", "30cm²", "25cm²"], "50cm²", "Area = Length x Width = 10 x 5 = 50cm²."),
+        ("Q2. [Science] Which blood cells fight against diseases in the human body?", ["Red blood cells", "White blood cells", "Platelets", "Plasma"], "White blood cells", "White blood cells defend the body against infections."),
+        ("Q3. [SST] When did Uganda gain her independence?", ["9th October 1962", "26th January 1986", "9th October 1952", "1st January 1960"], "9th October 1962", "Uganda became independent on October 9, 1962."),
+        ("Q4. [Kiswahili] What does the word 'Rafiki' mean in English?", ["Teacher", "Friend", "Brother", "Enemy"], "Friend", "'Rafiki' means friend in Kiswahili."),
+    ],
+    "P7": [
+        ("Q1. [Maths] Solve for x: 2x + 4 = 12", ["x = 4", "x = 6", "x = 8", "x = 2"], "x = 4", "2x = 12 - 4 => 2x = 8 => x = 4."),
+        ("Q2. [Science] Why is heat unable to travel in a vacuum?", ["There are no particles to carry it", "Vacuum is too hot", "Vacuum is too cold", "Vacuum has many particles"], "There are no particles to carry it", "Heat requires particles to transfer via conduction or convection; a vacuum has none."),
+        ("Q3. [SST] Name the organization that replaced the East African Community in 1977 before it was revived later.", ["COMESA", "None / It collapsed", "ECOWAS", "AU"], "None / It collapsed", "The initial EAC collapsed in 1977."),
+        ("Q4. [English] Choose the correct indirect speech: John said, 'I am going home.'", ["John said that he is going home", "John said that he was going home", "John said he is went home", "John said that I was going home"], "John said that he was going home", "Present tense changes to past tense in indirect speech."),
+    ]
+}
+
 def load_results():
-    # 1. Try Google Sheets via Apps Script
     if SHEET_URL:
         try:
             r = requests.get(SHEET_URL, timeout=10)
@@ -21,6 +329,7 @@ def load_results():
                 if str(row.get("Name", "")).strip() != "":
                     clean.append({
                         "Name": row.get("Name", ""),
+                        "Class": row.get("Class", "P1"),
                         "School": row.get("School", ""),
                         "Score": row.get("Score", ""),
                         "Percentage": float(row.get("Percentage", 0)) if str(row.get("Percentage", "")).strip() != "" else 0,
@@ -30,7 +339,6 @@ def load_results():
             return clean
         except Exception as e:
             st.warning(f"Could not load from Google Sheets: {e}")
-    # 2. Fallback local
     if os.path.exists(CSV_FILE):
         try:
             return pd.read_csv(CSV_FILE).to_dict("records")
@@ -47,7 +355,6 @@ def save_one_result(row):
                 saved = True
         except Exception as e:
             st.warning(f"Google Sheets save failed: {e}")
-    # Always backup locally too
     try:
         existing = []
         if os.path.exists(CSV_FILE):
@@ -67,34 +374,12 @@ if "last_submit_key" not in st.session_state:
 if "dashboard_unlocked" not in st.session_state:
     st.session_state.dashboard_unlocked = False
 
-questions = [
-    ("Q1. [English] What gets wetter the more it dries?", ["Water", "A towel", "A stone", "A cup"], "A towel", "A towel gets wetter as it dries you."),
-    ("Q2. [Maths] The temperature of the room in the morning was 54 degrees Celsius. Find the temperature in degrees Fahrenheit.", ["129.2F", "120F", "54F", "100F"], "129.2F", "F = (C x 9/5) + 32 = (54 x 9/5) + 32 = 129.2F"),
-    ("Q3. [CRE] How did the people of Israel survive in the wilderness while moving to the promised land?", ["God provided manna and quails", "They bought food", "They hunted", "They farmed"], "God provided manna and quails", "God provided manna and quails in the wilderness."),
-    ("Q4. [SST] What is the largest vegetation in Uganda?", ["Tropical rainforest", "Montane forest", "Swamp vegetation", "Savanna"], "Tropical rainforest", "Tropical rainforest is the largest vegetation in Uganda."),
-    ("Q5. [Maths] Simplify: -5 - (-6)", ["-11", "1", "11", "-1"], "1", "-5 + 6 = 1. Minus a minus becomes plus."),
-    ("Q6. [Maths] A pair of packets of biscuits costs Sh. 1000. Find the cost of 7 similar packets of biscuits.", ["Sh. 3500", "Sh. 7000", "Sh. 500", "Sh. 14000"], "Sh. 3500", "One packet = 1000/2 = 500. 7 x 500 = 3500."),
-    ("Q7. [Maths] How far can a fox run into a circular forest?", ["All the way through", "Quarter way", "Halfway", "To the centre"], "Halfway", "After halfway, it starts running out of the forest."),
-    ("Q8. [Science] How does a mosquito differ from a cockroach in terms of their lifecycle?", ["Mosquito undergoes complete metamorphosis, cockroach undergoes incomplete metamorphosis", "Both undergo complete metamorphosis", "Both undergo incomplete metamorphosis", "Mosquito undergoes incomplete, cockroach undergoes complete"], "Mosquito undergoes complete metamorphosis, cockroach undergoes incomplete metamorphosis", "Mosquito has complete metamorphosis, cockroach has incomplete metamorphosis."),
-    ("Q9. [Science] Why does heat travel faster in a solid than in a gas?", ["Particles in a solid are closer together", "Particles in a gas are closer together", "Solids are heavier", "Gases are colder"], "Particles in a solid are closer together", "Particles in a solid are closer together so heat passes faster."),
-    ("Q10. [RE] How does the school prayer assist a learner?", ["It makes the learner sleep", "It helps the learner start the day with God", "It makes the learner late", "It makes the learner hungry"], "It helps the learner start the day with God", "School prayer helps the learner start the day with God."),
-    ("Q11. [Maths] Simplify 2m - 8m + 13m", ["5m", "23m", "7m", "3m"], "7m", "2m - 8m = -6m, -6m + 13m = 7m."),
-    ("Q12. [SST] Which country does Uganda border in the East?", ["Tanzania", "South Sudan", "DR Congo", "Kenya"], "Kenya", "Uganda borders Kenya in the East."),
-    ("Q13. [Science] Why is heat unable to travel in a vacuum?", ["There are no particles to carry it", "Vacuum is too hot", "Vacuum is too cold", "Vacuum has many particles"], "There are no particles to carry it", "Vacuum is too hot to carry heat."),
-    ("Q14. [Maths] Which of these is the net of a cylinder?", ["One circle and a triangle", "Two circles and a rectangle", "One circle and a square", "Three circles"], "Two circles and a rectangle", "A cylinder net has two circles and a rectangle."),
-    ("Q15. [SST] Name the major physical feature that is known for the formation of relief rainfall in Eastern Uganda.", ["Mount Elgon", "Lake Victoria", "River Nile", "Rwenzori Mountains"], "Mount Elgon", "Mount Elgon causes relief rainfall in Eastern Uganda."),
-    ("Q16. [English] Use the correct form: Sarah ........ meat to chicken. (Prefers, likes)", ["Likes", "Prefer", "Prefers", "Like"], "Prefers", "Sarah prefers meat to chicken."),
-    ("Q17. [Maths] Molly is twice as old as Jolly. If the sum of their ages is 30, how old is Molly?", ["20 years", "10 years", "15 years", "30 years"], "20 years", "Jolly = 10, Molly = 20, total = 30."),
-    ("Q18. [SST] What is a landlocked country?", ["A country with many lakes", "A country with no sea coast", "A country with many rivers", "A country with a big ocean"], "A country with no sea coast", "A landlocked country has no sea coast."),
-    ("Q19. [CRE] 'I AM WHO I AM.' To whom was the statement made?", ["Abraham", "Jacob", "Moses", "David"], "Moses", "God said 'I AM WHO I AM' to Moses."),
-    ("Q20. [English] One of the following words means elephant in Kiswahili.", ["Tendo", "Rembo", "Pembo", "Tembo"], "Tembo", "Tembo means elephant in Kiswahili."),
-]
-
-page = st.sidebar.selectbox("Go to", ["Take Quiz", "Teacher Dashboard"])
+page = st.sidebar.selectbox("Go to", ["Take Quiz", "NCDC Curriculum Explorer", "Teacher Dashboard"])
 
 if page == "Take Quiz":
     st.title("LearnEasy Quiz")
-    st.write("Answer all questions, then click Submit.")
+    st.write("Select your class, answer the questions for your level, then click Submit.")
+    
     if st.button("Next Child - Clear for New Learner"):
         saved = st.session_state.get("results", [])
         st.session_state.clear()
@@ -103,14 +388,23 @@ if page == "Take Quiz":
         st.session_state.last_submit_key = ""
         st.session_state.dashboard_unlocked = False
         st.rerun()
+        
     name = st.text_input("Your Name", key="name")
     school = st.text_input("Your School", key="school")
+    learner_class = st.selectbox("Your Class", [f"P{i}" for i in range(1, 8)], key="learner_class")
+    
+    # Load class-specific questions
+    questions = CLASS_QUESTIONS.get(learner_class, [])
+    
+    st.markdown(f"### Assessment for {learner_class}")
     answers = []
     for i, (q, options, correct, explain) in enumerate(questions):
-        ans = st.radio(q, options, key=f"q{i}", index=None)
+        ans = st.radio(q, options, key=f"q{i}_{learner_class}", index=None)
         answers.append(ans)
+        
     if st.session_state.submitted:
         st.info("This child has already submitted. Click 'Next Child' above for the next learner.")
+        
     if st.button("Submit Quiz - See My Results"):
         if st.session_state.submitted:
             st.warning("Already submitted. Click 'Next Child' for the next learner.")
@@ -119,7 +413,7 @@ if page == "Take Quiz":
         elif any(a is None for a in answers):
             st.warning("Please answer all questions before submitting.")
         else:
-            submit_key = f"{name}|{school}|{answers}"
+            submit_key = f"{name}|{school}|{learner_class}|{answers}"
             if submit_key == st.session_state.last_submit_key:
                 st.warning("Already submitted. Click 'Next Child' for the next learner.")
             else:
@@ -128,7 +422,8 @@ if page == "Take Quiz":
                     if str(answers[i]) == str(correct):
                         score = score + 1
                 total = len(questions)
-                pct = round(score * 100 / total, 1)
+                pct = round(score * 100 / total, 1) if total > 0 else 0
+                
                 if pct >= 80:
                     grade = "A"
                     comment = "Excellent! Keep it up."
@@ -141,17 +436,28 @@ if page == "Take Quiz":
                 else:
                     grade = "D"
                     comment = "Keep trying, you can do better."
-                new_row = {"Name": name, "School": school, "Score": f"{score}/{total}", "Percentage": pct, "Grade": grade, "Comment": comment}
+                    
+                new_row = {
+                    "Name": name, 
+                    "Class": learner_class, 
+                    "School": school, 
+                    "Score": f"{score}/{total}", 
+                    "Percentage": pct, 
+                    "Grade": grade, 
+                    "Comment": comment
+                }
                 st.session_state.results.append(new_row)
                 ok = save_one_result(new_row)
                 if ok:
                     st.success("Saved to Google Sheets ✅ - Will survive reboot")
                 else:
                     st.warning("Saved locally only - Check SHEET_URL in Secrets")
+                    
                 st.session_state.last_submit_key = submit_key
                 st.session_state.submitted = True
                 st.success(f"Well done {name}! You scored {score}/{total} = {pct}% Grade {grade}")
                 st.write(comment)
+                
                 st.subheader("Review Your Answers")
                 for i, (q, options, correct, explain) in enumerate(questions):
                     st.write(f"Q{i+1}: {q}")
@@ -164,7 +470,29 @@ if page == "Take Quiz":
                     st.write(f"Explanation: {explain}")
                     st.write("---")
 
-if page == "Teacher Dashboard":
+elif page == "NCDC Curriculum Explorer":
+    st.title("📚 NCDC Primary Curriculum Explorer")
+    st.write("Explore official learning outcomes from Primary One (P1) to Primary Seven (P7) across all subjects including Kiswahili, Religious Education, and Creative Arts & PE.")
+    
+    col1, col2 = st.columns(2)
+    with col1:
+        selected_subject = st.selectbox("Select Subject", list(NCDC_CURRICULUM.keys()))
+    with col2:
+        selected_class = st.selectbox("Select Class", [f"P{i}" for i in range(1, 8)])
+        
+    st.markdown("---")
+    st.subheader(f"Learning Outcomes for {selected_subject} ({selected_class})")
+    
+    class_data = NCDC_CURRICULUM.get(selected_subject, {}).get(selected_class, {})
+    if class_data:
+        for term, outcome in class_data.items():
+            term_name = term.replace("_", " ").title()
+            st.markdown(f"**{term_name}:**")
+            st.info(outcome)
+    else:
+        st.write("No outcomes found for this combination.")
+
+elif page == "Teacher Dashboard":
     st.title("Teacher Dashboard - Locked")
     if not st.session_state.dashboard_unlocked:
         st.write("This page is for teachers only. Enter your password.")
@@ -176,23 +504,38 @@ if page == "Teacher Dashboard":
             else:
                 st.error("Wrong password. Try again.")
         st.stop()
+        
     st.title("Teacher Dashboard")
     if SHEET_URL:
         st.success("Google Sheets Link is set ✅")
     else:
-        st.error("No SHEET_URL in Secrets - Go to Step 3")
-    if st.button("Lock Dashboard"):
-        st.session_state.dashboard_unlocked = False
-        st.rerun()
-    if st.button("Refresh from Google Sheets"):
-        st.session_state.results = load_results()
-        st.rerun()
+        st.error("No SHEET_URL in Secrets")
+        
+    col_btn1, col_btn2 = st.columns(2)
+    with col_btn1:
+        if st.button("Lock Dashboard"):
+            st.session_state.dashboard_unlocked = False
+            st.rerun()
+    with col_btn2:
+        if st.button("Refresh from Google Sheets"):
+            st.session_state.results = load_results()
+            st.rerun()
+            
     results = st.session_state.get("results", [])
     st.write(f"Total attempts: {len(results)}")
+    
     if len(results) == 0:
         st.info("No results yet. Let a child take the quiz first.")
     else:
         df = pd.DataFrame(results)
+        
+        # Class Filter for Teacher View
+        if "Class" in df.columns:
+            all_classes = ["All"] + sorted(df["Class"].unique().tolist())
+            selected_filter_class = st.selectbox("Filter Leaderboard by Class", all_classes)
+            if selected_filter_class != "All":
+                df = df[df["Class"] == selected_filter_class]
+
         df = df.sort_values(by="Percentage", ascending=False).reset_index(drop=True)
         medals = []
         for idx in range(len(df)):
@@ -206,18 +549,19 @@ if page == "Teacher Dashboard":
                 medals.append("")
         df.insert(0, "Medal", medals)
         df.insert(0, "Rank", range(1, len(df) + 1))
+        
         st.subheader("🏆 Top 3 Medal Winners")
         for idx in range(min(3, len(df))):
             row = df.iloc[idx]
             if idx == 0:
-                st.success(f"🥇 GOLD - {row['Name']} - {row['School']} - {row['Score']} = {row['Percentage']}%")
+                st.success(f"🥇 GOLD - {row['Name']} ({row.get('Class', 'N/A')}) - {row['School']} - {row['Score']} = {row['Percentage']}%")
             elif idx == 1:
-                st.info(f"🥈 SILVER - {row['Name']} - {row['School']} - {row['Score']} = {row['Percentage']}%")
+                st.info(f"🥈 SILVER - {row['Name']} ({row.get('Class', 'N/A')}) - {row['School']} - {row['Score']} = {row['Percentage']}%")
             elif idx == 2:
-                st.warning(f"🥉 BRONZE - {row['Name']} - {row['School']} - {row['Score']} = {row['Percentage']}%")
-        st.subheader("Top 25 Learners")
-        st.dataframe(df.head(25))
-        st.subheader("All Results")
+                st.warning(f"🥉 BRONZE - {row['Name']} ({row.get('Class', 'N/A')}) - {row['School']} - {row['Score']} = {row['Percentage']}%")
+                
+        st.subheader("Learner Leaderboard")
         st.dataframe(df)
+        
         csv = df.to_csv(index=False).encode("utf-8")
         st.download_button("Download Results CSV", csv, "learneasy_results.csv", "text/csv")
