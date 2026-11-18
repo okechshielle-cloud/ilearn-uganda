@@ -3,7 +3,6 @@ import pandas as pd
 import os
 import requests
 import json
-import random
 
 st.set_page_config(page_title="iLearn-Uganda", layout="centered")
 
@@ -310,10 +309,10 @@ OMWESO_PUZZLES = {
         "ncdc_strand": "Operations & Remainders (P4–P5)"
     },
     "P6–P7 (Relay Chain & Okutta Capture)": {
-        "question": "Your Pit 5 has 1 seed across from AI pits holding 2 seeds each. Which pit do you play to trigger Okutta?",
+        "question": "Your Pit 5 has 1 seed across from opponent pits holding 2 seeds each. Which pit do you play to trigger Okutta?",
         "options": ["Play Pit 2", "Play Pit 5", "Play Pit 0", "Cannot capture"],
         "answer": "Play Pit 2",
-        "explanation": "Pit 2 has 3 seeds (2 + 3 = 5). Landing in occupied Pit 5 triggers Okutta across from AI's inner Pit 2 and outer Pit 13, capturing 4 seeds!",
+        "explanation": "Pit 2 has 3 seeds (2 + 3 = 5). Landing in occupied Pit 5 triggers Okutta across from opponent's inner Pit 2 and outer Pit 13, capturing 4 seeds!",
         "ncdc_strand": "Modular Arithmetic & Multi-Step Problem Solving (P6–P7)"
     }
 }
@@ -461,29 +460,27 @@ if page == "Take Quiz":
                     st.markdown("---")
 
 elif page == "Omweso Math Arena":
-    st.title("🎲 Omweso Math Arena (3D Visual Board)")
-    st.caption("Traditional Ugandan Board Game — 2 Seeds per Pit Setup & Visual Captures (`Okutta`)")
+    st.title("🎲 Omweso Math Arena (Pass & Play)")
+    st.caption("Traditional Ugandan Board Game — 2 Players (Turn-by-Turn Anti-Clockwise Sowing & Visual Captures)")
 
-    tab_play, tab_puzzle = st.tabs(["🕹️ Play 3D Omweso vs. AI", "🧩 NCDC Curriculum Puzzles"])
+    tab_play, tab_puzzle = st.tabs(["🕹️ Pass & Play (2 Players)", "🧩 NCDC Curriculum Puzzles"])
 
     with tab_play:
-        ai_level = st.selectbox("AI Difficulty", ["Beginner (P2)", "Intermediate (P5)", "Master (P7)"], key="omw_ai_lvl")
-        
-        # Embedded 3D Canvas App with 2 seeds per pit setup and visual capture emptying animation
-        omweso_3d_html = f"""
+        # Embedded 3D Canvas App with Pass & Play Mode (Player 1 & Player 2 take turns)
+        omweso_2p_html = """
         <!DOCTYPE html>
         <html>
         <head>
         <style>
-          body {{
+          body {
             background: #2b1810;
             color: #f4e8d8;
             font-family: sans-serif;
             text-align: center;
             margin: 0;
             padding: 5px;
-          }}
-          #board-container {{
+          }
+          #board-container {
             background: linear-gradient(135deg, #5c2c16, #3a1a0b);
             border: 5px solid #8B4513;
             border-radius: 14px;
@@ -492,14 +489,14 @@ elif page == "Omweso Math Arena":
             display: inline-block;
             max-width: 620px;
             width: 100%;
-          }}
-          .row {{
+          }
+          .row {
             display: flex;
             justify-content: center;
             gap: 6px;
             margin: 8px 0;
-          }}
-          .pit {{
+          }
+          .pit {
             width: 52px;
             height: 65px;
             background: radial-gradient(circle at 50% 30%, #1e0d05, #0f0502);
@@ -513,29 +510,33 @@ elif page == "Omweso Math Arena":
             cursor: pointer;
             position: relative;
             transition: transform 0.1s, background-color 0.3s;
-          }}
-          .pit:hover {{
+          }
+          .pit:hover {
             transform: scale(1.05);
             border-color: #faedcd;
-          }}
-          .pit.playable {{
+          }
+          .pit.playable-p1 {
             border-color: #52b788;
             box-shadow: inset 0 6px 10px rgba(0,0,0,0.9), 0 0 10px #52b788;
-          }}
-          .pit.capturing {{
+          }
+          .pit.playable-p2 {
+            border-color: #ffb703;
+            box-shadow: inset 0 6px 10px rgba(0,0,0,0.9), 0 0 10px #ffb703;
+          }
+          .pit.capturing {
             background: radial-gradient(circle at 50% 30%, #780000, #370617);
             border-color: #ff4d6d;
             box-shadow: inset 0 6px 10px rgba(0,0,0,0.9), 0 0 14px #ff4d6d;
             transform: scale(1.1);
-          }}
-          .pit-label {{
+          }
+          .pit-label {
             position: absolute;
             top: 2px;
             font-size: 8px;
             color: #d4a373;
             font-weight: bold;
-          }}
-          .seeds-container {{
+          }
+          .seeds-container {
             display: flex;
             flex-wrap: wrap;
             width: 40px;
@@ -544,24 +545,25 @@ elif page == "Omweso Math Arena":
             justify-content: center;
             gap: 2px;
             margin-top: 8px;
-          }}
-          .seed-3d {{
+          }
+          .seed-3d {
             width: 10px;
             height: 10px;
             background: radial-gradient(circle at 35% 35%, #ffb703, #b5651d 60%, #53330b);
             border-radius: 50%;
             box-shadow: 1px 2px 3px rgba(0,0,0,0.8), inset -1px -1px 2px rgba(0,0,0,0.5);
             display: inline-block;
-          }}
-          #status-bar {{
+          }
+          #status-bar {
             font-size: 14px;
             margin: 10px 0;
             padding: 8px;
             background: #432818;
             border-radius: 8px;
             border: 1px solid #bb9457;
-          }}
-          button.action-btn {{
+            font-weight: bold;
+          }
+          button.action-btn {
             background: #bc6c25;
             color: white;
             border: none;
@@ -570,26 +572,26 @@ elif page == "Omweso Math Arena":
             font-weight: bold;
             cursor: pointer;
             margin-top: 10px;
-          }}
-          button.action-btn:hover {{
+          }
+          button.action-btn:hover {
             background: #dda15e;
-          }}
+          }
         </style>
         </head>
         <body>
 
-          <div id="status-bar">Tap any glowing green pit (2+ seeds) to sow anti-clockwise!</div>
+          <div id="status-bar">Player 1's Turn: Tap any glowing green pit (2+ seeds)</div>
 
           <div id="board-container">
-            <div style="font-size:11px; color:#dda15e; margin-bottom:3px;">AI COACH SIDE (Top)</div>
-            <div class="row" id="ai-outer"></div>
-            <div class="row" id="ai-inner"></div>
+            <div id="p2-header" style="font-size:11px; color:#ffb703; margin-bottom:3px;">PLAYER 2 SIDE (Top - Inactive)</div>
+            <div class="row" id="p2-outer"></div>
+            <div class="row" id="p2-inner"></div>
 
             <hr style="border-color: #8B4513; margin: 10px 0;">
 
-            <div class="row" id="p-inner"></div>
-            <div class="row" id="p-outer"></div>
-            <div style="font-size:11px; color:#52b788; margin-top:3px;">YOUR SIDE (Bottom - 2 Seeds per Pit Setup)</div>
+            <div class="row" id="p1-inner"></div>
+            <div class="row" id="p1-outer"></div>
+            <div id="p1-header" style="font-size:11px; color:#52b788; margin-top:3px;">PLAYER 1 SIDE (Bottom - Active Turn)</div>
           </div>
 
           <div>
@@ -597,16 +599,17 @@ elif page == "Omweso Math Arena":
           </div>
 
         <script>
-          // Initialize with 2 seeds in each pit across all rows (32 seeds per player)
-          let p0 = [2,2,2,2,2,2,2,2, 2,2,2,2,2,2,2,2];
+          // p1 = Bottom player (0-7 inner, 8-15 outer)
+          // p2 = Top player (0-7 inner, 8-15 outer in their perspective)
           let p1 = [2,2,2,2,2,2,2,2, 2,2,2,2,2,2,2,2];
+          let p2 = [2,2,2,2,2,2,2,2, 2,2,2,2,2,2,2,2];
+          let currentTurn = 1; // 1 for Player 1, 2 for Player 2
           let isAnimating = false;
           let capturingPits = [];
-          let aiLevel = "{ai_level}";
 
           let audioCtx = null;
-          function playSeedSound() {{
-            try {{
+          function playSeedSound() {
+            try {
               if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
               let osc = audioCtx.createOscillator();
               let gain = audioCtx.createGain();
@@ -619,149 +622,152 @@ elif page == "Omweso Math Arena":
               gain.connect(audioCtx.destination);
               osc.start();
               osc.stop(audioCtx.currentTime + 0.07);
-            }} catch(e) {{}}
-          }}
+            } catch(e) {}
+          }
 
-          function renderBoard() {{
-            let htmlAIOuter = "";
-            for (let i = 15; i >= 8; i--) {{ htmlAIOuter += createPitHTML(1, i, p1[i], false); }}
-            document.getElementById('ai-outer').innerHTML = htmlAIOuter;
+          function renderBoard() {
+            // Render Player 2 (Top: Outer 15 down to 8, Inner 7 down to 0)
+            let htmlP2Outer = "";
+            for (let i = 15; i >= 8; i--) { htmlP2Outer += createPitHTML(2, i, p2[i], false); }
+            document.getElementById('p2-outer').innerHTML = htmlP2Outer;
 
-            let htmlAIInner = "";
-            for (let i = 7; i >= 0; i--) {{ htmlAIInner += createPitHTML(1, i, p1[i], false); }}
-            document.getElementById('ai-inner').innerHTML = htmlAIInner;
+            let htmlP2Inner = "";
+            for (let i = 7; i >= 0; i--) { 
+              let playable = !isAnimating && currentTurn === 2 && p2[i] >= 2;
+              htmlP2Inner += createPitHTML(2, i, p2[i], playable); 
+            }
+            document.getElementById('p2-inner').innerHTML = htmlP2Inner;
 
-            let htmlPInner = "";
-            for (let i = 0; i <= 7; i++) {{
-              let playable = !isAnimating && p0[i] >= 2;
-              htmlPInner += createPitHTML(0, i, p0[i], playable);
-            }}
-            document.getElementById('p-inner').innerHTML = htmlPInner;
+            // Render Player 1 (Bottom: Inner 0 up to 7, Outer 15 down to 8)
+            let htmlP1Inner = "";
+            for (let i = 0; i <= 7; i++) {
+              let playable = !isAnimating && currentTurn === 1 && p1[i] >= 2;
+              htmlP1Inner += createPitHTML(1, i, p1[i], playable);
+            }
+            document.getElementById('p1-inner').innerHTML = htmlP1Inner;
 
-            let htmlPOuter = "";
-            for (let i = 15; i >= 8; i--) {{
-              let playable = !isAnimating && p0[i] >= 2;
-              htmlPOuter += createPitHTML(0, i, p0[i], playable);
-            }}
-            document.getElementById('p-outer').innerHTML = htmlPOuter;
-          }}
+            let htmlP1Outer = "";
+            for (let i = 15; i >= 8; i--) {
+              let playable = !isAnimating && currentTurn === 1 && p1[i] >= 2;
+              htmlP1Outer += createPitHTML(1, i, p1[i], playable);
+            }
+            document.getElementById('p1-outer').innerHTML = htmlP1Outer;
 
-          function createPitHTML(player, index, count, playable) {{
+            // Update status text & header colors
+            if (!isAnimating) {
+              if (currentTurn === 1) {
+                document.getElementById('status-bar.innerText') // safety
+                document.getElementById('status-bar').innerText = "Player 1's Turn: Tap any green pit (2+ seeds) on your side";
+                document.getElementById('p1-header').style.color = "#52b788";
+                document.getElementById('p2-header').style.color = "#888";
+              } else {
+                document.getElementById('status-bar').innerText = "Player 2's Turn: Tap any yellow-glowing pit (2+ seeds) on your side";
+                document.getElementById('p2-header').style.color = "#ffb703";
+                document.getElementById('p1-header').style.color = "#888";
+              }
+            }
+          }
+
+          function createPitHTML(player, index, count, playable) {
             let seedsHTML = "";
             let displayCount = Math.min(count, 12);
-            for (let s = 0; s < displayCount; s++) {{
+            for (let s = 0; s < displayCount; s++) {
               seedsHTML += `<div class="seed-3d"></div>`;
-            }}
-            if (count > 12) {{
-              seedsHTML += `<span style="font-size:8px; color:#ffb703; font-weight:bold;">+${{count-12}}</span>`;
-            }}
-            let onclickAttr = (player === 0 && playable) ? `onclick="playTurn(${{index}})"` : "";
-            let playableClass = playable ? "playable" : "";
-            let isCapturing = (player === 1 && capturingPits.includes(index)) ? "capturing" : "";
+            }
+            if (count > 12) {
+              seedsHTML += `<span style="font-size:8px; color:#ffb703; font-weight:bold;">+${count-12}</span>`;
+            }
+            let onclickAttr = playable ? `onclick="playTurn(${player}, ${index})"` : "";
+            let playableClass = playable ? (player === 1 ? "playable-p1" : "playable-p2") : "";
+            let isCapturing = (capturingPits.length > 0 && capturingPits.includes(index) && capturingPits.player === player) ? "capturing" : "";
             return `
-              <div class="pit ${{playableClass}} ${{isCapturing}}" ${{onclickAttr}}>
-                <span class="pit-label">P${{index}}</span>
-                <div class="seeds-container">${{seedsHTML}}</div>
+              <div class="pit ${playableClass} ${isCapturing}" ${onclickAttr}>
+                <span class="pit-label">P${index}</span>
+                <div class="seeds-container">${seedsHTML}</div>
               </div>
             `;
-          }}
+          }
 
-          async function playTurn(startPit) {{
+          async function playTurn(player, startPit) {
             if (isAnimating) return;
             isAnimating = true;
 
-            let seedsInHand = p0[startPit];
-            p0[startPit] = 0;
+            let board = (player === 1) ? p1 : p2;
+            let opponentBoard = (player === 1) ? p2 : p1;
+
+            let seedsInHand = board[startPit];
+            board[startPit] = 0;
             let curr = startPit;
             renderBoard();
 
-            document.getElementById('status-bar').innerText = `Picking up ${{seedsInHand}} seeds from Pit ${{startPit}}...`;
+            document.getElementById('status-bar').innerText = `Player ${player} picking up ${seedsInHand} seeds from Pit ${startPit}...`;
 
-            while (seedsInHand > 0) {{
+            while (seedsInHand > 0) {
               await sleep(150);
               curr = (curr - 1 + 16) % 16;
-              p0[curr] += 1;
+              board[curr] += 1;
               seedsInHand -= 1;
               playSeedSound();
               renderBoard();
 
-              if (seedsInHand === 0) {{
-                if (curr <= 7 && p0[curr] > 1) {{
+              if (seedsInHand === 0) {
+                if (curr <= 7 && board[curr] > 1) {
                   let oppIn = 7 - curr;
                   let oppOut = 8 + curr;
-                  if (p1[oppIn] > 0 && p1[oppOut] > 0) {{
-                    let captured = p1[oppIn] + p1[oppOut];
+                  if (opponentBoard[oppIn] > 0 && opponentBoard[oppOut] > 0) {
+                    let captured = opponentBoard[oppIn] + opponentBoard[oppOut];
                     
-                    // Visually highlight opponent pits being captured so children see seeds taken away
                     capturingPits = [oppIn, oppOut];
+                    capturingPits.player = (player === 1) ? 2 : 1;
                     renderBoard();
-                    document.getElementById('status-bar').innerText = `✨ OKUTTA CAPTURE! Taking seeds from AI Pits ${{oppIn}} & ${{oppOut}}!`;
+                    document.getElementById('status-bar').innerText = `✨ PLAYER ${player} OKUTTA CAPTURE! Taking seeds from opponent Pits ${oppIn} & ${oppOut}!`;
                     playSeedSound();
                     await sleep(900);
 
-                    p1[oppIn] = 0;
-                    p1[oppOut] = 0;
+                    opponentBoard[oppIn] = 0;
+                    opponentBoard[oppOut] = 0;
                     capturingPits = [];
                     renderBoard();
 
                     seedsInHand = captured;
                     curr = (startPit + 1) % 16;
                     continue;
-                  }}
-                }}
-                if (p0[curr] >= 2) {{
-                  seedsInHand = p0[curr];
-                  p0[curr] = 0;
-                  document.getElementById('status-bar').innerText = `🔄 RELAY! Picking up ${{seedsInHand}} seeds from Pit ${{curr}} anti-clockwise!`;
+                  }
+                }
+                if (board[curr] >= 2) {
+                  seedsInHand = board[curr];
+                  board[curr] = 0;
+                  document.getElementById('status-bar').innerText = `🔄 RELAY! Picking up ${seedsInHand} seeds from Pit ${curr} anti-clockwise!`;
                   await sleep(350);
                   continue;
-                }}
-              }}
-            }}
+                }
+              }
+            }
 
-            document.getElementById('status-bar').innerText = "AI Coach is thinking...";
-            await sleep(700);
-            aiPlay();
+            // Switch turn to the other player
+            currentTurn = (currentTurn === 1) ? 2 : 1;
             isAnimating = false;
             renderBoard();
-          }}
+          }
 
-          function aiPlay() {{
-            let validAI = [];
-            for (let i = 0; i < 16; i++) {{ if (p1[i] >= 2) validAI.push(i); }}
-            if (validAI.length === 0) {{
-              document.getElementById('status-bar').innerText = "🏆 You win! AI has no legal moves left.";
-              return;
-            }}
-            let aiPit = validAI[Math.floor(Math.random() * validAI.length)];
-            let aiSeeds = p1[aiPit];
-            p1[aiPit] = 0;
-            let curr = aiPit;
-            for (let s = 0; s < aiSeeds; s++) {{
-              curr = (curr - 1 + 16) % 16;
-              p1[curr] += 1;
-            }}
-            playSeedSound();
-            document.getElementById('status-bar').innerText = `AI Coach played Pit ${{aiPit}} anti-clockwise. Your turn!`;
-          }}
+          function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
 
-          function sleep(ms) {{ return new Promise(resolve => setTimeout(resolve, ms)); }}
-
-          function resetGame() {{
+          function resetGame() {
             if (isAnimating) return;
-            p0 = [2,2,2,2,2,2,2,2, 2,2,2,2,2,2,2,2];
             p1 = [2,2,2,2,2,2,2,2, 2,2,2,2,2,2,2,2];
+            p2 = [2,2,2,2,2,2,2,2, 2,2,2,2,2,2,2,2];
+            currentTurn = 1;
             capturingPits = [];
-            document.getElementById('status-bar').innerText = "Board reset with 2 seeds per pit. Tap any glowing green pit!";
+            document.getElementById('status-bar').innerText = "Board reset. Player 1's turn!";
             renderBoard();
-          }}
+          }
 
           renderBoard();
         </script>
         </body>
         </html>
         """
-        st.components.v1.html(omweso_3d_html, height=520, scrolling=False)
+        st.components.v1.html(omweso_2p_html, height=540, scrolling=False)
 
     with tab_puzzle:
         tier = st.selectbox("Select NCDC Level", list(OMWESO_PUZZLES.keys()))
