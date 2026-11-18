@@ -379,56 +379,6 @@ def init_omweso_state():
         st.session_state.omw_turns = 0
         st.session_state.omw_winner = None
 
-def execute_omweso_move(player: int, start_pit: int):
-    board = st.session_state.omw_p0 if player == 0 else st.session_state.omw_p1
-    opp = st.session_state.omw_p1 if player == 0 else st.session_state.omw_p0
-    actor = "Learner" if player == 0 else "AI Coach"
-
-    seeds = board[start_pit]
-    if seeds < 2:
-        return
-
-    board[start_pit] = 0
-    curr = start_pit
-    steps = 0
-    captured_total = 0
-    relays = 0
-
-    while seeds > 0 and steps < 200:
-        steps += 1
-        curr = (curr + 1) % 16
-        board[curr] += 1
-        seeds -= 1
-
-        if seeds == 0:
-            if 0 <= curr <= 7 and board[curr] > 1:
-                opp_in, opp_out = 7 - curr, 8 + curr
-                if opp[opp_in] > 0 and opp[opp_out] > 0:
-                    cap = opp[opp_in] + opp[opp_out]
-                    opp[opp_in], opp[opp_out] = 0, 0
-                    captured_total += cap
-                    seeds = cap
-                    curr = (start_pit - 1) % 16
-                    continue
-            if board[curr] >= 2:
-                seeds = board[curr]
-                board[curr] = 0
-                relays += 1
-
-    laps = steps // 16
-    rem = steps % 16
-    msg = f"**{actor}** played Pit {start_pit} → {steps} steps ({laps} lap(s) + {rem}), {relays} relay(s)"
-    if captured_total > 0:
-        msg += f", **captured {captured_total} seeds (Okutta)!**"
-    st.session_state.omw_log = msg
-
-    if player == 0:
-        st.session_state.omw_turns += 1
-        st.session_state.omw_xp += 10 + (captured_total * 2)
-
-    if not any(s >= 2 for s in opp):
-        st.session_state.omw_winner = actor
-
 def ai_choose_move(difficulty: str) -> int:
     ai_board = st.session_state.omw_p1
     valid = [i for i, s in enumerate(ai_board) if s >= 2]
@@ -541,9 +491,9 @@ if page == "Take Quiz":
 elif page == "Omweso Math Arena":
     init_omweso_state()
     st.title("🎲 Omweso Math Arena")
-    st.caption("Ugandan Traditional Strategy Board — NCDC Modular Arithmetic & Problem Solving")
+    st.caption("Ugandan Traditional Strategy Board — Visual Seed Sowing & Modular Arithmetic")
 
-    tab_play, tab_puzzle = st.tabs(["🕹️ Play vs. AI Coach", "🧩 NCDC Curriculum Puzzles"])
+    tab_play, tab_puzzle = st.tabs(["🕹️ Play vs. AI Coach (Visual Board)", "🧩 NCDC Curriculum Puzzles"])
 
     with tab_play:
         col_top1, col_top2, col_top3 = st.columns([2, 2, 1])
@@ -553,7 +503,7 @@ elif page == "Omweso Math Arena":
             predict_mode = st.checkbox("Predict Landing Pit (+25 XP)", value=False)
         with col_top3:
             if st.button("Reset Board"):
-                for k in ["omw_p0", "omw_p1", "omw_log", "omw_xp", "omw_turns", "omw_winner"]:
+                for k in ["omw_p0", "omw_p1", "omw_log", "omw_xp", "omw_turns", "omw_winner", "omw_last_move_events"]:
                     st.session_state.pop(k, None)
                 st.rerun()
 
@@ -569,55 +519,138 @@ elif page == "Omweso Math Arena":
         if predict_mode:
             predicted_pit = st.number_input("Mental Math Prediction: Which pit index (0–15) will your move stop on?", 0, 15, 0)
 
-        st.markdown("**AI Coach Side (Top)**")
+        # --- VISUAL AI BOARD (TOP) ---
+        st.markdown("### 🤖 AI Coach Side (Top Row)")
+        st.caption("Outer Row (P15 to P8) & Inner Row (P7 to P0)")
+        
         ai_outer_cols = st.columns(8)
         for idx, pit in enumerate(range(15, 7, -1)):
-            ai_outer_cols[idx].button(f"P{pit}\n({st.session_state.omw_p1[pit]})", key=f"ai_out_{pit}", disabled=True, use_container_width=True)
+            seeds = st.session_state.omw_p1[pit]
+            seed_emoji = "🫘 " * seeds if seeds <= 6 else f"🫘x{seeds}"
+            ai_outer_cols[idx].markdown(
+                f"<div style='border: 2px solid #8B4513; border-radius: 8px; padding: 6px; text-align: center; background-color: #FDF5E6; min-height: 70px;'>"
+                f"<b style='font-size: 11px; color: #555;'>P{pit} (Outer)</b><br>"
+                f"<span style='font-size: 16px;'>{seed_emoji if seeds > 0 else '○'}</span>"
+                f"</div>", unsafe_allow_html=True
+            )
 
         ai_inner_cols = st.columns(8)
         for idx, pit in enumerate(range(7, -1, -1)):
-            ai_inner_cols[idx].button(f"P{pit}\n({st.session_state.omw_p1[pit]})", key=f"ai_in_{pit}", disabled=True, use_container_width=True)
+            seeds = st.session_state.omw_p1[pit]
+            seed_emoji = "🫘 " * seeds if seeds <= 6 else f"🫘x{seeds}"
+            ai_inner_cols[idx].markdown(
+                f"<div style='border: 2px solid #8B4513; border-radius: 8px; padding: 6px; text-align: center; background-color: #F5DEB3; min-height: 70px;'>"
+                f"<b style='font-size: 11px; color: #333;'>P{pit} (Inner)</b><br>"
+                f"<span style='font-size: 16px;'>{seed_emoji if seeds > 0 else '○'}</span>"
+                f"</div>", unsafe_allow_html=True
+            )
 
-        st.markdown("---")
+        st.markdown("<hr style='margin: 10px 0;'>", unsafe_allow_html=True)
 
-        st.markdown("**Your Side (Bottom — Tap a pit with ≥ 2 seeds)**")
+        # --- VISUAL LEARNER BOARD (BOTTOM) ---
+        st.markdown("### 🧑‍🎓 Your Side (Bottom — Tap a pit with 2+ seeds to sow counter-clockwise)")
+        
         clicked_pit = None
-
         p0_inner_cols = st.columns(8)
         for idx, pit in enumerate(range(0, 8)):
             seeds = st.session_state.omw_p0[pit]
-            if p0_inner_cols[idx].button(
-                f"P{pit}\n[{seeds}]",
-                key=f"p0_in_{pit}",
-                disabled=(seeds < 2 or st.session_state.omw_winner is not None),
-                type="primary" if seeds >= 2 else "secondary",
-                use_container_width=True
-            ):
-                clicked_pit = pit
+            with p0_inner_cols[idx]:
+                if st.button(
+                    f"P{pit} [{seeds}🫘]",
+                    key=f"p0_in_{pit}",
+                    disabled=(seeds < 2 or st.session_state.omw_winner is not None),
+                    type="primary" if seeds >= 2 else "secondary",
+                    use_container_width=True
+                ):
+                    clicked_pit = pit
 
         p0_outer_cols = st.columns(8)
         for idx, pit in enumerate(range(15, 7, -1)):
             seeds = st.session_state.omw_p0[pit]
-            if p0_outer_cols[idx].button(
-                f"P{pit}\n[{seeds}]",
-                key=f"p0_out_{pit}",
-                disabled=(seeds < 2 or st.session_state.omw_winner is not None),
-                type="primary" if seeds >= 2 else "secondary",
-                use_container_width=True
-            ):
-                clicked_pit = pit
+            with p0_outer_cols[idx]:
+                if st.button(
+                    f"P{pit} [{seeds}🫘]",
+                    key=f"p0_out_{pit}",
+                    disabled=(seeds < 2 or st.session_state.omw_winner is not None),
+                    type="primary" if seeds >= 2 else "secondary",
+                    use_container_width=True
+                ):
+                    clicked_pit = pit
 
+        # --- TURN EXECUTION & ANIMATION LOG ---
         if clicked_pit is not None:
-            execute_omweso_move(0, clicked_pit)
-            if predict_mode:
-                st.session_state.omw_xp += 25
-            if st.session_state.omw_winner is None:
+            board = st.session_state.omw_p0
+            opp = st.session_state.omw_p1
+            seeds_in_hand = board[clicked_pit]
+            board[clicked_pit] = 0
+            curr = clicked_pit
+            steps = 0
+            captured_total = 0
+            movement_trace = [f"Picked up {seeds_in_hand} seeds from Pit {clicked_pit}."]
+
+            while seeds_in_hand > 0 and steps < 200:
+                steps += 1
+                curr = (curr + 1) % 16
+                board[curr] += 1
+                seeds_in_hand -= 1
+                movement_trace.append(f"Drop #{steps} → Pit {curr} (now has {board[curr]} seeds)")
+
+                if seeds_in_hand == 0:
+                    if 0 <= curr <= 7 and board[curr] > 1:
+                        opp_in, opp_out = 7 - curr, 8 + curr
+                        if opp[opp_in] > 0 and opp[opp_out] > 0:
+                            cap = opp[opp_in] + opp[opp_out]
+                            opp[opp_in], opp[opp_out] = 0, 0
+                            captured_total += cap
+                            movement_trace.append(f"✨ **OKUTTA CAPTURE!** Landed in inner Pit {curr}. Captured {cap} seeds from AI Pits {opp_in} and {opp_out}!")
+                            seeds_in_hand = cap
+                            curr = (clicked_pit - 1) % 16
+                            continue
+                    if board[curr] >= 2:
+                        seeds_in_hand = board[curr]
+                        movement_trace.append(f"🔄 **RELAY!** Landed in Pit {curr} with {seeds_in_hand} seeds. Picking all up to continue sowing!")
+                        board[curr] = 0
+
+            st.session_state.omw_last_move_events = movement_trace
+            st.session_state.omw_turns += 1
+            st.session_state.omw_xp += 10 + (captured_total * 2)
+            st.session_state.omw_log = f"Played Pit {clicked_pit} → Sowed {steps} steps. {'Captured ' + str(captured_total) + ' seeds!' if captured_total > 0 else ''}"
+
+            if not any(s >= 2 for s in opp):
+                st.session_state.omw_winner = "Learner"
+            else:
                 ai_pit = ai_choose_move(ai_level)
                 if ai_pit != -1:
-                    prev_log = st.session_state.omw_log
-                    execute_omweso_move(1, ai_pit)
-                    st.session_state.omw_log = prev_log + "  \n" + st.session_state.omw_log
+                    ai_board = st.session_state.omw_p1
+                    ai_seeds = ai_board[ai_pit]
+                    ai_board[ai_pit] = 0
+                    ai_curr = ai_pit
+                    ai_steps = 0
+                    while ai_seeds > 0 and ai_steps < 200:
+                        ai_steps += 1
+                        ai_curr = (ai_curr + 1) % 16
+                        ai_board[ai_curr] += 1
+                        ai_seeds -= 1
+                        if ai_seeds == 0 and 0 <= ai_curr <= 7 and ai_board[ai_curr] > 1:
+                            l_in, l_out = 7 - ai_curr, 8 + ai_curr
+                            if st.session_state.omw_p0[l_in] > 0 and st.session_state.omw_p0[l_out] > 0:
+                                cap_ai = st.session_state.omw_p0[l_in] + st.session_state.omw_p0[l_out]
+                                st.session_state.omw_p0[l_in], st.session_state.omw_p0[l_out] = 0, 0
+                                ai_seeds = cap_ai
+                                ai_curr = (ai_pit - 1) % 16
+                                continue
+                            if ai_board[ai_curr] >= 2:
+                                ai_seeds = ai_board[ai_curr]
+                                ai_board[ai_curr] = 0
+                    st.session_state.omw_log += f" | AI Coach played Pit {ai_pit}."
+
             st.rerun()
+
+        # --- MOVEMENT TRACE INSPECTOR ---
+        if "omw_last_move_events" in st.session_state:
+            with st.expander("🔍 Step-by-Step Move Inspector (Watch How Seeds Travel)", expanded=True):
+                for event in st.session_state.omw_last_move_events:
+                    st.write(f"- {event}")
 
         if st.session_state.omw_winner:
             st.success(f"🏆 Game Over! Winner: **{st.session_state.omw_winner}** | Total XP: {st.session_state.omw_xp}")
@@ -677,7 +710,7 @@ elif page == "NCDC Official Syllabus Reference":
             st.write(val)
 
 elif page == "Teacher Dashboard":
-    st.title("teacher Dashboard")
+    st.title("Teacher Dashboard")
     st.caption("Protected Teacher Portal for Monitoring Student Competencies")
     
     if not st.session_state.dashboard_unlocked:
