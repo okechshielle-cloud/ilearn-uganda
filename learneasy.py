@@ -309,10 +309,10 @@ OMWESO_PUZZLES = {
         "ncdc_strand": "Operations & Remainders (P4–P5)"
     },
     "P6–P7 (Relay Chain & Okutta Capture)": {
-        "question": "When you land in a pit, how many opposite immediate pits on the opponent's side are captured (inner and outer)?",
-        "options": ["1 pit", "2 pits", "4 pits", "8 pits"],
-        "answer": "2 pits",
-        "explanation": "Okutta captures from the immediate two opposite pits (inner and outer) directly across from where the player lands.",
+        "question": "When you land in a pit, which opponent pits do you capture from?",
+        "options": ["Any random pit", "The immediate front line and back line pits directly opposite where you landed", "All opponent pits", "Only corner pits"],
+        "answer": "The immediate front line and back line pits directly opposite where you landed",
+        "explanation": "Okutta captures seeds from the immediate front line and back line pits directly across from the landing pit.",
         "ncdc_strand": "Modular Arithmetic & Multi-Step Problem Solving (P6–P7)"
     }
 }
@@ -460,13 +460,13 @@ if page == "Take Quiz":
                     st.markdown("---")
 
 elif page == "Omweso Math Arena":
-    st.title("🎲 Omweso Math Arena (Exact Locality Capture)")
-    st.caption("Ugandan Traditional Rules: Capture Opposite Two Pits Only & Virtual Finger Sowing")
+    st.title("🎲 Omweso Math Arena (Front & Back Line Capture)")
+    st.caption("Ugandan Traditional Rules: Immediate Front and Back Opposing Pits Capture & Virtual Finger Sowing")
 
     tab_play, tab_puzzle = st.tabs(["🕹️ Pass & Play (Locality Rules)", "🧩 NCDC Curriculum Puzzles"])
 
     with tab_play:
-        omweso_two_pits_html = """
+        omweso_front_back_html = """
         <!DOCTYPE html>
         <html>
         <head>
@@ -761,19 +761,13 @@ elif page == "Omweso Math Arena":
             return false;
           }
 
-          // Exact opposite two pits (inner opposite and outer opposite corresponding to landing position index)
-          function getOppositeTwoPits(curr) {
-            let oppInner = curr <= 7 ? (7 - curr) : (23 - curr);
-            let oppOuter = curr <= 7 ? (8 + curr) : (39 - curr); // wait, let's map exact opposite rows:
-            // In 16 pits (0-7 inner, 8-15 outer):
-            // Inner i (0-7) corresponds to opponent inner (7-i) and opponent outer (8+i)
-            // Outer i (8-15) corresponds to inner (15-i) and outer (i)
-            if (curr <= 7) {
-              return [7 - curr, 8 + curr];
-            } else {
-              let mappedInner = 15 - curr;
-              return [mappedInner, curr];
-            }
+          // Immediate front-line and back-line pits directly opposite the landing pit
+          function getFrontAndBackOppositePits(curr) {
+            // curr: 0-7 (inner row), 8-15 (outer row)
+            // Opposite front-line (inner row) and back-line (outer row) directly across:
+            let frontOpp = curr <= 7 ? (7 - curr) : (15 - (curr - 8));
+            let backOpp = curr <= 7 ? (8 + curr) : curr;
+            return [frontOpp, backOpp];
           }
 
           function testCapture(board, oppBoard, startPit, dir) {
@@ -790,8 +784,8 @@ elif page == "Omweso Math Arena":
               tempBoard[curr] += 1;
               seeds -= 1;
               if (seeds === 0) {
-                let [opp1, opp2] = getOppositeTwoPits(curr);
-                if (tempOpp[opp1] > 0 || tempOpp[opp2] > 0) return true;
+                let [frontOpp, backOpp] = getFrontAndBackOppositePits(curr);
+                if (tempOpp[frontOpp] > 0 || tempOpp[backOpp] > 0) return true;
               }
             }
             return false;
@@ -848,22 +842,22 @@ elif page == "Omweso Math Arena":
                 await sleep(180);
               }
 
-              let [opp1, opp2] = getOppositeTwoPits(tempCurr);
-              if (opponentBoard[opp1] > 0 || opponentBoard[opp2] > 0) {
-                let captured = opponentBoard[opp1] + opponentBoard[opp2];
-                capturingPits = [opp1, opp2];
-                pointFingerAtPit(player === 1 ? 2 : 1, opp1);
+              let [frontOpp, backOpp] = getFrontAndBackOppositePits(tempCurr);
+              if (opponentBoard[frontOpp] > 0 || opponentBoard[backOpp] > 0) {
+                let captured = opponentBoard[frontOpp] + opponentBoard[backOpp];
+                capturingPits = [frontOpp, backOpp];
+                pointFingerAtPit(player === 1 ? 2 : 1, frontOpp);
                 renderBoard();
-                document.getElementById('status-bar').innerText = `✨ LEFT CORNER REVERSE CAPTURE! Finger takes opposite two pits (${opp1} & ${opp2})!`;
+                document.getElementById('status-bar').innerText = `✨ LEFT CORNER REVERSE CAPTURE! Finger takes front & back pits (${frontOpp} & ${backOpp})!`;
                 playSeedSound();
                 await sleep(1000);
 
-                if (opp1 === 0 || opp1 === 7 || opp2 === 8 || opp2 === 15) {
+                if (frontOpp === 0 || frontOpp === 7 || backOpp === 8 || backOpp === 15) {
                   if (player === 1) p1CornerCapturesCount++; else p2CornerCapturesCount++;
                 }
 
-                opponentBoard[opp1] = 0;
-                opponentBoard[opp2] = 0;
+                opponentBoard[frontOpp] = 0;
+                opponentBoard[backOpp] = 0;
                 capturingPits = [];
                 renderBoard();
 
@@ -892,23 +886,23 @@ elif page == "Omweso Math Arena":
               renderBoard();
 
               if (seedsInHand === 0) {
-                let [opp1, opp2] = getOppositeTwoPits(curr);
-                if (opponentBoard[opp1] > 0 || opponentBoard[opp2] > 0) {
-                  let captured = opponentBoard[opp1] + opponentBoard[opp2];
+                let [frontOpp, backOpp] = getFrontAndBackOppositePits(curr);
+                if (opponentBoard[frontOpp] > 0 || opponentBoard[backOpp] > 0) {
+                  let captured = opponentBoard[frontOpp] + opponentBoard[backOpp];
                   
-                  capturingPits = [opp1, opp2];
-                  pointFingerAtPit(player === 1 ? 2 : 1, opp1);
+                  capturingPits = [frontOpp, backOpp];
+                  pointFingerAtPit(player === 1 ? 2 : 1, frontOpp);
                   renderBoard();
-                  document.getElementById('status-bar').innerText = `✨ PLAYER ${player} OKUTTA CAPTURE! Finger takes seeds from opposite two pits (${opp1} & ${opp2})!`;
+                  document.getElementById('status-bar').innerText = `✨ PLAYER ${player} OKUTTA CAPTURE! Finger takes seeds from front & back opposite pits (${frontOpp} & ${backOpp})!`;
                   playSeedSound();
                   await sleep(1000);
 
-                  if (opp1 === 0 || opp1 === 7 || opp2 === 8 || opp2 === 15) {
+                  if (frontOpp === 0 || frontOpp === 7 || backOpp === 8 || backOpp === 15) {
                     if (player === 1) p1CornerCapturesCount++; else p2CornerCapturesCount++;
                   }
 
-                  opponentBoard[opp1] = 0;
-                  opponentBoard[opp2] = 0;
+                  opponentBoard[frontOpp] = 0;
+                  opponentBoard[backOpp] = 0;
                   capturingPits = [];
                   renderBoard();
 
@@ -957,7 +951,7 @@ elif page == "Omweso Math Arena":
         </body>
         </html>
         """
-        st.components.v1.html(omweso_two_pits_html, height=580, scrolling=False)
+        st.components.v1.html(omweso_front_back_html, height=580, scrolling=False)
 
     with tab_puzzle:
         tier = st.selectbox("Select NCDC Level", list(OMWESO_PUZZLES.keys()))
