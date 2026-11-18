@@ -296,17 +296,17 @@ CLASS_QUESTIONS = {
 
 OMWESO_PUZZLES = {
     "P1–P3 (Counting & Number Bonds)": {
-        "question": "Pit 1 holds 5 seeds. If you sow counter-clockwise (1 seed per pit across your 16-pit loop), which pit receives the last seed?",
+        "question": "Pit 1 holds 5 seeds. If you sow anti-clockwise (1 seed per pit across your 16-pit loop), which pit receives the last seed?",
         "options": ["Pit 5", "Pit 6", "Pit 7", "Pit 4"],
         "answer": "Pit 6",
-        "explanation": "1 + 5 = 6. Counting on 5 steps counter-clockwise from Pit 1 lands in Pit 6.",
+        "explanation": "1 + 5 = 6. Counting on 5 steps anti-clockwise from Pit 1 lands in Pit 6.",
         "ncdc_strand": "Whole Numbers & Addition (P1–P3)"
     },
     "P4–P5 (Division & Remainders)": {
-        "question": "One full lap around your 16 pits takes 16 steps counter-clockwise. Pit 2 holds 19 seeds. Where does the 19th seed land?",
+        "question": "One full lap around your 16 pits takes 16 steps anti-clockwise. Pit 2 holds 19 seeds. Where does the 19th seed land?",
         "options": ["Pit 3", "Pit 4", "Pit 5", "Pit 6"],
         "answer": "Pit 5",
-        "explanation": "19 ÷ 16 = 1 full lap with remainder 3. Starting at Pit 2 moving counter-clockwise: 2 + 3 = Pit 5.",
+        "explanation": "19 ÷ 16 = 1 full lap with remainder 3. Starting at Pit 2 moving anti-clockwise: 2 + 3 = Pit 5.",
         "ncdc_strand": "Operations & Remainders (P4–P5)"
     },
     "P6–P7 (Relay Chain & Okutta Capture)": {
@@ -462,14 +462,14 @@ if page == "Take Quiz":
 
 elif page == "Omweso Math Arena":
     st.title("🎲 Omweso Math Arena (3D Visual Board)")
-    st.caption("Traditional Ugandan Board Game — Correct Counter-Clockwise Sowing & Audio Cues")
+    st.caption("Traditional Ugandan Board Game — Anti-Clockwise Sowing & Audio Cues")
 
     tab_play, tab_puzzle = st.tabs(["🕹️ Play 3D Omweso vs. AI", "🧩 NCDC Curriculum Puzzles"])
 
     with tab_play:
         ai_level = st.selectbox("AI Difficulty", ["Beginner (P2)", "Intermediate (P5)", "Master (P7)"], key="omw_ai_lvl")
         
-        # Embedded 3D Canvas App with Correct Counter-Clockwise Sowing & Falling Ball Sounds
+        # Embedded 3D Canvas App with Strict Anti-Clockwise Sowing & Falling Ball Sounds
         omweso_3d_html = f"""
         <!DOCTYPE html>
         <html>
@@ -572,7 +572,7 @@ elif page == "Omweso Math Arena":
         </head>
         <body>
 
-          <div id="status-bar">Tap any glowing green pit (2+ seeds) to sow counter-clockwise!</div>
+          <div id="status-bar">Tap any glowing green pit (2+ seeds) to sow anti-clockwise!</div>
 
           <div id="board-container">
             <div style="font-size:11px; color:#dda15e; margin-bottom:3px;">AI COACH SIDE (Top)</div>
@@ -583,7 +583,7 @@ elif page == "Omweso Math Arena":
 
             <div class="row" id="p-inner"></div>
             <div class="row" id="p-outer"></div>
-            <div style="font-size:11px; color:#52b788; margin-top:3px;">YOUR SIDE (Bottom - Tap to Play Counter-Clockwise)</div>
+            <div style="font-size:11px; color:#52b788; margin-top:3px;">YOUR SIDE (Bottom - Tap to Play Anti-Clockwise)</div>
           </div>
 
           <div>
@@ -668,10 +668,10 @@ elif page == "Omweso Math Arena":
 
             document.getElementById('status-bar').innerText = `Picking up ${{seedsInHand}} seeds from Pit ${{startPit}}...`;
 
-            // Counter-clockwise sowing movement across the 16 pits (0 to 15 loop)
+            // STRICT ANTI-CLOCKWISE MOVEMENT ACROSS 16 PITS: (curr - 1 + 16) % 16
             while (seedsInHand > 0) {{
               await sleep(150);
-              curr = (curr + 1) % 16;
+              curr = (curr - 1 + 16) % 16;
               p0[curr] += 1;
               seedsInHand -= 1;
               playSeedSound();
@@ -688,14 +688,14 @@ elif page == "Omweso Math Arena":
                     document.getElementById('status-bar').innerText = `✨ OKUTTA CAPTURE! Captured ${{captured}} seeds! Continuing relay...`;
                     await sleep(500);
                     seedsInHand = captured;
-                    curr = (startPit - 1) % 16;
+                    curr = (startPit + 1) % 16; // resume forward anti-clockwise from start pit
                     continue;
                   }}
                 }}
                 if (p0[curr] >= 2) {{
                   seedsInHand = p0[curr];
                   p0[curr] = 0;
-                  document.getElementById('status-bar').innerText = `🔄 RELAY! Picking up ${{seedsInHand}} seeds from Pit ${{curr}} counter-clockwise!`;
+                  document.getElementById('status-bar').innerText = `🔄 RELAY! Picking up ${{seedsInHand}} seeds from Pit ${{curr}} anti-clockwise!`;
                   await sleep(350);
                   continue;
                 }}
@@ -721,11 +721,11 @@ elif page == "Omweso Math Arena":
             p1[aiPit] = 0;
             let curr = aiPit;
             for (let s = 0; s < aiSeeds; s++) {{
-              curr = (curr + 1) % 16;
+              curr = (curr - 1 + 16) % 16;
               p1[curr] += 1;
             }}
             playSeedSound();
-            document.getElementById('status-bar').innerText = `AI Coach played Pit ${{aiPit}}. Your turn!`;
+            document.getElementById('status-bar').innerText = `AI Coach played Pit ${{aiPit}} anti-clockwise. Your turn!`;
           }}
 
           function sleep(ms) {{ return new Promise(resolve => setTimeout(resolve, ms)); }}
