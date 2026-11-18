@@ -3,6 +3,7 @@ import pandas as pd
 import os
 import requests
 import json
+import random
 
 st.set_page_config(page_title="iLearn-Uganda", layout="centered")
 
@@ -248,22 +249,6 @@ NCDC_OFFICIAL_FRAMEWORK = {
     }
 }
 
-# Official NCDC Mathematics 12 Core Strands Reference
-NCDC_MATH_STRANDS = [
-    "1. Set Concepts (Venn Diagrams, Subsets, Probability)",
-    "2. Whole Numbers (Place Values, Roman Numerals, Non-Decimal Bases)",
-    "3. Operations on Whole Numbers (BODMAS, Multi-step Word Problems)",
-    "4. Patterns and Sequences (Progressions, Primes, Squares, Cubes)",
-    "5. Fractions, Decimals and Percentages (Ratios, Commercial Arithmetic)",
-    "6. Lines, Angles and Geometric Figures (Constructions, Polygon Properties)",
-    "7. Data Handling (Statistics, Mean, Median, Mode, Pie Charts, Bar Graphs)",
-    "8. Time (Speed, Distance, Timetables, Average Speed, Travel Graphs)",
-    "9. Integers (Number Line Operations, Cartesian Plane Coordinates)",
-    "10. Money (Profit, Loss, Discount, Simple Interest, Utility Bills)",
-    "11. Length, Mass and Capacity (Perimeter, Area, Volume, Surface Area)",
-    "12. Algebra (Linear Equations, Inequalities)"
-]
-
 CLASS_QUESTIONS = {
     "P1": [
         ("Q1. [Maths] What is 2 + 3?", ["4", "5", "6", "3"], "5", "2 plus 3 equals 5."),
@@ -307,6 +292,36 @@ CLASS_QUESTIONS = {
         ("Q3. [SST] Name the organization that replaced the East African Community in 1977 before it was revived later.", ["COMESA", "None / It collapsed", "ECOWAS", "AU"], "None / It collapsed", "The initial EAC collapsed in 1977."),
         ("Q4. [English] Choose the correct indirect speech: John said, 'I am going home.'", ["John said that he is going home", "John said that he was going home", "John said he is went home", "John said that I was going home"], "John said that he was going home", "Present tense changes to past tense in indirect speech."),
     ]
+}
+
+OMWESO_PUZZLES = {
+    "P1–P3 (Counting & Number Bonds)": {
+        "board_p0": [0, 5, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0],
+        "board_p1": [0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0],
+        "question": "Pit 1 holds 5 seeds. If you sow counter-clockwise (1 seed per pit), which pit receives the last seed?",
+        "options": ["Pit 5", "Pit 6", "Pit 7", "Pit 4"],
+        "answer": "Pit 6",
+        "explanation": "1 + 5 = 6. Counting on 5 steps from Pit 1 lands in Pit 6.",
+        "ncdc_strand": "Whole Numbers & Addition (P1–P3)"
+    },
+    "P4–P5 (Division & Remainders)": {
+        "board_p0": [0, 0, 19, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0],
+        "board_p1": [0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0],
+        "question": "One full lap around your 16 pits takes 16 steps. Pit 2 holds 19 seeds. Where does the 19th seed land?",
+        "options": ["Pit 3", "Pit 4", "Pit 5", "Pit 6"],
+        "answer": "Pit 5",
+        "explanation": "19 ÷ 16 = 1 full lap with remainder 3. Starting at Pit 2: 2 + 3 = Pit 5.",
+        "ncdc_strand": "Operations & Remainders (P4–P5)"
+    },
+    "P6–P7 (Relay Chain & Okutta Capture)": {
+        "board_p0": [0, 0, 3, 0, 0, 1, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0],
+        "board_p1": [0, 0, 6, 0, 0, 0, 0, 0,  0, 0, 0, 0, 5, 0, 0, 0],
+        "question": "Your Pit 5 has 1 seed across from AI pits holding 6 and 5 seeds. Which pit do you play to capture all 11 seeds?",
+        "options": ["Play Pit 2", "Play Pit 5", "Play Pit 0", "Cannot capture"],
+        "answer": "Play Pit 2",
+        "explanation": "Pit 2 has 3 seeds (2 + 3 = 5). Landing in occupied Pit 5 triggers Okutta across from AI's inner Pit 2 (7 - 5 = 2) and outer Pit 13 (8 + 5 = 13), capturing 6 + 5 = 11 seeds!",
+        "ncdc_strand": "Modular Arithmetic & Multi-Step Problem Solving (P6–P7)"
+    }
 }
 
 def load_results():
@@ -355,6 +370,78 @@ def save_one_result(row):
         pass
     return saved
 
+def init_omweso_state():
+    if "omw_p0" not in st.session_state:
+        st.session_state.omw_p0 = [4] * 8 + [0] * 8  # Learner (Bottom)
+        st.session_state.omw_p1 = [4] * 8 + [0] * 8  # AI Coach (Top)
+        st.session_state.omw_log = "Tap any green pit (≥ 2 seeds) to sow counter-clockwise!"
+        st.session_state.omw_xp = 0
+        st.session_state.omw_turns = 0
+        st.session_state.omw_winner = None
+
+def execute_omweso_move(player: int, start_pit: int):
+    board = st.session_state.omw_p0 if player == 0 else st.session_state.omw_p1
+    opp = st.session_state.omw_p1 if player == 0 else st.session_state.omw_p0
+    actor = "Learner" if player == 0 else "AI Coach"
+
+    seeds = board[start_pit]
+    if seeds < 2:
+        return
+
+    board[start_pit] = 0
+    curr = start_pit
+    steps = 0
+    captured_total = 0
+    relays = 0
+
+    while seeds > 0 and steps < 200:
+        steps += 1
+        curr = (curr + 1) % 16
+        board[curr] += 1
+        seeds -= 1
+
+        if seeds == 0:
+            if 0 <= curr <= 7 and board[curr] > 1:
+                opp_in, opp_out = 7 - curr, 8 + curr
+                if opp[opp_in] > 0 and opp[opp_out] > 0:
+                    cap = opp[opp_in] + opp[opp_out]
+                    opp[opp_in], opp[opp_out] = 0, 0
+                    captured_total += cap
+                    seeds = cap
+                    curr = (start_pit - 1) % 16
+                    continue
+            if board[curr] >= 2:
+                seeds = board[curr]
+                board[curr] = 0
+                relays += 1
+
+    laps = steps // 16
+    rem = steps % 16
+    msg = f"**{actor}** played Pit {start_pit} → {steps} steps ({laps} lap(s) + {rem}), {relays} relay(s)"
+    if captured_total > 0:
+        msg += f", **captured {captured_total} seeds (Okutta)!**"
+    st.session_state.omw_log = msg
+
+    if player == 0:
+        st.session_state.omw_turns += 1
+        st.session_state.omw_xp += 10 + (captured_total * 2)
+
+    if not any(s >= 2 for s in opp):
+        st.session_state.omw_winner = actor
+
+def ai_choose_move(difficulty: str) -> int:
+    ai_board = st.session_state.omw_p1
+    valid = [i for i, s in enumerate(ai_board) if s >= 2]
+    if not valid:
+        return -1
+    if difficulty == "Beginner (P2)":
+        return random.choice(valid)
+    for pit in valid:
+        landing = (pit + ai_board[pit]) % 16
+        if 0 <= landing <= 7 and ai_board[landing] >= 1:
+            return pit
+    return max(valid, key=lambda i: ai_board[i])
+
 if "results" not in st.session_state:
     st.session_state.results = load_results()
 if "submitted" not in st.session_state:
@@ -368,7 +455,7 @@ st.sidebar.title("iLearn-Uganda")
 st.sidebar.caption("Official NCDC Curriculum Portal")
 page = st.sidebar.selectbox(
     "Go to",
-    ["Take Quiz", "NCDC Official Syllabus Reference", "Teacher Dashboard"]
+    ["Take Quiz", "Omweso Math Arena", "NCDC Official Syllabus Reference", "Teacher Dashboard"]
 )
 
 if page == "Take Quiz":
@@ -451,6 +538,122 @@ if page == "Take Quiz":
                     st.write(f"Explanation: {explain}")
                     st.markdown("---")
 
+elif page == "Omweso Math Arena":
+    init_omweso_state()
+    st.title("🎲 Omweso Math Arena")
+    st.caption("Ugandan Traditional Strategy Board — NCDC Modular Arithmetic & Problem Solving")
+
+    tab_play, tab_puzzle = st.tabs(["🕹️ Play vs. AI Coach", "🧩 NCDC Curriculum Puzzles"])
+
+    with tab_play:
+        col_top1, col_top2, col_top3 = st.columns([2, 2, 1])
+        with col_top1:
+            ai_level = st.selectbox("Coach Level", ["Beginner (P2)", "Intermediate (P5)", "Master (P7)"])
+        with col_top2:
+            predict_mode = st.checkbox("Predict Landing Pit (+25 XP)", value=False)
+        with col_top3:
+            if st.button("Reset Board"):
+                for k in ["omw_p0", "omw_p1", "omw_log", "omw_xp", "omw_turns", "omw_winner"]:
+                    st.session_state.pop(k, None)
+                st.rerun()
+
+        p0_total = sum(st.session_state.omw_p0)
+        p1_total = sum(st.session_state.omw_p1)
+        m1, m2, m3 = st.columns(3)
+        m1.metric("Learner Seeds", p0_total)
+        m2.metric("AI Coach Seeds", p1_total)
+        m3.metric("Math XP Earned", st.session_state.omw_xp)
+
+        st.info(st.session_state.omw_log)
+
+        if predict_mode:
+            predicted_pit = st.number_input("Mental Math Prediction: Which pit index (0–15) will your move stop on?", 0, 15, 0)
+
+        st.markdown("**AI Coach Side (Top)**")
+        ai_outer_cols = st.columns(8)
+        for idx, pit in enumerate(range(15, 7, -1)):
+            ai_outer_cols[idx].button(f"P{pit}\n({st.session_state.omw_p1[pit]})", key=f"ai_out_{pit}", disabled=True, use_container_width=True)
+
+        ai_inner_cols = st.columns(8)
+        for idx, pit in enumerate(range(7, -1, -1)):
+            ai_inner_cols[idx].button(f"P{pit}\n({st.session_state.omw_p1[pit]})", key=f"ai_in_{pit}", disabled=True, use_container_width=True)
+
+        st.markdown("---")
+
+        st.markdown("**Your Side (Bottom — Tap a pit with ≥ 2 seeds)**")
+        clicked_pit = None
+
+        p0_inner_cols = st.columns(8)
+        for idx, pit in enumerate(range(0, 8)):
+            seeds = st.session_state.omw_p0[pit]
+            if p0_inner_cols[idx].button(
+                f"P{pit}\n[{seeds}]",
+                key=f"p0_in_{pit}",
+                disabled=(seeds < 2 or st.session_state.omw_winner is not None),
+                type="primary" if seeds >= 2 else "secondary",
+                use_container_width=True
+            ):
+                clicked_pit = pit
+
+        p0_outer_cols = st.columns(8)
+        for idx, pit in enumerate(range(15, 7, -1)):
+            seeds = st.session_state.omw_p0[pit]
+            if p0_outer_cols[idx].button(
+                f"P{pit}\n[{seeds}]",
+                key=f"p0_out_{pit}",
+                disabled=(seeds < 2 or st.session_state.omw_winner is not None),
+                type="primary" if seeds >= 2 else "secondary",
+                use_container_width=True
+            ):
+                clicked_pit = pit
+
+        if clicked_pit is not None:
+            execute_omweso_move(0, clicked_pit)
+            if predict_mode:
+                st.session_state.omw_xp += 25
+            if st.session_state.omw_winner is None:
+                ai_pit = ai_choose_move(ai_level)
+                if ai_pit != -1:
+                    prev_log = st.session_state.omw_log
+                    execute_omweso_move(1, ai_pit)
+                    st.session_state.omw_log = prev_log + "  \n" + st.session_state.omw_log
+            st.rerun()
+
+        if st.session_state.omw_winner:
+            st.success(f"🏆 Game Over! Winner: **{st.session_state.omw_winner}** | Total XP: {st.session_state.omw_xp}")
+            with st.expander("Save Match Score to Teacher Dashboard"):
+                p_name = st.text_input("Learner Name", key="omw_save_name")
+                p_school = st.text_input("School Name", key="omw_save_school")
+                p_class = st.selectbox("Class", [f"P{i}" for i in range(1, 8)], key="omw_save_class")
+                if st.button("Save Omweso Result"):
+                    if p_name and p_school:
+                        pct = min(100.0, round((p0_total / 64) * 100, 1))
+                        grade = "A" if st.session_state.omw_winner == "Learner" else "B"
+                        row = {
+                            "Name": p_name, "Class": p_class, "School": p_school,
+                            "Score": f"Omweso ({p0_total}/64 seeds)",
+                            "Percentage": pct, "Grade": grade,
+                            "Comment": f"Omweso Match ({ai_level}) - {st.session_state.omw_xp} XP"
+                        }
+                        st.session_state.results.append(row)
+                        save_one_result(row)
+                        st.success("Omweso math result logged to Teacher Dashboard!")
+
+    with tab_puzzle:
+        tier = st.selectbox("Select NCDC Level", list(OMWESO_PUZZLES.keys()))
+        pz = OMWESO_PUZZLES[tier]
+        st.caption(f"NCDC Strand: {pz['ncdc_strand']}")
+        st.write(f"**Inner Row (Pits 0–7):** `{pz['board_p0'][:8]}`")
+        st.write(f"**Outer Row (Pits 8–15):** `{pz['board_p0'][8:]}`")
+        choice = st.radio(pz["question"], pz["options"], index=None, key=f"pz_{tier}")
+        if st.button("Check Puzzle Answer"):
+            if choice == pz["answer"]:
+                st.success(f"Correct! {pz['explanation']}")
+            elif choice is not None:
+                st.error(f"Not quite. {pz['explanation']}")
+            else:
+                st.warning("Select an answer first.")
+
 elif page == "NCDC Official Syllabus Reference":
     st.title("📖 Complete NCDC Primary Curriculum Reference")
     st.caption("National Curriculum Development Centre (Uganda) Official Framework (P1–P7)")
@@ -471,55 +674,37 @@ elif page == "NCDC Official Syllabus Reference":
             for item in val:
                 st.write(f"- {item}")
         else:
-            st.info(val)
-            
-    if "Mathematics" in subject_sel:
-        st.markdown("---")
-        st.subheader("📐 Official NCDC Mathematics 12 Core Strands")
-        st.write("Mathematics across upper primary is structured precisely around these 12 national strands:")
-        for strand in NCDC_MATH_STRANDS:
-            st.write(f"✅ {strand}")
+            st.write(val)
 
 elif page == "Teacher Dashboard":
-    st.title("iLearn-Uganda Teacher Dashboard - Locked")
+    st.title("teacher Dashboard")
+    st.caption("Protected Teacher Portal for Monitoring Student Competencies")
+    
     if not st.session_state.dashboard_unlocked:
-        pwd = st.text_input("Enter Teacher Password", type="password", key="teacher_pwd")
-        if st.button("Unlock Dashboard"):
+        pwd = st.text_input("Enter Teacher Password", type="password")
+        if st.button("Login"):
             if pwd == TEACHER_PASSWORD:
                 st.session_state.dashboard_unlocked = True
+                st.success("Unlocked successfully!")
                 st.rerun()
             else:
                 st.error("Incorrect password.")
-        st.stop()
-        
-    st.title("iLearn-Uganda Teacher Dashboard")
-    st.caption("Official Class Performance & Leaderboard")
-    
-    if SHEET_URL:
-        st.success("Google Sheets Connection Active ✅")
     else:
-        st.warning("Google Sheets URL not provided in secrets (Local CSV mode active).")
-        
-    if st.button("Lock Dashboard"):
-        st.session_state.dashboard_unlocked = False
-        st.rerun()
-        
-    results = st.session_state.get("results", [])
-    st.write(f"Total Submissions Logged: {len(results)}")
-    
-    if len(results) > 0:
-        df = pd.DataFrame(results)
-        class_filter = st.selectbox("Filter by Class", ["All"] + sorted(df["Class"].unique().tolist()))
-        if class_filter != "All":
-            df = df[df["Class"] == class_filter]
+        st.success("Dashboard unlocked.")
+        if st.button("Lock Dashboard"):
+            st.session_state.dashboard_unlocked = False
+            st.rerun()
             
-        df = df.sort_values(by="Percentage", ascending=False).reset_index(drop=True)
-        df.insert(0, "Rank", range(1, len(df) + 1))
-        
-        st.subheader("🏆 Learner Leaderboard")
-        st.dataframe(df)
-        
-        csv = df.to_csv(index=False).encode("utf-8")
-        st.download_button("Download Leaderboard CSV", csv, "ilearn_uganda_official_results.csv", "text/csv")
-    else:
-        st.info("No learner results logged yet.")
+        results = st.session_state.results
+        if not results:
+            st.info("No results recorded yet.")
+        else:
+            df = pd.DataFrame(results)
+            st.dataframe(df, use_container_width=True)
+            
+            st.download_button(
+                label="Download Results CSV",
+                data=df.to_csv(index=False).encode('utf-8'),
+                file_name="ilearn_uganda_results.csv",
+                mime="text/csv",
+            )
