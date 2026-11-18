@@ -309,10 +309,10 @@ OMWESO_PUZZLES = {
         "ncdc_strand": "Operations & Remainders (P4–P5)"
     },
     "P6–P7 (Relay Chain & Okutta Capture)": {
-        "question": "Under what condition does Okutta capturing happen?",
-        "options": ["When you land on any pit", "Only when your final seed lands on a front-line pit (inner row)", "When you land on a back-line pit", "Randomly anywhere"],
-        "answer": "Only when your final seed lands on a front-line pit (inner row)",
-        "explanation": "Capturing is triggered strictly when landing in a front-line pit, collecting both front and back opposite opponent pits.",
+        "question": "When is clockwise (reverse) movement permitted in Omweso?",
+        "options": ["Anytime you want", "Only when playing from one of the four left corner pits AND it results in a capture", "Never", "Always anti-clockwise"],
+        "answer": "Only when playing from one of the four left corner pits AND it results in a capture",
+        "explanation": "Clockwise movement is a special tactical option restricted exclusively to the four left-corner pits when a capture is possible.",
         "ncdc_strand": "Modular Arithmetic & Multi-Step Problem Solving (P6–P7)"
     }
 }
@@ -460,13 +460,13 @@ if page == "Take Quiz":
                     st.markdown("---")
 
 elif page == "Omweso Math Arena":
-    st.title("🎲 Omweso Math Arena (Front-Line Landing Capture)")
-    st.caption("Ugandan Traditional Rules: Capture occurs ONLY when landing on a Front-Line (Inner Row) pit — collecting both front & back opposite pits!")
+    st.title("🎲 Omweso Math Arena (Left Corner Capture Rule)")
+    st.caption("Ugandan Traditional Rules: Clockwise movement is allowed ONLY from the four left-corner pits (P0, P7, P8, P15) when it results in a front-line Okutta capture!")
 
     tab_play, tab_puzzle = st.tabs(["🕹️ Pass & Play (Locality Rules)", "🧩 NCDC Curriculum Puzzles"])
 
     with tab_play:
-        omweso_front_line_html = """
+        omweso_strict_corner_html = """
         <!DOCTYPE html>
         <html>
         <head>
@@ -621,15 +621,15 @@ elif page == "Omweso Math Arena":
         </head>
         <body>
 
-          <div id="status-bar">Game Active: Tap any pit (2+ seeds) to start sowing! (Capture happens ONLY on front-line landing).</div>
+          <div id="status-bar">Game Active: Tap any pit (2+ seeds) to start sowing! (Clockwise only from left corners if capturing).</div>
 
           <!-- Left Corner Reverse Choice Modal -->
           <div id="direction-modal">
             <div class="modal-content">
-              <h3 style="color: #ffb703; margin-top:0;">🔄 Left Corner Reverse Option</h3>
-              <p style="font-size: 13px;">This is one of the four left corner pits. You can choose to reverse (clockwise) or play standard anti-clockwise.</p>
+              <h3 style="color: #ffb703; margin-top:0;">🔄 Left Corner Capture Option</h3>
+              <p style="font-size: 13px;">This is one of the four left corner pits (P0, P7, P8, P15). You can play standard anti-clockwise or choose clockwise (which is available because it leads to a front-line capture!).</p>
               <button class="dir-btn" onclick="executeMoveWithDir(-1)">← Anti-Clockwise (Standard)</button><br>
-              <button class="dir-btn clock" onclick="executeMoveWithDir(1)">Clockwise → (Reverse Option)</button>
+              <button class="dir-btn clock" onclick="executeMoveWithDir(1)">Clockwise → (Capture Move)</button>
             </div>
           </div>
 
@@ -637,7 +637,7 @@ elif page == "Omweso Math Arena":
             <!-- Virtual Finger -->
             <div id="game-finger">👆🏿</div>
 
-            <div id="p2-header" style="font-size:11px; color:#ffb703; margin-bottom:3px;">PLAYER 2 SIDE (Top) [Outer: 8-15 | Inner Front-Line: 0-7]</div>
+            <div id="p2-header" style="font-size:11px; color:#ffb703; margin-bottom:3px;">PLAYER 2 SIDE (Top)</div>
             <div class="row" id="p2-outer"></div>
             <div class="row" id="p2-inner"></div>
 
@@ -645,7 +645,7 @@ elif page == "Omweso Math Arena":
 
             <div class="row" id="p1-inner"></div>
             <div class="row" id="p1-outer"></div>
-            <div id="p1-header" style="font-size:11px; color:#52b788; margin-top:3px;">PLAYER 1 SIDE (Bottom) [Inner Front-Line: 0-7 | Outer: 8-15]</div>
+            <div id="p1-header" style="font-size:11px; color:#52b788; margin-top:3px;">PLAYER 1 SIDE (Bottom)</div>
           </div>
 
           <div>
@@ -761,14 +761,15 @@ elif page == "Omweso Math Arena":
             return false;
           }
 
-          // Returns opposite front-line (inner row 0-7) and back-line (outer row 8-15) directly across
+          // Opposite front-line (inner row 0-7) and back-line (outer row 8-15) directly across
           function getOppositeFrontAndBack(curr) {
             let frontOpp = curr <= 7 ? (7 - curr) : (15 - (curr - 8));
             let backOpp = curr <= 7 ? (8 + curr) : curr;
             return [frontOpp, backOpp];
           }
 
-          function testCapture(board, oppBoard, startPit, dir) {
+          // Test clockwise movement specifically for left corners (0, 7, 8, 15) to see if it results in a FRONT-LINE landing capture
+          function testClockwiseCapture(board, oppBoard, startPit) {
             let tempBoard = [...board];
             let tempOpp = [...oppBoard];
             let seeds = tempBoard[startPit];
@@ -777,13 +778,11 @@ elif page == "Omweso Math Arena":
             let steps = 0;
             while (seeds > 0 && steps < 200) {
               steps++;
-              if (dir === -1) curr = (curr - 1 + 16) % 16;
-              else curr = (curr + 1) % 16;
+              curr = (curr + 1) % 16; // Clockwise step (+1)
               tempBoard[curr] += 1;
               seeds -= 1;
               if (seeds === 0) {
-                // Check if landing is on front line (0 to 7)
-                if (curr <= 7) {
+                if (curr <= 7) { // Must land on front-line (inner row 0-7) to capture
                   let [frontOpp, backOpp] = getOppositeFrontAndBack(curr);
                   if (tempOpp[frontOpp] > 0 || tempOpp[backOpp] > 0) return true;
                 }
@@ -798,13 +797,15 @@ elif page == "Omweso Math Arena":
             let board = (player === 1) ? p1 : p2;
             let oppBoard = (player === 1) ? p2 : p1;
 
+            // Clockwise is ONLY allowed from the four left corner pits (0, 7, 8, 15) AND ONLY if it results in a capture!
             if ((startPit === 0 || startPit === 7 || startPit === 8 || startPit === 15) && board[startPit] >= 2) {
-              let canClock = testCapture(board, oppBoard, startPit, 1);
-              if (canClock) {
+              let canClockCapture = testClockwiseCapture(board, oppBoard, startPit);
+              if (canClockCapture) {
                 document.getElementById('direction-modal').style.display = 'flex';
                 return;
               }
             }
+            // Otherwise, default strictly to anti-clockwise (-1)
             executeMoveWithDir(-1);
           }
 
@@ -828,7 +829,7 @@ elif page == "Omweso Math Arena":
             await sleep(600);
 
             if (dir === 1) {
-              document.getElementById('status-bar').innerText = `👉 Reversing (clockwise) from left corner Pit ${startPit}...`;
+              document.getElementById('status-bar').innerText = `👉 Executing Left-Corner Clockwise Capture Move from Pit ${startPit}...`;
               let tempSeeds = seedsInHand;
               let tempCurr = startPit;
               let steps = 0;
@@ -850,7 +851,7 @@ elif page == "Omweso Math Arena":
                   capturingPits = [frontOpp, backOpp];
                   pointFingerAtPit(player === 1 ? 2 : 1, frontOpp);
                   renderBoard();
-                  document.getElementById('status-bar').innerText = `✨ FRONT-LINE REVERSE CAPTURE! Finger takes opposite front & back pits (${frontOpp} & ${backOpp})!`;
+                  document.getElementById('status-bar').innerText = `✨ LEFT CORNER CLOCKWISE CAPTURE! Finger takes front & back pits (${frontOpp} & ${backOpp})!`;
                   playSeedSound();
                   await sleep(1000);
 
@@ -894,7 +895,7 @@ elif page == "Omweso Math Arena":
               renderBoard();
 
               if (seedsInHand === 0) {
-                // Check if final seed landed on FRONT-LINE (inner row 0 to 7)
+                // Check if landing is on FRONT-LINE (inner row 0 to 7)
                 if (curr <= 7) {
                   let [frontOpp, backOpp] = getOppositeFrontAndBack(curr);
                   if (opponentBoard[frontOpp] > 0 || opponentBoard[backOpp] > 0) {
@@ -926,7 +927,6 @@ elif page == "Omweso Math Arena":
                     continue;
                   }
                 } else {
-                  // Landed on back row (outer row 8-15) -> NO capture allowed!
                   document.getElementById('status-bar').innerText = `ℹ️ Landed on back-line pit ${curr}. No capture (Front-line landing required)!`;
                 }
 
@@ -965,7 +965,7 @@ elif page == "Omweso Math Arena":
         </body>
         </html>
         """
-        st.components.v1.html(omweso_front_line_html, height=580, scrolling=False)
+        st.components.v1.html(omweso_strict_corner_html, height=580, scrolling=False)
 
     with tab_puzzle:
         tier = st.selectbox("Select NCDC Level", list(OMWESO_PUZZLES.keys()))
