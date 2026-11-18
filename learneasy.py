@@ -1,743 +1,317 @@
 import streamlit as st
-import pandas as pd
-import os
-import requests
-import json
-import random
 
-st.set_page_config(page_title="iLearn-Uganda", layout="centered")
+st.set_page_config(page_title="iLearn-Uganda - 3D Omweso", layout="centered")
 
-TEACHER_PASSWORD = st.secrets.get("TEACHER_PASSWORD", "iLearnUganda123")
-CSV_FILE = "results.csv"
-SHEET_URL = st.secrets.get("SHEET_URL", "")
+st.title("🎲 iLearn-Uganda: 3D Animated Omweso")
+st.caption("Traditional Ugandan Board Game with 3D Physics Sowing & Audio Cues")
 
-# Complete Official NCDC Primary Curriculum Framework (P1–P7) with All Subjects, Life Skills, Values & Learning Aids
-NCDC_OFFICIAL_FRAMEWORK = {
-    "Lower Primary (Cycle 1: Thematic Approach P1–P3)": {
-        "P1": {
-            "Literacy I (Local Language)": {
-                "Topics / Themes": ["Our School", "Our Home and Community", "Our Environment", "Plants and Animals"],
-                "Life Skills": ["Effective communication", "Self-awareness", "Interpersonal relationships"],
-                "Values": ["Obedience", "Respect", "Neatness"],
-                "Learning Aids": ["Name flashcards", "Picture charts", "Real school objects"]
-            },
-            "Literacy II (Health, Science & Environment)": {
-                "Topics / Themes": ["The Human Body and Health", "Food and Nutrition", "Weather Changes", "Sanitation"],
-                "Life Skills": ["Self-care", "Health awareness", "Critical thinking"],
-                "Values": ["Cleanliness", "Self-respect", "Hygiene"],
-                "Learning Aids": ["Soap, clean water, basin", "Human body charts", "Weather symbols"]
-            },
-            "Numeracy (Mathematics)": {
-                "Topics / Themes": ["Set Concepts (Sorting & Matching)", "Whole Numbers (1-10)", "Operations (Addition & Subtraction up to 20)"],
-                "Life Skills": ["Logical thinking", "Problem solving", "Accuracy"],
-                "Values": ["Patience", "Orderliness", "Honesty"],
-                "Learning Aids": ["Bottle tops, sticks, stones (counters)", "Number cards", "Abacus"]
-            },
-            "English (Oral & Transition)": {
-                "Topics / Themes": ["Greetings & Courtesies", "Simple Classroom Instructions", "Naming Common Objects"],
-                "Life Skills": ["Listening attention", "Verbal expression"],
-                "Values": ["Confidence", "Courtesy"],
-                "Learning Aids": ["Audio flashcards", "Puppets", "Action charts"]
-            }
-        },
-        "P2": {
-            "Literacy I (Local Language)": {
-                "Topics / Themes": ["Our Community", "Child Rights and Responsibilities", "Cultural Practices"],
-                "Life Skills": ["Decision making", "Empathy", "Effective communication"],
-                "Values": ["Cooperation", "Sharing", "Responsibility"],
-                "Learning Aids": ["Storybooks", "Community role-play cards", "Local language charts"]
-            },
-            "Literacy II (Environment & Science)": {
-                "Topics / Themes": ["Food and Nutrition (Local food groups)", "Sanitation and Personal Hygiene", "Sources of Energy", "Keeping Animals and Plants"],
-                "Life Skills": ["Health consciousness", "Environmental observation", "Coping with stress"],
-                "Values": ["Gratitude", "Stewardship", "Cleanliness"],
-                "Learning Aids": ["Real food samples", "Seed samples", "Energy source charts"]
-            },
-            "Numeracy (Mathematics)": {
-                "Topics / Themes": ["Set Concepts (Intersection & Union)", "Whole Numbers up to 50", "Addition & Subtraction with Regrouping", "Basic Multiplication"],
-                "Life Skills": ["Analytical thinking", "Numerical estimation"],
-                "Values": ["Precision", "Diligence"],
-                "Learning Aids": ["Place value tins", "Bundles of 10 sticks", "Multiplication grids"]
-            },
-            "English": {
-                "Topics / Themes": ["Descriptive Vocabulary", "Simple Present Tense", "Reading Short Sentences"],
-                "Life Skills": ["Literacy comprehension", "Confidence"],
-                "Values": ["Perseverance", "Neatness"],
-                "Learning Aids": ["Word flashcards", "Reader books"]
-            }
-        },
-        "P3": {
-            "Literacy I / Transition to English": {
-                "Topics / Themes": ["Our Sub-county / Division", "Living Together", "Transition Foundations to English-medium instruction"],
-                "Life Skills": ["Spatial orientation", "Civic awareness", "Negotiation"],
-                "Values": ["Patriotism", "Community pride", "Tolerance"],
-                "Learning Aids": ["Sub-county sketch maps", "Transition reading cards"]
-            },
-            "Literacy II (Science & Environment)": {
-                "Topics / Themes": ["Environment and Weather", "Sanitation and Water", "Energy Resources", "Vector Control"],
-                "Life Skills": ["Health protection", "Problem solving"],
-                "Values": ["Responsibility", "Environmental care"],
-                "Learning Aids": ["Safe water chain charts", "Rain gauge models"]
-            },
-            "Numeracy (Mathematics)": {
-                "Topics / Themes": ["Numbers up to 1,000", "Multiplication Tables", "Simple Fractions (Halves, Quarters)", "Money & Local Currency", "Standard Metric Units"],
-                "Life Skills": ["Financial literacy", "Measurement estimation"],
-                "Values": ["Honesty in trade", "Fairness"],
-                "Learning Aids": ["Currency notes/coins", "Meter rulers", "Fraction cut-outs"]
-            },
-            "English": {
-                "Topics / Themes": ["Grammar fundamentals", "Paragraph construction", "Guided composition"],
-                "Life Skills": ["Effective writing", "Expression"],
-                "Values": ["Clarity", "Discipline"],
-                "Learning Aids": ["Sentence strips", "Writing charts"]
-            }
-        }
-    },
-    "Upper Primary (Cycle 2 & 3: Subject-Based P4–P7)": {
-        "P4": {
-            "1. Mathematics (12 Core NCDC Strands)": {
-                "Topics / Themes": ["Set Concepts", "Whole Numbers", "Operations on Whole Numbers", "Patterns & Sequences", "Fractions", "Lines, Angles & Geometry", "Data Handling", "Time", "Integers", "Money", "Length, Mass & Capacity", "Algebra"],
-                "Life Skills": ["Logical reasoning", "Spatial precision", "Problem solving"],
-                "Values": ["Accuracy", "Orderliness", "Persistence"],
-                "Learning Aids": ["Venn diagram charts", "Abacus", "Protractors", "Weighing scales"]
-            },
-            "2. English Language": {
-                "Topics / Themes": ["Nouns & Pronouns", "Present & Past Simple Tenses", "Punctuation", "Comprehension & Summary", "Guided Letter Writing"],
-                "Life Skills": ["Effective written & oral communication", "Critical analysis"],
-                "Values": ["Neatness", "Clarity", "Courtesy"],
-                "Learning Aids": ["Grammar charts", "Letter templates", "Comprehension readers"]
-            },
-            "3. Integrated Science": {
-                "Topics / Themes": ["Plant Anatomy & Crop Growing", "Human Digestive System & Teeth", "Weather Instruments", "Sanitation & Vectors"],
-                "Life Skills": ["Scientific observation", "Agricultural husbandry", "Health safety"],
-                "Values": ["Environmental stewardship", "Hard work", "Cleanliness"],
-                "Learning Aids": ["Uprooted flowering plants", "Dental anatomy charts", "Rain gauge"]
-            },
-            "4. Social Studies (SST)": {
-                "Topics / Themes": ["Map Reading (Compass, Scale, Key)", "District Physical Geography", "Vegetation & Climate", "Local Administrative Leadership"],
-                "Life Skills": ["Map navigation", "Civic participation", "Environmental awareness"],
-                "Values": ["Patriotism", "Respect for leaders", "Unity"],
-                "Learning Aids": ["District wall maps", "Magnetic compass", "Relief models"]
-            },
-            "5. Religious Education (CRE / IRE)": {
-                "Topics / Themes": ["Creation & God's Purpose", "Foundational Covenants (Noah, Abraham)", "Moral Integrity & Honesty", "Service to Community"],
-                "Life Skills": ["Moral reasoning", "Empathy", "Spiritual reflection"],
-                "Values": ["Integrity", "Truthfulness", "Reverence"],
-                "Learning Aids": ["Bible / Quran extracts", "Moral scenario flashcards"]
-            },
-            "6. CAPE (Arts & PE)": {
-                "Topics / Themes": ["CAPE 1: Music, Dance & Drama (Folk tunes & rhythm)", "CAPE 2: Physical Education (Athletics & ball game rules)", "CAPE 3: Art & Technology (Color mixing, paper craft)"],
-                "Life Skills": ["Motor coordination", "Physical endurance", "Creative design"],
-                "Values": ["Sportsmanship", "Discipline", "Cultural appreciation"],
-                "Learning Aids": ["Watercolors", "Footballs", "Local drums"]
-            }
-        },
-        "P5": {
-            "1. Mathematics (12 Core NCDC Strands)": {
-                "Topics / Themes": ["Advanced Sets & Subsets", "Whole Numbers up to 999,999 & Roman Numerals", "BODMAS & Word Problems", "Primes & Sequences", "Fractions, Decimals & Percentages", "Angles on Lines & Polygons", "Statistics (Mean, Median, Mode)", "24-Hour Clock & Speed", "Integers", "Profit & Loss", "Area & Volume", "Basic Algebra & Inequalities"],
-                "Life Skills": ["Logical deduction", "Proportional reasoning", "Statistical interpretation"],
-                "Values": ["Precision", "Curiosity", "Diligence"],
-                "Learning Aids": ["Percentage grid charts", "Geometric shape models", "Statistical survey sheets"]
-            },
-            "2. English Language": {
-                "Topics / Themes": ["Relative Clauses", "Conjunctions (because, although)", "Poetry Analysis", "Formal & Informal Letters", "Summary Writing"],
-                "Life Skills": ["Formal speech", "Advanced reading comprehension"],
-                "Values": ["Respect", "Clarity"],
-                "Learning Aids": ["Poetry anthologies", "Formal letter samples"]
-            },
-            "3. Integrated Science": {
-                "Topics / Themes": ["States of Matter", "Heat Transfer (Conduction, Convection, Radiation)", "Human Circulatory & Respiratory Systems", "Primary Health Care (PHC) & Immunization"],
-                "Life Skills": ["Experimental inquiry", "Health safety management"],
-                "Values": ["Scientific curiosity", "Responsibility"],
-                "Learning Aids": ["Heat sources & metal rods", "Heart and lung anatomical charts", "Immunization schedules"]
-            },
-            "4. Social Studies (SST)": {
-                "Topics / Themes": ["Uganda's Physical Geography & Relief Zones", "Drainage Systems", "Ethnic Migrations (Bantu, Nilotics)", "Early African Kingdoms", "The National Constitution"],
-                "Life Skills": ["Historical synthesis", "Geopolitical awareness", "Civic responsibility"],
-                "Values": ["National unity", "Tolerance", "Patriotism"],
-                "Learning Aids": ["Physical map of Uganda", "Migration arrow maps", "Constitution extracts"]
-            },
-            "5. Religious Education (CRE / IRE)": {
-                "Topics / Themes": ["Life and Teachings of Jesus Christ / Prophet Muhammad", "Compassion and Justice", "Worship Practices", "Resisting Negative Peer Pressure"],
-                "Life Skills": ["Assertiveness", "Ethical decision-making", "Moral fortitude"],
-                "Values": ["Compassion", "Steadfastness", "Justice"],
-                "Learning Aids": ["Scripture text guides", "Peer-pressure role-play cards"]
-            },
-            "6. CAPE (Arts & PE)": {
-                "Topics / Themes": ["CAPE 1: Traditional Folk Songs & Dance Formations", "CAPE 2: Gymnastics & Athletic Endurance", "CAPE 3: Functional Craft, Pottery & Weaving"],
-                "Life Skills": ["Physical stamina", "Artistic craftsmanship"],
-                "Values": ["Cultural preservation", "Perseverance"],
-                "Learning Aids": ["Local clay", "Weaving reeds", "Gym mats"]
-            }
-        },
-        "P6": {
-            "1. Mathematics (12 Core NCDC Strands)": {
-                "Topics / Themes": ["Venn Diagram Word Problems (2-Set)", "Place Values in Millions & Number Bases (Base 5 & 2)", "Advanced Operations", "Fibonacci Sequences", "Reciprocals & Simple Interest", "Parallel Lines & Circle Properties", "Pie Charts & Bar-Line Graphs", "Travel Graphs & Time Zones", "Cartesian Plane Coordinates", "Foreign Exchange & Utility Bills", "Area of Trapeziums/Rings & Volume of Cylinders", "Brackets, Factorization & Simultaneous Equations"],
-                "Life Skills": ["Logical synthesis", "Financial literacy", "Spatial visualization"],
-                "Values": ["Tenacity", "Prudence", "Accuracy"],
-                "Learning Aids": ["Venn diagram worksheet charts", "Sample utility bills", "Cylinder models", "Cartesian grid boards"]
-            },
-            "2. English Language": {
-                "Topics / Themes": ["Active and Passive Voice", "Direct and Indirect (Reported) Speech", "Conditional Clauses (First, Second, Third)", "Formal Report Writing", "Meeting Minutes"],
-                "Life Skills": ["Public speaking", "Critical editing", "Persuasion"],
-                "Values": ["Confidence", "Respect for views", "Accuracy"],
-                "Learning Aids": ["Speech transformation charts", "Meeting minute templates"]
-            },
-            "3. Integrated Science": {
-                "Topics / Themes": ["Electricity and Magnetism", "Simple Machines (Levers, Pulleys, Inclined Planes)", "Friction", "Mammalian Reproduction & Adolescence", "Personal Hygiene & Immunity"],
-                "Life Skills": ["Technical problem solving", "Self-protection", "Health maintenance"],
-                "Values": ["Safety consciousness", "Responsibility", "Self-respect"],
-                "Learning Aids": ["Dry cells & copper wires", "Pulley/lever models", "Health education charts"]
-            },
-            "4. Social Studies (SST)": {
-                "Topics / Themes": ["East African Physical Resources", "European Scramble and Partition", "African Resistance Movements", "Path to Independence", "Regional Cooperation (EAC)"],
-                "Life Skills": ["Geopolitical analysis", "Historical synthesis"],
-                "Values": ["Pan-African solidarity", "Patriotism", "Peace advocacy"],
-                "Learning Aids": ["East Africa political & resource maps", "Historical timelines"]
-            },
-            "5. Religious Education (CRE / IRE)": {
-                "Topics / Themes": ["Faith in Action", "Christian/Islamic Leadership Models", "Family Values & Dignity of Work", "Resource Stewardship & Conflict Resolution"],
-                "Life Skills": ["Conflict mediation", "Leadership ethics"],
-                "Values": ["Accountability", "Stewardship", "Peace-building"],
-                "Learning Aids": ["Community leadership case studies", "Scripture guides"]
-            },
-            "6. CAPE (Arts & PE)": {
-                "Topics / Themes": ["CAPE 1: Choral Performance & Drama Scripts", "CAPE 2: First-Aid Safety & Sports Officiating", "CAPE 3: Advanced Sculpture, Tie-and-Dye, Textile Design"],
-                "Life Skills": ["Emergency response", "Dramatic direction"],
-                "Values": ["Safety mindfulness", "Civic responsibility", "Enterprise"],
-                "Learning Aids": ["First aid kits", "Papier-mâché", "Textile dyes"]
-            }
-        },
-        "P7": {
-            "1. Mathematics (12 Core NCDC Strands Mastery)": {
-                "Topics / Themes": ["3-Set Venn Diagram Word Problems", "Standard Form & Non-Decimal Base Arithmetic", "PLE Past Paper Problem Solving", "Advanced Progressions & Proofs", "Recurring Decimals & Advanced Commercial Math", "Compass Construction of Angles & Triangles", "Probability & Combined Data Interpretation", "Average Speed for Multi-Stage Journeys", "Linear Inequalities & Graphing", "Simple Interest & Taxation", "Composite Area & Volume of Solids", "Quadratic Expressions & Word Problems"],
-                "Life Skills": ["Strategic time management under pressure", "Advanced analytical deduction", "Risk evaluation"],
-                "Values": ["Resilience", "Excellence", "Analytical honesty"],
-                "Learning Aids": ["PLE past paper compilations", "Mathematical sets", "Probability spinners"]
-            },
-            "2. English Language": {
-                "Topics / Themes": ["PLE Grammar Consolidation", "Phrasal Verbs & Idioms", "Proverb Meanings & Synonyms", "Passage Summary Compression", "Timed Exam Simulation"],
-                "Life Skills": ["Stress control", "Time management under exams", "Rapid comprehension"],
-                "Values": ["Academic integrity", "Perseverance"],
-                "Learning Aids": ["Timed PLE past papers", "Idiom reference sheets"]
-            },
-            "3. Integrated Science": {
-                "Topics / Themes": ["Excretory System (Kidneys, Skin)", "Nervous System (Brain, Spinal Cord, Reflex Arc)", "Agricultural Science & Crop Production", "Livestock & Poultry Management", "Environmental Conservation"],
-                "Life Skills": ["Scientific synthesis", "Agricultural entrepreneurship", "Environmental advocacy"],
-                "Values": ["Environmental accountability", "Diligence", "Hard work"],
-                "Learning Aids": ["Kidney/brain anatomical charts", "Livestock feed samples", "Conservation posters"]
-            },
-            "4. Social Studies (SST)": {
-                "Topics / Themes": ["Continental Geography of Africa", "Decolonization Struggles in Africa", "African Union (AU) & United Nations (UN)", "International Trade & Global Governance", "Holistic PLE SST Revision"],
-                "Life Skills": ["Global citizenship", "International relations evaluation"],
-                "Values": ["Global empathy", "Peace advocacy", "Civic pride"],
-                "Learning Aids": ["Wall map of Africa", "AU/UN organizational charts", "Revision briefs"]
-            },
-            "5. Religious Education (CRE / IRE)": {
-                "Topics / Themes": ["Moral Theology & Human Dignity", "Ethical Responses to Modern Challenges", "Social Responsibility", "Comprehensive PLE CRE/IRE Revision"],
-                "Life Skills": ["Ethical discernment", "Holistic self-evaluation"],
-                "Values": ["Spiritual maturity", "Moral integrity", "Justice"],
-                "Learning Aids": ["Thematic PLE revision briefs", "Ethical dilemma discussion cards"]
-            },
-            "6. CAPE (Arts & PE)": {
-                "Topics / Themes": ["CAPE 1: Advanced MDD Stage Productions", "CAPE 2: Recreational Sport Management & Fitness", "CAPE 3: Entrepreneurial Craft Exhibitions & Marketing"],
-                "Life Skills": ["Sports leadership", "Event organization", "Entrepreneurship"],
-                "Values": ["Enterprise", "Cultural leadership", "Teamwork"],
-                "Learning Aids": ["Sports officiating gear", "Exhibition boards", "Craft marketing tags"]
-            }
-        }
+# We embed a fully self-contained HTML5/JS application with 3D canvas rendering and Web Audio sound synthesis
+omweso_html = """
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+  body {
+    background: #2b1810;
+    color: #f4e8d8;
+    font-family: sans-serif;
+    text-align: center;
+    margin: 0;
+    padding: 10px;
+  }
+  #board-container {
+    background: linear-data(135deg, #5c2c16, #3a1a0b);
+    border: 6px solid #8B4513;
+    border-radius: 16px;
+    padding: 15px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.6);
+    display: inline-block;
+    max-width: 650px;
+    width: 100%;
+  }
+  .row {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin: 10px 0;
+  }
+  .pit {
+    width: 55px;
+    height: 70px;
+    background: radial-gradient(circle at 50% 30%, #1e0d05, #0f0502);
+    border: 3px solid #d4a373;
+    border-radius: 50%/30%;
+    box-shadow: inset 0 8px 12px rgba(0,0,0,0.9), 0 3px 6px rgba(0,0,0,0.4);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    position: relative;
+    transition: transform 0.1s;
+  }
+  .pit:hover {
+    transform: scale(1.05);
+    border-color: #faedcd;
+  }
+  .pit.playable {
+    border-color: #52b788;
+    box-shadow: inset 0 8px 12px rgba(0,0,0,0.9), 0 0 10px #52b788;
+  }
+  .pit-label {
+    position: absolute;
+    top: 2px;
+    font-size: 9px;
+    color: #d4a373;
+    font-weight: bold;
+  }
+  .seeds-container {
+    display: flex;
+    flex-wrap: wrap;
+    width: 42px;
+    height: 42px;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    margin-top: 10px;
+  }
+  .seed-3d {
+    width: 11px;
+    height: 11px;
+    background: radial-gradient(circle at 35% 35%, #ffb703, #b5651d 60%, #53330b);
+    border-radius: 50%;
+    box-shadow: 1px 2px 3px rgba(0,0,0,0.8), inset -1px -1px 2px rgba(0,0,0,0.5);
+    display: inline-block;
+  }
+  #status-bar {
+    font-size: 15px;
+    margin: 15px 0;
+    padding: 8px;
+    background: #432818;
+    border-radius: 8px;
+    border: 1px solid #bb9457;
+  }
+  button.action-btn {
+    background: #bc6c25;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+    margin: 5px;
+  }
+  button.action-btn:hover {
+    background: #dda15e;
+  }
+</style>
+</head>
+<body>
+
+  <div id="status-bar">Tap any glowing green pit (2+ seeds) to start sowing counter-clockwise!</div>
+
+  <div id="board-container">
+    <div style="font-size:12px; color:#dda15e; margin-bottom:5px;">AI COACH SIDE (Top)</div>
+    <!-- AI Outer Row (15 down to 8) -->
+    <div class="row" id="ai-outer"></div>
+    <!-- AI Inner Row (7 down to 0) -->
+    <div class="row" id="ai-inner"></div>
+
+    <hr style="border-color: #8B4513; margin: 15px 0;">
+
+    <!-- Learner Inner Row (0 up to 7) -->
+    <div class="row" id="p-inner"></div>
+    <!-- Learner Outer Row (15 down to 8) -->
+    <div class="row" id="p-outer"></div>
+    <div style="font-size:12px; color:#52b788; margin-top:5px;">YOUR SIDE (Bottom - Tap to Play)</div>
+  </div>
+
+  <div style="margin-top: 15px;">
+    <button class="action-btn" onclick="resetGame()">Reset Board</button>
+  </div>
+
+<script>
+  // Game State: 16 pits per player (0-7 inner, 8-15 outer)
+  let p0 = [4,4,4,4,4,4,4,4, 0,0,0,0,0,0,0,0]; // Learner
+  let p1 = [4,4,4,4,4,4,4,4, 0,0,0,0,0,0,0,0]; // AI Coach
+  let isAnimating = false;
+
+  // Web Audio API Sound Synthesizer for Falling Seed Clacks
+  let audioCtx = null;
+  function playSeedSound() {
+    try {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      let osc = audioCtx.createOscillator();
+      let gain = audioCtx.createGain();
+      
+      // Pitch drop simulates a small wooden seed dropping into a carved pit
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(400 + Math.random() * 150, audioCtx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(120, audioCtx.currentTime + 0.08);
+      
+      gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.08);
+      
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.08);
+    } catch(e) {
+      // Audio context might be restricted before user interaction
     }
-}
+  }
 
-CLASS_QUESTIONS = {
-    "P1": [
-        ("Q1. [Maths] What is 2 + 3?", ["4", "5", "6", "3"], "5", "2 plus 3 equals 5."),
-        ("Q2. [English] What is the opposite of day?", ["Sun", "Night", "Morning", "Dark"], "Night", "The opposite of day is night."),
-        ("Q3. [Science] Which body part do we use for seeing?", ["Nose", "Eyes", "Ears", "Mouth"], "Eyes", "We use eyes for seeing."),
-        ("Q4. [SST] Who heads a family at home?", ["Teacher", "Father/Mother", "Doctor", "Driver"], "Father/Mother", "Parents or guardians head the family."),
-    ],
-    "P2": [
-        ("Q1. [Maths] What is 15 - 7?", ["7", "8", "9", "6"], "8", "15 minus 7 equals 8."),
-        ("Q2. [English] Choose the correct plural of 'cat':", ["Cats", "Cates", "Cat", "Catie"], "Cats", "The plural of cat is cats."),
-        ("Q3. [Science] Which food group gives us energy?", ["Proteins", "Carbohydrates", "Vitamins", "Water"], "Carbohydrates", "Carbohydrates give the body energy."),
-        ("Q4. [SST] Name the place where we buy things in our community.", ["School", "Market", "Hospital", "Well"], "Market", "We buy goods from the market."),
-    ],
-    "P3": [
-        ("Q1. [Maths] What is 6 multiplied by 4?", ["20", "24", "18", "28"], "24", "6 x 4 = 24."),
-        ("Q2. [Science] Which soil type holds the most water?", ["Sandy soil", "Loam soil", "Clay soil", "Topsoil"], "Clay soil", "Clay soil has fine particles that hold water best."),
-        ("Q3. [SST] What is the title of the political head of a sub-county?", ["LC III Chairperson", "LC I Chairperson", "RDC", "Mayor"], "LC III Chairperson", "An LC III Chairperson heads a sub-county."),
-        ("Q4. [English] Fill in the gap: She ........ to school every day.", ["walk", "walks", "walking", "walked"], "walks", "Third-person singular uses 'walks'."),
-    ],
-    "P4": [
-        ("Q1. [Maths] Express 1/2 as a percentage.", ["25%", "50%", "75%", "100%"], "50%", "1/2 x 100% = 50%."),
-        ("Q2. [Science] Which part of a plant manufactures food?", ["Root", "Stem", "Leaf", "Flower"], "Leaf", "Leaves perform photosynthesis to make food."),
-        ("Q3. [SST] What instrument is used to show directions on a map?", ["Windsock", "Compass", "Thermometer", "Barometer"], "Compass", "A compass shows cardinal directions."),
-        ("Q4. [English] Give the plural of 'baby':", ["Babys", "Babies", "Babyies", "Babs"], "Babies", "Words ending in 'y' preceded by a consonant change to 'ies'."),
-    ],
-    "P5": [
-        ("Q1. [Maths] Simplify: -5 - (-6)", ["-11", "1", "11", "-1"], "1", "-5 + 6 = 1. Minus a minus becomes plus."),
-        ("Q2. [Science] What gas is used by plants during photosynthesis?", ["Oxygen", "Carbon dioxide", "Nitrogen", "Hydrogen"], "Carbon dioxide", "Plants absorb carbon dioxide from the air."),
-        ("Q3. [SST] Which is the largest country in East Africa by land area?", ["Uganda", "Kenya", "Tanzania", "Rwanda"], "Tanzania", "Tanzania is the largest East African country."),
-        ("Q4. [CRE] Who was sold by his brothers into Egypt?", ["Joseph", "Moses", "David", "Abraham"], "Joseph", "Joseph was sold into slavery by his brothers."),
-    ],
-    "P6": [
-        ("Q1. [Maths] Find the area of a rectangle of length 10cm and width 5cm.", ["15cm²", "50cm²", "30cm²", "25cm²"], "50cm²", "Area = Length x Width = 10 x 5 = 50cm²."),
-        ("Q2. [Science] Which blood cells fight against diseases in the human body?", ["Red blood cells", "White blood cells", "Platelets", "Plasma"], "White blood cells", "White blood cells defend the body against infections."),
-        ("Q3. [SST] When did Uganda gain her independence?", ["9th October 1962", "26th January 1986", "9th October 1952", "1st January 1960"], "9th October 1962", "Uganda became independent on October 9, 1962."),
-        ("Q4. [English] Choose the correct form: Neither John nor his friends ........ coming.", ["is", "are", "was", "has"], "are", "Verb agrees with the closer subject ('friends' -> are)."),
-    ],
-    "P7": [
-        ("Q1. [Maths] Solve for x: 2x + 4 = 12", ["x = 4", "x = 6", "x = 8", "x = 2"], "x = 4", "2x = 12 - 4 => 2x = 8 => x = 4."),
-        ("Q2. [Science] Why is heat unable to travel in a vacuum?", ["There are no particles to carry it", "Vacuum is too hot", "Vacuum is too cold", "Vacuum has many particles"], "There are no particles to carry it", "Heat requires particles to transfer via conduction or convection; a vacuum has none."),
-        ("Q3. [SST] Name the organization that replaced the East African Community in 1977 before it was revived later.", ["COMESA", "None / It collapsed", "ECOWAS", "AU"], "None / It collapsed", "The initial EAC collapsed in 1977."),
-        ("Q4. [English] Choose the correct indirect speech: John said, 'I am going home.'", ["John said that he is going home", "John said that he was going home", "John said he is went home", "John said that I was going home"], "John said that he was going home", "Present tense changes to past tense in indirect speech."),
-    ]
-}
-
-OMWESO_PUZZLES = {
-    "P1–P3 (Counting & Number Bonds)": {
-        "board_p0": [0, 5, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0],
-        "board_p1": [0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0],
-        "question": "Pit 1 holds 5 seeds. If you sow counter-clockwise (1 seed per pit), which pit receives the last seed?",
-        "options": ["Pit 5", "Pit 6", "Pit 7", "Pit 4"],
-        "answer": "Pit 6",
-        "explanation": "1 + 5 = 6. Counting on 5 steps from Pit 1 lands in Pit 6.",
-        "ncdc_strand": "Whole Numbers & Addition (P1–P3)"
-    },
-    "P4–P5 (Division & Remainders)": {
-        "board_p0": [0, 0, 19, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0],
-        "board_p1": [0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0],
-        "question": "One full lap around your 16 pits takes 16 steps. Pit 2 holds 19 seeds. Where does the 19th seed land?",
-        "options": ["Pit 3", "Pit 4", "Pit 5", "Pit 6"],
-        "answer": "Pit 5",
-        "explanation": "19 ÷ 16 = 1 full lap with remainder 3. Starting at Pit 2: 2 + 3 = Pit 5.",
-        "ncdc_strand": "Operations & Remainders (P4–P5)"
-    },
-    "P6–P7 (Relay Chain & Okutta Capture)": {
-        "board_p0": [0, 0, 3, 0, 0, 1, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0],
-        "board_p1": [0, 0, 6, 0, 0, 0, 0, 0,  0, 0, 0, 0, 5, 0, 0, 0],
-        "question": "Your Pit 5 has 1 seed across from AI pits holding 6 and 5 seeds. Which pit do you play to capture all 11 seeds?",
-        "options": ["Play Pit 2", "Play Pit 5", "Play Pit 0", "Cannot capture"],
-        "answer": "Play Pit 2",
-        "explanation": "Pit 2 has 3 seeds (2 + 3 = 5). Landing in occupied Pit 5 triggers Okutta across from AI's inner Pit 2 (7 - 5 = 2) and outer Pit 13 (8 + 5 = 13), capturing 6 + 5 = 11 seeds!",
-        "ncdc_strand": "Modular Arithmetic & Multi-Step Problem Solving (P6–P7)"
+  function renderBoard() {
+    // Render AI Outer (15 -> 8)
+    let htmlAIOuter = "";
+    for (let i = 15; i >= 8; i--) {
+      htmlAIOuter += createPitHTML(1, i, p1[i], false);
     }
-}
+    document.getElementById('ai-outer').innerHTML = htmlAIOuter;
 
-def load_results():
-    if SHEET_URL:
-        try:
-            r = requests.get(SHEET_URL, timeout=10)
-            data = r.json()
-            clean = []
-            for row in data:
-                if str(row.get("Name", "")).strip() != "":
-                    clean.append({
-                        "Name": row.get("Name", ""),
-                        "Class": row.get("Class", "P1"),
-                        "School": row.get("School", ""),
-                        "Score": row.get("Score", ""),
-                        "Percentage": float(row.get("Percentage", 0)) if str(row.get("Percentage", "")).strip() != "" else 0,
-                        "Grade": row.get("Grade", ""),
-                        "Comment": row.get("Comment", ""),
-                    })
-            return clean
-        except Exception as e:
-            st.warning(f"Could not load from Google Sheets: {e}")
-    if os.path.exists(CSV_FILE):
-        try:
-            return pd.read_csv(CSV_FILE).to_dict("records")
-        except:
-            return []
-    return []
+    // Render AI Inner (7 -> 0)
+    let htmlAIInner = "";
+    for (let i = 7; i >= 0; i--) {
+      htmlAIInner += createPitHTML(1, i, p1[i], false);
+    }
+    document.getElementById('ai-inner').innerHTML = htmlAIInner;
 
-def save_one_result(row):
-    saved = False
-    if SHEET_URL:
-        try:
-            r = requests.post(SHEET_URL, data=json.dumps(row), headers={"Content-Type": "application/json"}, timeout=10)
-            if r.status_code == 200:
-                saved = True
-        except Exception as e:
-            st.warning(f"Google Sheets save failed: {e}")
-    try:
-        existing = []
-        if os.path.exists(CSV_FILE):
-            existing = pd.read_csv(CSV_FILE).to_dict("records")
-        existing.append(row)
-        pd.DataFrame(existing).to_csv(CSV_FILE, index=False)
-    except:
-        pass
-    return saved
+    // Render Learner Inner (0 -> 7)
+    let htmlPInner = "";
+    for (let i = 0; i <= 7; i++) {
+      let playable = !isAnimating && p0[i] >= 2;
+      htmlPInner += createPitHTML(0, i, p0[i], playable);
+    }
+    document.getElementById('p-inner').innerHTML = htmlPInner;
 
-def init_omweso_state():
-    if "omw_p0" not in st.session_state:
-        st.session_state.omw_p0 = [4] * 8 + [0] * 8  # Learner (Bottom)
-        st.session_state.omw_p1 = [4] * 8 + [0] * 8  # AI Coach (Top)
-        st.session_state.omw_log = "Tap any green pit (≥ 2 seeds) to sow counter-clockwise!"
-        st.session_state.omw_xp = 0
-        st.session_state.omw_turns = 0
-        st.session_state.omw_winner = None
+    // Render Learner Outer (15 -> 8)
+    let htmlPOuter = "";
+    for (let i = 15; i >= 8; i--) {
+      let playable = !isAnimating && p0[i] >= 2;
+      htmlPOuter += createPitHTML(0, i, p0[i], playable);
+    }
+    document.getElementById('p-outer').innerHTML = htmlPOuter;
+  }
 
-def ai_choose_move(difficulty: str) -> int:
-    ai_board = st.session_state.omw_p1
-    valid = [i for i, s in enumerate(ai_board) if s >= 2]
-    if not valid:
-        return -1
-    if difficulty == "Beginner (P2)":
-        return random.choice(valid)
-    for pit in valid:
-        landing = (pit + ai_board[pit]) % 16
-        if 0 <= landing <= 7 and ai_board[landing] >= 1:
-            return pit
-    return max(valid, key=lambda i: ai_board[i])
+  function createPitHTML(player, index, count, playable) {
+    let seedsHTML = "";
+    // Limit displayed 3D seeds to 12 for visual neatness, show badge if more
+    let displayCount = Math.min(count, 12);
+    for (let s = 0; s < displayCount; s++) {
+      seedsHTML += `<div class="seed-3d"></div>`;
+    }
+    if (count > 12) {
+      seedsHTML += `<span style="font-size:9px; color:#ffb703; font-weight:bold;">+${count-12}</span>`;
+    }
 
-if "results" not in st.session_state:
-    st.session_state.results = load_results()
-if "submitted" not in st.session_state:
-    st.session_state.submitted = False
-if "last_submit_key" not in st.session_state:
-    st.session_state.last_submit_key = ""
-if "dashboard_unlocked" not in st.session_state:
-    st.session_state.dashboard_unlocked = False
+    let onclickAttr = (player === 0 && playable) ? `onclick="playTurn(${index})"` : "";
+    let playableClass = playable ? "playable" : "";
 
-st.sidebar.title("iLearn-Uganda")
-st.sidebar.caption("Official NCDC Curriculum Portal")
-page = st.sidebar.selectbox(
-    "Go to",
-    ["Take Quiz", "Omweso Math Arena", "NCDC Official Syllabus Reference", "Teacher Dashboard"]
-)
+    return `
+      <div class="pit ${playableClass}" ${onclickAttr}>
+        <span class="pit-label">P${index}</span>
+        <div class="seeds-container">${seedsHTML}</div>
+      </div>
+    `;
+  }
 
-if page == "Take Quiz":
-    st.title("iLearn-Uganda Assessment Portal")
-    st.caption("Primary Level Competency Assessment based on NCDC Standards")
-    st.write("Select your class, answer the questions, and submit your score.")
-    
-    if st.button("Next Child - Clear for New Learner"):
-        saved = st.session_state.get("results", [])
-        st.session_state.clear()
-        st.session_state.results = saved
-        st.session_state.submitted = False
-        st.session_state.last_submit_key = ""
-        st.session_state.dashboard_unlocked = False
-        st.rerun()
-        
-    name = st.text_input("Learner Name", key="name")
-    school = st.text_input("School Name", key="school")
-    learner_class = st.selectbox("Select Class", [f"P{i}" for i in range(1, 8)], key="learner_class")
-    
-    questions = CLASS_QUESTIONS.get(learner_class, [])
-    
-    st.markdown(f"### Assessment for {learner_class}")
-    answers = []
-    for i, (q, options, correct, explain) in enumerate(questions):
-        ans = st.radio(q, options, key=f"q{i}_{learner_class}", index=None)
-        answers.append(ans)
-        
-    if st.session_state.submitted:
-        st.info("This child has already submitted. Click 'Next Child' above for the next learner.")
-        
-    if st.button("Submit Quiz - See Results"):
-        if st.session_state.submitted:
-            st.warning("Already submitted. Click 'Next Child' for a new learner.")
-        elif not name or not school:
-            st.warning("Please fill in Learner Name and School Name.")
-        elif any(a is None for a in answers):
-            st.warning("Please answer all questions before submitting.")
-        else:
-            submit_key = f"{name}|{school}|{learner_class}|{answers}"
-            if submit_key == st.session_state.last_submit_key:
-                st.warning("Already submitted.")
-            else:
-                score = 0
-                for i, (q, options, correct, explain) in enumerate(questions):
-                    if str(answers[i]) == str(correct):
-                        score = score + 1
-                total = len(questions)
-                pct = round(score * 100 / total, 1) if total > 0 else 0
-                
-                if pct >= 80:
-                    grade, comment = "A", "Excellent mastery!"
-                elif pct >= 60:
-                    grade, comment = "B", "Very good performance."
-                elif pct >= 40:
-                    grade, comment = "C", "Good, keep revising."
-                else:
-                    grade, comment = "D", "Needs more practice."
-                    
-                new_row = {
-                    "Name": name, "Class": learner_class, "School": school, 
-                    "Score": f"{score}/{total}", "Percentage": pct, "Grade": grade, "Comment": comment
-                }
-                st.session_state.results.append(new_row)
-                ok = save_one_result(new_row)
-                if ok:
-                    st.success("Saved to Google Sheets database successfully ✅")
-                else:
-                    st.warning("Saved locally (Check Google Sheets secret configuration).")
-                    
-                st.session_state.last_submit_key = submit_key
-                st.session_state.submitted = True
-                st.success(f"Well done {name}! Score: {score}/{total} ({pct}%) — Grade: {grade}")
-                st.write(comment)
-                
-                st.subheader("Detailed Review")
-                for i, (q, options, correct, explain) in enumerate(questions):
-                    st.write(f"**Q{i+1}:** {q}")
-                    st.write(f"Your Answer: {answers[i]} | Correct Answer: {correct}")
-                    st.write(f"Explanation: {explain}")
-                    st.markdown("---")
+  // Sequential 3D Falling Seed Animation & Sowing Logic
+  async function playTurn(startPit) {
+    if (isAnimating) return;
+    isAnimating = true;
 
-elif page == "Omweso Math Arena":
-    init_omweso_state()
-    st.title("🎲 Omweso Math Arena")
-    st.caption("Ugandan Traditional Strategy Board — Visual Seed Sowing & Modular Arithmetic")
+    let seedsInHand = p0[startPit];
+    p0[startPit] = 0;
+    let curr = startPit;
+    renderBoard();
 
-    tab_play, tab_puzzle = st.tabs(["🕹️ Play vs. AI Coach (Visual Board)", "🧩 NCDC Curriculum Puzzles"])
+    document.getElementById('status-bar').innerText = `Picking up ${seedsInHand} seeds from Pit ${startPit}...`;
 
-    with tab_play:
-        col_top1, col_top2, col_top3 = st.columns([2, 2, 1])
-        with col_top1:
-            ai_level = st.selectbox("Coach Level", ["Beginner (P2)", "Intermediate (P5)", "Master (P7)"])
-        with col_top2:
-            predict_mode = st.checkbox("Predict Landing Pit (+25 XP)", value=False)
-        with col_top3:
-            if st.button("Reset Board"):
-                for k in ["omw_p0", "omw_p1", "omw_log", "omw_xp", "omw_turns", "omw_winner", "omw_last_move_events"]:
-                    st.session_state.pop(k, None)
-                st.rerun()
+    // Sowing loop with async delay so seeds fall one by one
+    while (seedsInHand > 0) {
+      await sleep(180); // Speed of each falling seed
+      curr = (curr + 1) % 16;
+      p0[curr] += 1;
+      seedsInHand -= 1;
+      
+      playSeedSound();
+      renderBoard();
 
-        p0_total = sum(st.session_state.omw_p0)
-        p1_total = sum(st.session_state.omw_p1)
-        m1, m2, m3 = st.columns(3)
-        m1.metric("Learner Seeds", p0_total)
-        m2.metric("AI Coach Seeds", p1_total)
-        m3.metric("Math XP Earned", st.session_state.omw_xp)
+      // Check if last seed landed
+      if (seedsInHand === 0) {
+        // Okutta Capture Check
+        if (curr <= 7 && p0[curr] > 1) {
+          let oppIn = 7 - curr;
+          let oppOut = 8 + curr;
+          if (p1[oppIn] > 0 && p1[oppOut] > 0) {
+            let captured = p1[oppIn] + p1[oppOut];
+            p1[oppIn] = 0;
+            p1[oppOut] = 0;
+            document.getElementById('status-bar').innerText = `✨ OKUTTA CAPTURE! Captured ${captured} seeds! Continuing relay...`;
+            await sleep(600);
+            seedsInHand = captured;
+            curr = (startPit - 1) % 16;
+            continue;
+          }
+        }
+        // Relay Check
+        if (p0[curr] >= 2) {
+          seedsInHand = p0[curr];
+          p0[curr] = 0;
+          document.getElementById('status-bar').innerText = `🔄 RELAY! Picking up ${seedsInHand} seeds from Pit ${curr} to keep going!`;
+          await sleep(400);
+          continue;
+        }
+      }
+    }
 
-        st.info(st.session_state.omw_log)
+    document.getElementById('status-bar').innerText = "AI Coach is thinking...";
+    await sleep(800);
+    aiPlay();
+    isAnimating = false;
+    renderBoard();
+  }
 
-        if predict_mode:
-            predicted_pit = st.number_input("Mental Math Prediction: Which pit index (0–15) will your move stop on?", 0, 15, 0)
+  function aiPlay() {
+    let validAI = [];
+    for (let i = 0; i < 16; i++) {
+      if (p1[i] >= 2) validAI.push(i);
+    }
+    if (validAI.length === 0) {
+      document.getElementById('status-bar').innerText = "🏆 You win! AI has no moves left.";
+      return;
+    }
+    let aiPit = validAI[Math.floor(Math.random() * validAI.length)];
+    let aiSeeds = p1[aiPit];
+    p1[aiPit] = 0;
+    let curr = aiPit;
+    for (let s = 0; s < aiSeeds; s++) {
+      curr = (curr + 1) % 16;
+      p1[curr] += 1;
+    }
+    playSeedSound();
+    document.getElementById('status-bar').innerText = `AI Coach played Pit ${aiPit}. Your turn!`;
+  }
 
-        # --- VISUAL AI BOARD (TOP) ---
-        st.markdown("### 🤖 AI Coach Side (Top Row)")
-        st.caption("Outer Row (P15 to P8) & Inner Row (P7 to P0)")
-        
-        ai_outer_cols = st.columns(8)
-        for idx, pit in enumerate(range(15, 7, -1)):
-            seeds = st.session_state.omw_p1[pit]
-            seed_emoji = "🫘 " * seeds if seeds <= 6 else f"🫘x{seeds}"
-            ai_outer_cols[idx].markdown(
-                f"<div style='border: 2px solid #8B4513; border-radius: 8px; padding: 6px; text-align: center; background-color: #FDF5E6; min-height: 70px;'>"
-                f"<b style='font-size: 11px; color: #555;'>P{pit} (Outer)</b><br>"
-                f"<span style='font-size: 16px;'>{seed_emoji if seeds > 0 else '○'}</span>"
-                f"</div>", unsafe_allow_html=True
-            )
+  function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
 
-        ai_inner_cols = st.columns(8)
-        for idx, pit in enumerate(range(7, -1, -1)):
-            seeds = st.session_state.omw_p1[pit]
-            seed_emoji = "🫘 " * seeds if seeds <= 6 else f"🫘x{seeds}"
-            ai_inner_cols[idx].markdown(
-                f"<div style='border: 2px solid #8B4513; border-radius: 8px; padding: 6px; text-align: center; background-color: #F5DEB3; min-height: 70px;'>"
-                f"<b style='font-size: 11px; color: #333;'>P{pit} (Inner)</b><br>"
-                f"<span style='font-size: 16px;'>{seed_emoji if seeds > 0 else '○'}</span>"
-                f"</div>", unsafe_allow_html=True
-            )
+  function resetGame() {
+    if (isAnimating) return;
+    p0 = [4,4,4,4,4,4,4,4, 0,0,0,0,0,0,0,0];
+    p1 = [4,4,4,4,4,4,4,4, 0,0,0,0,0,0,0,0];
+    document.getElementById('status-bar').innerText = "Board reset. Tap any glowing green pit to play!";
+    renderBoard();
+  }
 
-        st.markdown("<hr style='margin: 10px 0;'>", unsafe_allow_html=True)
+  // Initial render
+  renderBoard();
+</script>
 
-        # --- VISUAL LEARNER BOARD (BOTTOM) ---
-        st.markdown("### 🧑‍🎓 Your Side (Bottom — Tap a pit with 2+ seeds to sow counter-clockwise)")
-        
-        clicked_pit = None
-        p0_inner_cols = st.columns(8)
-        for idx, pit in enumerate(range(0, 8)):
-            seeds = st.session_state.omw_p0[pit]
-            with p0_inner_cols[idx]:
-                if st.button(
-                    f"P{pit} [{seeds}🫘]",
-                    key=f"p0_in_{pit}",
-                    disabled=(seeds < 2 or st.session_state.omw_winner is not None),
-                    type="primary" if seeds >= 2 else "secondary",
-                    use_container_width=True
-                ):
-                    clicked_pit = pit
+</body>
+</html>
+"""
 
-        p0_outer_cols = st.columns(8)
-        for idx, pit in enumerate(range(15, 7, -1)):
-            seeds = st.session_state.omw_p0[pit]
-            with p0_outer_cols[idx]:
-                if st.button(
-                    f"P{pit} [{seeds}🫘]",
-                    key=f"p0_out_{pit}",
-                    disabled=(seeds < 2 or st.session_state.omw_winner is not None),
-                    type="primary" if seeds >= 2 else "secondary",
-                    use_container_width=True
-                ):
-                    clicked_pit = pit
-
-        # --- TURN EXECUTION & ANIMATION LOG ---
-        if clicked_pit is not None:
-            board = st.session_state.omw_p0
-            opp = st.session_state.omw_p1
-            seeds_in_hand = board[clicked_pit]
-            board[clicked_pit] = 0
-            curr = clicked_pit
-            steps = 0
-            captured_total = 0
-            movement_trace = [f"Picked up {seeds_in_hand} seeds from Pit {clicked_pit}."]
-
-            while seeds_in_hand > 0 and steps < 200:
-                steps += 1
-                curr = (curr + 1) % 16
-                board[curr] += 1
-                seeds_in_hand -= 1
-                movement_trace.append(f"Drop #{steps} → Pit {curr} (now has {board[curr]} seeds)")
-
-                if seeds_in_hand == 0:
-                    if 0 <= curr <= 7 and board[curr] > 1:
-                        opp_in, opp_out = 7 - curr, 8 + curr
-                        if opp[opp_in] > 0 and opp[opp_out] > 0:
-                            cap = opp[opp_in] + opp[opp_out]
-                            opp[opp_in], opp[opp_out] = 0, 0
-                            captured_total += cap
-                            movement_trace.append(f"✨ **OKUTTA CAPTURE!** Landed in inner Pit {curr}. Captured {cap} seeds from AI Pits {opp_in} and {opp_out}!")
-                            seeds_in_hand = cap
-                            curr = (clicked_pit - 1) % 16
-                            continue
-                    if board[curr] >= 2:
-                        seeds_in_hand = board[curr]
-                        movement_trace.append(f"🔄 **RELAY!** Landed in Pit {curr} with {seeds_in_hand} seeds. Picking all up to continue sowing!")
-                        board[curr] = 0
-
-            st.session_state.omw_last_move_events = movement_trace
-            st.session_state.omw_turns += 1
-            st.session_state.omw_xp += 10 + (captured_total * 2)
-            st.session_state.omw_log = f"Played Pit {clicked_pit} → Sowed {steps} steps. {'Captured ' + str(captured_total) + ' seeds!' if captured_total > 0 else ''}"
-
-            if not any(s >= 2 for s in opp):
-                st.session_state.omw_winner = "Learner"
-            else:
-                ai_pit = ai_choose_move(ai_level)
-                if ai_pit != -1:
-                    ai_board = st.session_state.omw_p1
-                    ai_seeds = ai_board[ai_pit]
-                    ai_board[ai_pit] = 0
-                    ai_curr = ai_pit
-                    ai_steps = 0
-                    while ai_seeds > 0 and ai_steps < 200:
-                        ai_steps += 1
-                        ai_curr = (ai_curr + 1) % 16
-                        ai_board[ai_curr] += 1
-                        ai_seeds -= 1
-                        if ai_seeds == 0 and 0 <= ai_curr <= 7 and ai_board[ai_curr] > 1:
-                            l_in, l_out = 7 - ai_curr, 8 + ai_curr
-                            if st.session_state.omw_p0[l_in] > 0 and st.session_state.omw_p0[l_out] > 0:
-                                cap_ai = st.session_state.omw_p0[l_in] + st.session_state.omw_p0[l_out]
-                                st.session_state.omw_p0[l_in], st.session_state.omw_p0[l_out] = 0, 0
-                                ai_seeds = cap_ai
-                                ai_curr = (ai_pit - 1) % 16
-                                continue
-                            if ai_board[ai_curr] >= 2:
-                                ai_seeds = ai_board[ai_curr]
-                                ai_board[ai_curr] = 0
-                    st.session_state.omw_log += f" | AI Coach played Pit {ai_pit}."
-
-            st.rerun()
-
-        # --- MOVEMENT TRACE INSPECTOR ---
-        if "omw_last_move_events" in st.session_state:
-            with st.expander("🔍 Step-by-Step Move Inspector (Watch How Seeds Travel)", expanded=True):
-                for event in st.session_state.omw_last_move_events:
-                    st.write(f"- {event}")
-
-        if st.session_state.omw_winner:
-            st.success(f"🏆 Game Over! Winner: **{st.session_state.omw_winner}** | Total XP: {st.session_state.omw_xp}")
-            with st.expander("Save Match Score to Teacher Dashboard"):
-                p_name = st.text_input("Learner Name", key="omw_save_name")
-                p_school = st.text_input("School Name", key="omw_save_school")
-                p_class = st.selectbox("Class", [f"P{i}" for i in range(1, 8)], key="omw_save_class")
-                if st.button("Save Omweso Result"):
-                    if p_name and p_school:
-                        pct = min(100.0, round((p0_total / 64) * 100, 1))
-                        grade = "A" if st.session_state.omw_winner == "Learner" else "B"
-                        row = {
-                            "Name": p_name, "Class": p_class, "School": p_school,
-                            "Score": f"Omweso ({p0_total}/64 seeds)",
-                            "Percentage": pct, "Grade": grade,
-                            "Comment": f"Omweso Match ({ai_level}) - {st.session_state.omw_xp} XP"
-                        }
-                        st.session_state.results.append(row)
-                        save_one_result(row)
-                        st.success("Omweso math result logged to Teacher Dashboard!")
-
-    with tab_puzzle:
-        tier = st.selectbox("Select NCDC Level", list(OMWESO_PUZZLES.keys()))
-        pz = OMWESO_PUZZLES[tier]
-        st.caption(f"NCDC Strand: {pz['ncdc_strand']}")
-        st.write(f"**Inner Row (Pits 0–7):** `{pz['board_p0'][:8]}`")
-        st.write(f"**Outer Row (Pits 8–15):** `{pz['board_p0'][8:]}`")
-        choice = st.radio(pz["question"], pz["options"], index=None, key=f"pz_{tier}")
-        if st.button("Check Puzzle Answer"):
-            if choice == pz["answer"]:
-                st.success(f"Correct! {pz['explanation']}")
-            elif choice is not None:
-                st.error(f"Not quite. {pz['explanation']}")
-            else:
-                st.warning("Select an answer first.")
-
-elif page == "NCDC Official Syllabus Reference":
-    st.title("📖 Complete NCDC Primary Curriculum Reference")
-    st.caption("National Curriculum Development Centre (Uganda) Official Framework (P1–P7)")
-    
-    cycle_sel = st.selectbox("1. Select Curriculum Cycle", list(NCDC_OFFICIAL_FRAMEWORK.keys()))
-    class_sel = st.selectbox("2. Select Class Level", list(NCDC_OFFICIAL_FRAMEWORK[cycle_sel].keys()))
-    
-    class_subjects = NCDC_OFFICIAL_FRAMEWORK[cycle_sel][class_sel]
-    subject_sel = st.selectbox("3. Select Subject / Learning Area", list(class_subjects.keys()))
-    
-    st.markdown("---")
-    st.subheader(f"Official Syllabus Details: {class_sel} — {subject_sel}")
-    
-    sub_data = class_subjects[subject_sel]
-    for key, val in sub_data.items():
-        st.markdown(f"### **{key}**")
-        if isinstance(val, list):
-            for item in val:
-                st.write(f"- {item}")
-        else:
-            st.write(val)
-
-elif page == "Teacher Dashboard":
-    st.title("Teacher Dashboard")
-    st.caption("Protected Teacher Portal for Monitoring Student Competencies")
-    
-    if not st.session_state.dashboard_unlocked:
-        pwd = st.text_input("Enter Teacher Password", type="password")
-        if st.button("Login"):
-            if pwd == TEACHER_PASSWORD:
-                st.session_state.dashboard_unlocked = True
-                st.success("Unlocked successfully!")
-                st.rerun()
-            else:
-                st.error("Incorrect password.")
-    else:
-        st.success("Dashboard unlocked.")
-        if st.button("Lock Dashboard"):
-            st.session_state.dashboard_unlocked = False
-            st.rerun()
-            
-        results = st.session_state.results
-        if not results:
-            st.info("No results recorded yet.")
-        else:
-            df = pd.DataFrame(results)
-            st.dataframe(df, use_container_width=True)
-            
-            st.download_button(
-                label="Download Results CSV",
-                data=df.to_csv(index=False).encode('utf-8'),
-                file_name="ilearn_uganda_results.csv",
-                mime="text/csv",
-            )
+st.components.v1.html(omweso_html, height=520, scrolling=False)
