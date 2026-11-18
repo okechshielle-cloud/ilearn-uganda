@@ -310,9 +310,9 @@ OMWESO_PUZZLES = {
     },
     "P6–P7 (Relay Chain & Okutta Capture)": {
         "question": "When you land in a pit, which opponent pits do you capture from?",
-        "options": ["Any random pit", "The immediate front line and back line pits directly opposite where you landed", "All opponent pits", "Only corner pits"],
-        "answer": "The immediate front line and back line pits directly opposite where you landed",
-        "explanation": "Okutta captures seeds from the immediate front line and back line pits directly across from the landing pit.",
+        "options": ["Any random pit", "The front-line and back-line pits directly opposite where you landed", "All opponent pits", "Only corner pits"],
+        "answer": "The front-line and back-line pits directly opposite where you landed",
+        "explanation": "Okutta captures seeds from both the front-line and back-line opponent pits directly across from the landing pit.",
         "ncdc_strand": "Modular Arithmetic & Multi-Step Problem Solving (P6–P7)"
     }
 }
@@ -461,7 +461,7 @@ if page == "Take Quiz":
 
 elif page == "Omweso Math Arena":
     st.title("🎲 Omweso Math Arena (Front & Back Line Capture)")
-    st.caption("Ugandan Traditional Rules: Immediate Front and Back Opposing Pits Capture & Virtual Finger Sowing")
+    st.caption("Ugandan Traditional Rules: Exact Front-Line and Back-Line Opposing Pits Capture & Virtual Finger Sowing")
 
     tab_play, tab_puzzle = st.tabs(["🕹️ Pass & Play (Locality Rules)", "🧩 NCDC Curriculum Puzzles"])
 
@@ -761,10 +761,10 @@ elif page == "Omweso Math Arena":
             return false;
           }
 
-          // Immediate front-line and back-line pits directly opposite the landing pit
+          // Exact front-line and back-line pits directly opposite the landing pit
           function getFrontAndBackOppositePits(curr) {
             // curr: 0-7 (inner row), 8-15 (outer row)
-            // Opposite front-line (inner row) and back-line (outer row) directly across:
+            // Front-line opposite (inner row) and back-line opposite (outer row) directly across from landing index
             let frontOpp = curr <= 7 ? (7 - curr) : (15 - (curr - 8));
             let backOpp = curr <= 7 ? (8 + curr) : curr;
             return [frontOpp, backOpp];
