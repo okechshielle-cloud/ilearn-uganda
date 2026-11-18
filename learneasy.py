@@ -461,7 +461,7 @@ if page == "Take Quiz":
 
 elif page == "Omweso Math Arena":
     st.title("🎲 Omweso Math Arena (Locality Rules Engine)")
-    st.caption("Ugandan Traditional Rules: 2 Seeds/Pit Setup, Simultaneous Start, Resume Capture from Start Pit, Left-Corner Recursive Reverse Capturing & Strict Loss Conditions")
+    st.caption("Ugandan Traditional Rules: Left-Corner Reverse Capture & Resume Anti-Clockwise from Start Pit")
 
     tab_play, tab_puzzle = st.tabs(["🕹️ Pass & Play (Locality Rules)", "🧩 NCDC Curriculum Puzzles"])
 
@@ -613,13 +613,13 @@ elif page == "Omweso Math Arena":
 
           <div id="status-bar">Game Active: Both players can pick any pit (2+ seeds) on their side!</div>
 
-          <!-- Direction Choice Modal for Left-Side / Left-Corner Reverse Capturing -->
+          <!-- Left Corner Reverse Choice Modal -->
           <div id="direction-modal">
             <div class="modal-content">
-              <h3 style="color: #ffb703; margin-top:0;">🔄 Left-Side Reverse Capture Option</h3>
-              <p style="font-size: 13px;">This is a left-side pit! You have the option to reverse (clockwise) or proceed anti-clockwise.</p>
+              <h3 style="color: #ffb703; margin-top:0;">🔄 Left Corner Reverse Option</h3>
+              <p style="font-size: 13px;">This is one of the four left corner pits. You can choose to reverse (clockwise) or play standard anti-clockwise.</p>
               <button class="dir-btn" onclick="executeMoveWithDir(-1)">← Anti-Clockwise (Standard)</button><br>
-              <button class="dir-btn clock" onclick="executeMoveWithDir(1)">Clockwise → (Reverse Capture Option)</button>
+              <button class="dir-btn clock" onclick="executeMoveWithDir(1)">Clockwise → (Reverse Option)</button>
             </div>
           </div>
 
@@ -640,7 +640,6 @@ elif page == "Omweso Math Arena":
           </div>
 
         <script>
-          // Rule 1: All pits initialized to 2 seeds (32 seeds per player)
           let p1 = [2,2,2,2,2,2,2,2, 2,2,2,2,2,2,2,2];
           let p2 = [2,2,2,2,2,2,2,2, 2,2,2,2,2,2,2,2];
           let isAnimating = false;
@@ -695,7 +694,6 @@ elif page == "Omweso Math Arena":
             if (count > 12) {
               seedsHTML += `<span style="font-size:8px; color:#ffb703; font-weight:bold;">+${count-12}</span>`;
             }
-            // Rule 2: Both players can start from any pit with 2+ seeds at any time
             let playable = !isAnimating && count >= 2;
             let onclickAttr = playable ? `onclick="initiateMove(${player}, ${index})"` : "";
             let playableClass = playable ? (player === 1 ? "playable-p1" : "playable-p2") : "";
@@ -709,7 +707,6 @@ elif page == "Omweso Math Arena":
           }
 
           function checkLossConditions(board, player) {
-            // Rule 6: Starvation (opponent left with only individual single seeds in every pit)
             let allSingle = true;
             for (let i = 0; i < 16; i++) {
               if (board[i] > 1) { allSingle = false; break; }
@@ -720,7 +717,6 @@ elif page == "Omweso Math Arena":
               document.getElementById('status-bar').innerText = `🚨 ${loser} has only single seeds left! ${winner} WINS by Starvation (Rule 6)!`;
               return true;
             }
-            // Rule 7: Two corner captures from either corner pits of opponent
             if (player === 1 && p1CornerCapturesCount >= 2) {
               document.getElementById('status-bar').innerText = `🏆 Player 1 wins by capturing from both opponent corner pits twice (Rule 7 / Emitwe-ebiri)!`;
               return true;
@@ -760,11 +756,10 @@ elif page == "Omweso Math Arena":
             let board = (player === 1) ? p1 : p2;
             let oppBoard = (player === 1) ? p2 : p1;
 
-            // Rules 4 & 5: Left-side or four left-corner pits (Pits 0, 7, 8, 15 or left zone) with reverse options
+            // Four left corner pits (Pits 0, 7, 8, 15)
             if ((startPit === 0 || startPit === 7 || startPit === 8 || startPit === 15) && board[startPit] >= 2) {
-              let canAnti = testCapture(board, oppBoard, startPit, -1);
               let canClock = testCapture(board, oppBoard, startPit, 1);
-              if (canAnti && canClock) {
+              if (canClock) {
                 document.getElementById('direction-modal').style.display = 'flex';
                 return;
               }
@@ -787,51 +782,66 @@ elif page == "Omweso Math Arena":
             let curr = startPit;
             renderBoard();
 
-            document.getElementById('status-bar').innerText = `Player ${player} playing from Pit ${startPit} (${dir === -1 ? 'Anti-Clockwise' : 'Clockwise/Reverse'})...`;
-
-            // Rules 4 & 5: Repeated reverse capturing if applicable on left side / corners
-            let reverseCapturingActive = (dir === 1);
-            while (reverseCapturingActive) {
-              let steps = 0;
+            // If reverse (clockwise) move was chosen from left corner
+            if (dir === 1) {
+              document.getElementById('status-bar').innerText = `Player ${player} reversing (clockwise) from left corner Pit ${startPit}...`;
               let tempSeeds = seedsInHand;
-              let tempCurr = curr;
-              // Simulate reverse move
+              let tempCurr = startPit;
+              let steps = 0;
               while (tempSeeds > 0 && steps < 200) {
                 steps++;
                 tempCurr = (tempCurr + 1) % 16;
+                board[tempCurr] += 1;
                 tempSeeds -= 1;
+                playSeedSound();
+                renderBoard();
+                await sleep(150);
               }
-              if (tempCurr <= 7) {
+
+              // Check if landing on a capture
+              if (tempCurr <= 7 && board[tempCurr] > 1) {
                 let oppIn = 7 - tempCurr;
                 let oppOut = 8 + tempCurr;
                 if (opponentBoard[oppIn] > 0 && opponentBoard[oppOut] > 0) {
                   let captured = opponentBoard[oppIn] + opponentBoard[oppOut];
                   capturingPits = [oppIn, oppOut];
                   renderBoard();
-                  document.getElementById('status-bar').innerText = `✨ REVERSE CAPTURE (*Okukuba emabega*)! Taking opponent Pits ${oppIn} & ${oppOut}!`;
+                  document.getElementById('status-bar').innerText = `✨ LEFT CORNER REVERSE CAPTURE! Taking opponent Pits ${oppIn} & ${oppOut}!`;
                   playSeedSound();
                   await sleep(900);
+
+                  if (oppIn === 0 || oppIn === 7 || oppOut === 8 || oppOut === 15) {
+                    if (player === 1) p1CornerCapturesCount++; else p2CornerCapturesCount++;
+                  }
+
                   opponentBoard[oppIn] = 0;
                   opponentBoard[oppOut] = 0;
                   capturingPits = [];
                   renderBoard();
-                  seedsInHand = captured;
-                  if (oppIn === 0 || oppIn === 7 || oppOut === 8 || oppOut === 15) {
-                    if (player === 1) p1CornerCapturesCount++; else p2CornerCapturesCount++;
-                  }
+
                   if (checkLossConditions(opponentBoard, player)) { isAnimating = false; return; }
-                  continue;
+
+                  // Resume normally from where reverse was made from (startPit) anti-clockwise
+                  document.getElementById('status-bar').innerText = `🔄 Resuming normal movement from original start Pit ${startPit} anti-clockwise!`;
+                  seedsInHand = captured;
+                  curr = startPit;
+                  dir = -1; // switch back to anti-clockwise standard sowing
+                } else {
+                  isAnimating = false;
+                  renderBoard();
+                  return;
                 }
+              } else {
+                isAnimating = false;
+                renderBoard();
+                return;
               }
-              reverseCapturingActive = false;
             }
 
-            // Standard Sowing Loop
+            // Standard Anti-Clockwise Sowing Loop
             while (seedsInHand > 0) {
               await sleep(150);
-              if (dir === -1) curr = (curr - 1 + 16) % 16;
-              else curr = (curr + 1) % 16;
-
+              curr = (curr - 1 + 16) % 16;
               board[curr] += 1;
               seedsInHand -= 1;
               playSeedSound();
@@ -886,7 +896,6 @@ elif page == "Omweso Math Arena":
 
           function resetGame() {
             if (isAnimating) return;
-            // Rule 1: Reset all pits to 2 seeds
             p1 = [2,2,2,2,2,2,2,2, 2,2,2,2,2,2,2,2];
             p2 = [2,2,2,2,2,2,2,2, 2,2,2,2,2,2,2,2];
             capturingPits = [];
