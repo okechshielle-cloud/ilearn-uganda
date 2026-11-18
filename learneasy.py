@@ -460,13 +460,13 @@ if page == "Take Quiz":
                     st.markdown("---")
 
 elif page == "Omweso Math Arena":
-    st.title("🎲 Omweso Math Arena (Pass & Play)")
-    st.caption("Traditional Ugandan Board Game — Reverse Sowing (*Okukuba emabega*) & Visual Captures")
+    st.title("🎲 Omweso Math Arena (Locality Rules Engine)")
+    st.caption("Ugandan Traditional Rules: 2 Seeds/Pit Setup, Simultaneous Start, Resume Capture from Start Pit, Left-Corner Recursive Reverse Capturing & Strict Loss Conditions")
 
-    tab_play, tab_puzzle = st.tabs(["🕹️ Pass & Play (2 Players)", "🧩 NCDC Curriculum Puzzles"])
+    tab_play, tab_puzzle = st.tabs(["🕹️ Pass & Play (Locality Rules)", "🧩 NCDC Curriculum Puzzles"])
 
     with tab_play:
-        omweso_reverse_html = """
+        omweso_locality_html = """
         <!DOCTYPE html>
         <html>
         <head>
@@ -611,20 +611,20 @@ elif page == "Omweso Math Arena":
         </head>
         <body>
 
-          <div id="status-bar">Player 1's Turn: Tap any glowing green pit (2+ seeds)</div>
+          <div id="status-bar">Game Active: Both players can pick any pit (2+ seeds) on their side!</div>
 
-          <!-- Direction Choice Modal for End Pits (Okukuba emabega) -->
+          <!-- Direction Choice Modal for Left-Side / Left-Corner Reverse Capturing -->
           <div id="direction-modal">
             <div class="modal-content">
-              <h3 style="color: #ffb703; margin-top:0;">🔄 Choose Sowing Direction</h3>
-              <p style="font-size: 13px;">This is an end pit! Both Anti-Clockwise and Clockwise result in captures.</p>
+              <h3 style="color: #ffb703; margin-top:0;">🔄 Left-Side Reverse Capture Option</h3>
+              <p style="font-size: 13px;">This is a left-side pit! You have the option to reverse (clockwise) or proceed anti-clockwise.</p>
               <button class="dir-btn" onclick="executeMoveWithDir(-1)">← Anti-Clockwise (Standard)</button><br>
-              <button class="dir-btn clock" onclick="executeMoveWithDir(1)">Clockwise → (Reverse Capture)</button>
+              <button class="dir-btn clock" onclick="executeMoveWithDir(1)">Clockwise → (Reverse Capture Option)</button>
             </div>
           </div>
 
           <div id="board-container">
-            <div id="p2-header" style="font-size:11px; color:#ffb703; margin-bottom:3px;">PLAYER 2 SIDE (Top - Inactive)</div>
+            <div id="p2-header" style="font-size:11px; color:#ffb703; margin-bottom:3px;">PLAYER 2 SIDE (Top)</div>
             <div class="row" id="p2-outer"></div>
             <div class="row" id="p2-inner"></div>
 
@@ -632,7 +632,7 @@ elif page == "Omweso Math Arena":
 
             <div class="row" id="p1-inner"></div>
             <div class="row" id="p1-outer"></div>
-            <div id="p1-header" style="font-size:11px; color:#52b788; margin-top:3px;">PLAYER 1 SIDE (Bottom - Active Turn)</div>
+            <div id="p1-header" style="font-size:11px; color:#52b788; margin-top:3px;">PLAYER 1 SIDE (Bottom)</div>
           </div>
 
           <div>
@@ -640,13 +640,15 @@ elif page == "Omweso Math Arena":
           </div>
 
         <script>
+          // Rule 1: All pits initialized to 2 seeds (32 seeds per player)
           let p1 = [2,2,2,2,2,2,2,2, 2,2,2,2,2,2,2,2];
           let p2 = [2,2,2,2,2,2,2,2, 2,2,2,2,2,2,2,2];
-          let currentTurn = 1;
           let isAnimating = false;
           let capturingPits = [];
           let pendingStartPit = null;
           let pendingPlayer = null;
+          let p1CornerCapturesCount = 0;
+          let p2CornerCapturesCount = 0;
 
           let audioCtx = null;
           function playSeedSound() {
@@ -668,44 +670,23 @@ elif page == "Omweso Math Arena":
 
           function renderBoard() {
             let htmlP2Outer = "";
-            for (let i = 15; i >= 8; i--) { htmlP2Outer += createPitHTML(2, i, p2[i], false); }
+            for (let i = 15; i >= 8; i--) { htmlP2Outer += createPitHTML(2, i, p2[i]); }
             document.getElementById('p2-outer').innerHTML = htmlP2Outer;
 
             let htmlP2Inner = "";
-            for (let i = 7; i >= 0; i--) { 
-              let playable = !isAnimating && currentTurn === 2 && p2[i] >= 2;
-              htmlP2Inner += createPitHTML(2, i, p2[i], playable); 
-            }
+            for (let i = 7; i >= 0; i--) { htmlP2Inner += createPitHTML(2, i, p2[i]); }
             document.getElementById('p2-inner').innerHTML = htmlP2Inner;
 
             let htmlP1Inner = "";
-            for (let i = 0; i <= 7; i++) {
-              let playable = !isAnimating && currentTurn === 1 && p1[i] >= 2;
-              htmlP1Inner += createPitHTML(1, i, p1[i], playable);
-            }
+            for (let i = 0; i <= 7; i++) { htmlP1Inner += createPitHTML(1, i, p1[i]); }
             document.getElementById('p1-inner').innerHTML = htmlP1Inner;
 
             let htmlP1Outer = "";
-            for (let i = 15; i >= 8; i--) {
-              let playable = !isAnimating && currentTurn === 1 && p1[i] >= 2;
-              htmlP1Outer += createPitHTML(1, i, p1[i], playable);
-            }
+            for (let i = 15; i >= 8; i--) { htmlP1Outer += createPitHTML(1, i, p1[i]); }
             document.getElementById('p1-outer').innerHTML = htmlP1Outer;
-
-            if (!isAnimating) {
-              if (currentTurn === 1) {
-                document.getElementById('status-bar').innerText = "Player 1's Turn: Tap any green pit (2+ seeds)";
-                document.getElementById('p1-header').style.color = "#52b788";
-                document.getElementById('p2-header').style.color = "#888";
-              } else {
-                document.getElementById('status-bar').innerText = "Player 2's Turn: Tap any yellow-glowing pit (2+ seeds)";
-                document.getElementById('p2-header').style.color = "#ffb703";
-                document.getElementById('p1-header').style.color = "#888";
-              }
-            }
           }
 
-          function createPitHTML(player, index, count, playable) {
+          function createPitHTML(player, index, count) {
             let seedsHTML = "";
             let displayCount = Math.min(count, 12);
             for (let s = 0; s < displayCount; s++) {
@@ -714,6 +695,8 @@ elif page == "Omweso Math Arena":
             if (count > 12) {
               seedsHTML += `<span style="font-size:8px; color:#ffb703; font-weight:bold;">+${count-12}</span>`;
             }
+            // Rule 2: Both players can start from any pit with 2+ seeds at any time
+            let playable = !isAnimating && count >= 2;
             let onclickAttr = playable ? `onclick="initiateMove(${player}, ${index})"` : "";
             let playableClass = playable ? (player === 1 ? "playable-p1" : "playable-p2") : "";
             let isCapturing = (capturingPits.length > 0 && capturingPits.includes(index)) ? "capturing" : "";
@@ -723,6 +706,30 @@ elif page == "Omweso Math Arena":
                 <div class="seeds-container">${seedsHTML}</div>
               </div>
             `;
+          }
+
+          function checkLossConditions(board, player) {
+            // Rule 6: Starvation (opponent left with only individual single seeds in every pit)
+            let allSingle = true;
+            for (let i = 0; i < 16; i++) {
+              if (board[i] > 1) { allSingle = false; break; }
+            }
+            if (allSingle) {
+              let winner = player === 1 ? "Player 1" : "Player 2";
+              let loser = player === 1 ? "Player 2" : "Player 1";
+              document.getElementById('status-bar').innerText = `🚨 ${loser} has only single seeds left! ${winner} WINS by Starvation (Rule 6)!`;
+              return true;
+            }
+            // Rule 7: Two corner captures from either corner pits of opponent
+            if (player === 1 && p1CornerCapturesCount >= 2) {
+              document.getElementById('status-bar').innerText = `🏆 Player 1 wins by capturing from both opponent corner pits twice (Rule 7 / Emitwe-ebiri)!`;
+              return true;
+            }
+            if (player === 2 && p2CornerCapturesCount >= 2) {
+              document.getElementById('status-bar').innerText = `🏆 Player 2 wins by capturing from both opponent corner pits twice (Rule 7 / Emitwe-ebiri)!`;
+              return true;
+            }
+            return false;
           }
 
           function testCapture(board, oppBoard, startPit, dir) {
@@ -753,8 +760,8 @@ elif page == "Omweso Math Arena":
             let board = (player === 1) ? p1 : p2;
             let oppBoard = (player === 1) ? p2 : p1;
 
-            // Check if end pits (0 or 7) with options for both directions
-            if ((startPit === 0 || startPit === 7) && board[startPit] >= 2) {
+            // Rules 4 & 5: Left-side or four left-corner pits (Pits 0, 7, 8, 15 or left zone) with reverse options
+            if ((startPit === 0 || startPit === 7 || startPit === 8 || startPit === 15) && board[startPit] >= 2) {
               let canAnti = testCapture(board, oppBoard, startPit, -1);
               let canClock = testCapture(board, oppBoard, startPit, 1);
               if (canAnti && canClock) {
@@ -762,7 +769,7 @@ elif page == "Omweso Math Arena":
                 return;
               }
             }
-            executeMoveWithDir(-1); // Default anti-clockwise
+            executeMoveWithDir(-1);
           }
 
           async function executeMoveWithDir(dir) {
@@ -780,8 +787,46 @@ elif page == "Omweso Math Arena":
             let curr = startPit;
             renderBoard();
 
-            document.getElementById('status-bar').innerText = `Player ${player} sowing ${dir === -1 ? 'anti-clockwise' : 'clockwise'} from Pit ${startPit}...`;
+            document.getElementById('status-bar').innerText = `Player ${player} playing from Pit ${startPit} (${dir === -1 ? 'Anti-Clockwise' : 'Clockwise/Reverse'})...`;
 
+            // Rules 4 & 5: Repeated reverse capturing if applicable on left side / corners
+            let reverseCapturingActive = (dir === 1);
+            while (reverseCapturingActive) {
+              let steps = 0;
+              let tempSeeds = seedsInHand;
+              let tempCurr = curr;
+              // Simulate reverse move
+              while (tempSeeds > 0 && steps < 200) {
+                steps++;
+                tempCurr = (tempCurr + 1) % 16;
+                tempSeeds -= 1;
+              }
+              if (tempCurr <= 7) {
+                let oppIn = 7 - tempCurr;
+                let oppOut = 8 + tempCurr;
+                if (opponentBoard[oppIn] > 0 && opponentBoard[oppOut] > 0) {
+                  let captured = opponentBoard[oppIn] + opponentBoard[oppOut];
+                  capturingPits = [oppIn, oppOut];
+                  renderBoard();
+                  document.getElementById('status-bar').innerText = `✨ REVERSE CAPTURE (*Okukuba emabega*)! Taking opponent Pits ${oppIn} & ${oppOut}!`;
+                  playSeedSound();
+                  await sleep(900);
+                  opponentBoard[oppIn] = 0;
+                  opponentBoard[oppOut] = 0;
+                  capturingPits = [];
+                  renderBoard();
+                  seedsInHand = captured;
+                  if (oppIn === 0 || oppIn === 7 || oppOut === 8 || oppOut === 15) {
+                    if (player === 1) p1CornerCapturesCount++; else p2CornerCapturesCount++;
+                  }
+                  if (checkLossConditions(opponentBoard, player)) { isAnimating = false; return; }
+                  continue;
+                }
+              }
+              reverseCapturingActive = false;
+            }
+
+            // Standard Sowing Loop
             while (seedsInHand > 0) {
               await sleep(150);
               if (dir === -1) curr = (curr - 1 + 16) % 16;
@@ -805,13 +850,21 @@ elif page == "Omweso Math Arena":
                     playSeedSound();
                     await sleep(900);
 
+                    if (oppIn === 0 || oppIn === 7 || oppOut === 8 || oppOut === 15) {
+                      if (player === 1) p1CornerCapturesCount++; else p2CornerCapturesCount++;
+                    }
+
                     opponentBoard[oppIn] = 0;
                     opponentBoard[oppOut] = 0;
                     capturingPits = [];
                     renderBoard();
 
+                    if (checkLossConditions(opponentBoard, player)) { isAnimating = false; return; }
+
+                    // Rule 3: Collect captured seeds and resume moving from where the turn started previously
+                    document.getElementById('status-bar').innerText = `🔄 Resuming movement from original start Pit ${startPit} with captured seeds!`;
                     seedsInHand = captured;
-                    curr = (dir === -1) ? (startPit + 1) % 16 : (startPit - 1 + 16) % 16;
+                    curr = startPit;
                     continue;
                   }
                 }
@@ -825,7 +878,6 @@ elif page == "Omweso Math Arena":
               }
             }
 
-            currentTurn = (currentTurn === 1) ? 2 : 1;
             isAnimating = false;
             renderBoard();
           }
@@ -834,11 +886,13 @@ elif page == "Omweso Math Arena":
 
           function resetGame() {
             if (isAnimating) return;
+            // Rule 1: Reset all pits to 2 seeds
             p1 = [2,2,2,2,2,2,2,2, 2,2,2,2,2,2,2,2];
             p2 = [2,2,2,2,2,2,2,2, 2,2,2,2,2,2,2,2];
-            currentTurn = 1;
             capturingPits = [];
-            document.getElementById('status-bar').innerText = "Board reset. Player 1's turn!";
+            p1CornerCapturesCount = 0;
+            p2CornerCapturesCount = 0;
+            document.getElementById('status-bar').innerText = "Board reset with 2 seeds per pit. Both players can play simultaneously!";
             renderBoard();
           }
 
@@ -847,7 +901,7 @@ elif page == "Omweso Math Arena":
         </body>
         </html>
         """
-        st.components.v1.html(omweso_reverse_html, height=560, scrolling=False)
+        st.components.v1.html(omweso_locality_html, height=580, scrolling=False)
 
     with tab_puzzle:
         tier = st.selectbox("Select NCDC Level", list(OMWESO_PUZZLES.keys()))
