@@ -310,10 +310,10 @@ OMWESO_PUZZLES = {
         "ncdc_strand": "Operations & Remainders (P4–P5)"
     },
     "P6–P7 (Relay Chain & Okutta Capture)": {
-        "question": "Your Pit 5 has 1 seed across from AI pits holding 6 and 5 seeds. Which pit do you play to trigger Okutta?",
+        "question": "Your Pit 5 has 1 seed across from AI pits holding 2 seeds each. Which pit do you play to trigger Okutta?",
         "options": ["Play Pit 2", "Play Pit 5", "Play Pit 0", "Cannot capture"],
         "answer": "Play Pit 2",
-        "explanation": "Pit 2 has 3 seeds (2 + 3 = 5). Landing in occupied Pit 5 triggers Okutta across from AI's inner Pit 2 and outer Pit 13, capturing 11 seeds!",
+        "explanation": "Pit 2 has 3 seeds (2 + 3 = 5). Landing in occupied Pit 5 triggers Okutta across from AI's inner Pit 2 and outer Pit 13, capturing 4 seeds!",
         "ncdc_strand": "Modular Arithmetic & Multi-Step Problem Solving (P6–P7)"
     }
 }
@@ -462,14 +462,14 @@ if page == "Take Quiz":
 
 elif page == "Omweso Math Arena":
     st.title("🎲 Omweso Math Arena (3D Visual Board)")
-    st.caption("Traditional Ugandan Board Game — Anti-Clockwise Sowing & Audio Cues")
+    st.caption("Traditional Ugandan Board Game — 2 Seeds per Pit Setup & Visual Captures (`Okutta`)")
 
     tab_play, tab_puzzle = st.tabs(["🕹️ Play 3D Omweso vs. AI", "🧩 NCDC Curriculum Puzzles"])
 
     with tab_play:
         ai_level = st.selectbox("AI Difficulty", ["Beginner (P2)", "Intermediate (P5)", "Master (P7)"], key="omw_ai_lvl")
         
-        # Embedded 3D Canvas App with Strict Anti-Clockwise Sowing & Falling Ball Sounds
+        # Embedded 3D Canvas App with 2 seeds per pit setup and visual capture emptying animation
         omweso_3d_html = f"""
         <!DOCTYPE html>
         <html>
@@ -512,7 +512,7 @@ elif page == "Omweso Math Arena":
             justify-content: center;
             cursor: pointer;
             position: relative;
-            transition: transform 0.1s;
+            transition: transform 0.1s, background-color 0.3s;
           }}
           .pit:hover {{
             transform: scale(1.05);
@@ -521,6 +521,12 @@ elif page == "Omweso Math Arena":
           .pit.playable {{
             border-color: #52b788;
             box-shadow: inset 0 6px 10px rgba(0,0,0,0.9), 0 0 10px #52b788;
+          }}
+          .pit.capturing {{
+            background: radial-gradient(circle at 50% 30%, #780000, #370617);
+            border-color: #ff4d6d;
+            box-shadow: inset 0 6px 10px rgba(0,0,0,0.9), 0 0 14px #ff4d6d;
+            transform: scale(1.1);
           }}
           .pit-label {{
             position: absolute;
@@ -583,17 +589,19 @@ elif page == "Omweso Math Arena":
 
             <div class="row" id="p-inner"></div>
             <div class="row" id="p-outer"></div>
-            <div style="font-size:11px; color:#52b788; margin-top:3px;">YOUR SIDE (Bottom - Tap to Play Anti-Clockwise)</div>
+            <div style="font-size:11px; color:#52b788; margin-top:3px;">YOUR SIDE (Bottom - 2 Seeds per Pit Setup)</div>
           </div>
 
           <div>
-            <button class="action-btn" onclick="resetGame()">Reset Board</button>
+            <button class="action-btn" onclick="resetGame()">Reset Board (2 Seeds/Pit)</button>
           </div>
 
         <script>
-          let p0 = [4,4,4,4,4,4,4,4, 0,0,0,0,0,0,0,0];
-          let p1 = [4,4,4,4,4,4,4,4, 0,0,0,0,0,0,0,0];
+          // Initialize with 2 seeds in each pit across all rows (32 seeds per player)
+          let p0 = [2,2,2,2,2,2,2,2, 2,2,2,2,2,2,2,2];
+          let p1 = [2,2,2,2,2,2,2,2, 2,2,2,2,2,2,2,2];
           let isAnimating = false;
+          let capturingPits = [];
           let aiLevel = "{ai_level}";
 
           let audioCtx = null;
@@ -649,8 +657,9 @@ elif page == "Omweso Math Arena":
             }}
             let onclickAttr = (player === 0 && playable) ? `onclick="playTurn(${{index}})"` : "";
             let playableClass = playable ? "playable" : "";
+            let isCapturing = (player === 1 && capturingPits.includes(index)) ? "capturing" : "";
             return `
-              <div class="pit ${{playableClass}}" ${{onclickAttr}}>
+              <div class="pit ${{playableClass}} ${{isCapturing}}" ${{onclickAttr}}>
                 <span class="pit-label">P${{index}}</span>
                 <div class="seeds-container">${{seedsHTML}}</div>
               </div>
@@ -668,7 +677,6 @@ elif page == "Omweso Math Arena":
 
             document.getElementById('status-bar').innerText = `Picking up ${{seedsInHand}} seeds from Pit ${{startPit}}...`;
 
-            // STRICT ANTI-CLOCKWISE MOVEMENT ACROSS 16 PITS: (curr - 1 + 16) % 16
             while (seedsInHand > 0) {{
               await sleep(150);
               curr = (curr - 1 + 16) % 16;
@@ -683,12 +691,21 @@ elif page == "Omweso Math Arena":
                   let oppOut = 8 + curr;
                   if (p1[oppIn] > 0 && p1[oppOut] > 0) {{
                     let captured = p1[oppIn] + p1[oppOut];
+                    
+                    // Visually highlight opponent pits being captured so children see seeds taken away
+                    capturingPits = [oppIn, oppOut];
+                    renderBoard();
+                    document.getElementById('status-bar').innerText = `✨ OKUTTA CAPTURE! Taking seeds from AI Pits ${{oppIn}} & ${{oppOut}}!`;
+                    playSeedSound();
+                    await sleep(900);
+
                     p1[oppIn] = 0;
                     p1[oppOut] = 0;
-                    document.getElementById('status-bar').innerText = `✨ OKUTTA CAPTURE! Captured ${{captured}} seeds! Continuing relay...`;
-                    await sleep(500);
+                    capturingPits = [];
+                    renderBoard();
+
                     seedsInHand = captured;
-                    curr = (startPit + 1) % 16; // resume forward anti-clockwise from start pit
+                    curr = (startPit + 1) % 16;
                     continue;
                   }}
                 }}
@@ -732,9 +749,10 @@ elif page == "Omweso Math Arena":
 
           function resetGame() {{
             if (isAnimating) return;
-            p0 = [4,4,4,4,4,4,4,4, 0,0,0,0,0,0,0,0];
-            p1 = [4,4,4,4,4,4,4,4, 0,0,0,0,0,0,0,0];
-            document.getElementById('status-bar').innerText = "Board reset. Tap any glowing green pit to play!";
+            p0 = [2,2,2,2,2,2,2,2, 2,2,2,2,2,2,2,2];
+            p1 = [2,2,2,2,2,2,2,2, 2,2,2,2,2,2,2,2];
+            capturingPits = [];
+            document.getElementById('status-bar').innerText = "Board reset with 2 seeds per pit. Tap any glowing green pit!";
             renderBoard();
           }}
 
