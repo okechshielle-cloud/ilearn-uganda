@@ -461,13 +461,12 @@ if page == "Take Quiz":
 
 elif page == "Omweso Math Arena":
     st.title("🎲 Omweso Math Arena (Pass & Play)")
-    st.caption("Traditional Ugandan Board Game — 2 Players (Turn-by-Turn Anti-Clockwise Sowing & Visual Captures)")
+    st.caption("Traditional Ugandan Board Game — Reverse Sowing (*Okukuba emabega*) & Visual Captures")
 
     tab_play, tab_puzzle = st.tabs(["🕹️ Pass & Play (2 Players)", "🧩 NCDC Curriculum Puzzles"])
 
     with tab_play:
-        # Embedded 3D Canvas App with Pass & Play Mode (Player 1 & Player 2 take turns)
-        omweso_2p_html = """
+        omweso_reverse_html = """
         <!DOCTYPE html>
         <html>
         <head>
@@ -563,6 +562,38 @@ elif page == "Omweso Math Arena":
             border: 1px solid #bb9457;
             font-weight: bold;
           }
+          #direction-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+          }
+          .modal-content {
+            background: #3a1a0b;
+            border: 4px solid #d4a373;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            max-width: 350px;
+            width: 90%;
+          }
+          button.dir-btn {
+            background: #52b788;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 8px;
+            font-size: 14px;
+          }
+          button.dir-btn.clock {
+            background: #bc6c25;
+          }
           button.action-btn {
             background: #bc6c25;
             color: white;
@@ -582,6 +613,16 @@ elif page == "Omweso Math Arena":
 
           <div id="status-bar">Player 1's Turn: Tap any glowing green pit (2+ seeds)</div>
 
+          <!-- Direction Choice Modal for End Pits (Okukuba emabega) -->
+          <div id="direction-modal">
+            <div class="modal-content">
+              <h3 style="color: #ffb703; margin-top:0;">🔄 Choose Sowing Direction</h3>
+              <p style="font-size: 13px;">This is an end pit! Both Anti-Clockwise and Clockwise result in captures.</p>
+              <button class="dir-btn" onclick="executeMoveWithDir(-1)">← Anti-Clockwise (Standard)</button><br>
+              <button class="dir-btn clock" onclick="executeMoveWithDir(1)">Clockwise → (Reverse Capture)</button>
+            </div>
+          </div>
+
           <div id="board-container">
             <div id="p2-header" style="font-size:11px; color:#ffb703; margin-bottom:3px;">PLAYER 2 SIDE (Top - Inactive)</div>
             <div class="row" id="p2-outer"></div>
@@ -599,13 +640,13 @@ elif page == "Omweso Math Arena":
           </div>
 
         <script>
-          // p1 = Bottom player (0-7 inner, 8-15 outer)
-          // p2 = Top player (0-7 inner, 8-15 outer in their perspective)
           let p1 = [2,2,2,2,2,2,2,2, 2,2,2,2,2,2,2,2];
           let p2 = [2,2,2,2,2,2,2,2, 2,2,2,2,2,2,2,2];
-          let currentTurn = 1; // 1 for Player 1, 2 for Player 2
+          let currentTurn = 1;
           let isAnimating = false;
           let capturingPits = [];
+          let pendingStartPit = null;
+          let pendingPlayer = null;
 
           let audioCtx = null;
           function playSeedSound() {
@@ -626,7 +667,6 @@ elif page == "Omweso Math Arena":
           }
 
           function renderBoard() {
-            // Render Player 2 (Top: Outer 15 down to 8, Inner 7 down to 0)
             let htmlP2Outer = "";
             for (let i = 15; i >= 8; i--) { htmlP2Outer += createPitHTML(2, i, p2[i], false); }
             document.getElementById('p2-outer').innerHTML = htmlP2Outer;
@@ -638,7 +678,6 @@ elif page == "Omweso Math Arena":
             }
             document.getElementById('p2-inner').innerHTML = htmlP2Inner;
 
-            // Render Player 1 (Bottom: Inner 0 up to 7, Outer 15 down to 8)
             let htmlP1Inner = "";
             for (let i = 0; i <= 7; i++) {
               let playable = !isAnimating && currentTurn === 1 && p1[i] >= 2;
@@ -653,15 +692,13 @@ elif page == "Omweso Math Arena":
             }
             document.getElementById('p1-outer').innerHTML = htmlP1Outer;
 
-            // Update status text & header colors
             if (!isAnimating) {
               if (currentTurn === 1) {
-                document.getElementById('status-bar.innerText') // safety
-                document.getElementById('status-bar').innerText = "Player 1's Turn: Tap any green pit (2+ seeds) on your side";
+                document.getElementById('status-bar').innerText = "Player 1's Turn: Tap any green pit (2+ seeds)";
                 document.getElementById('p1-header').style.color = "#52b788";
                 document.getElementById('p2-header').style.color = "#888";
               } else {
-                document.getElementById('status-bar').innerText = "Player 2's Turn: Tap any yellow-glowing pit (2+ seeds) on your side";
+                document.getElementById('status-bar').innerText = "Player 2's Turn: Tap any yellow-glowing pit (2+ seeds)";
                 document.getElementById('p2-header').style.color = "#ffb703";
                 document.getElementById('p1-header').style.color = "#888";
               }
@@ -677,9 +714,9 @@ elif page == "Omweso Math Arena":
             if (count > 12) {
               seedsHTML += `<span style="font-size:8px; color:#ffb703; font-weight:bold;">+${count-12}</span>`;
             }
-            let onclickAttr = playable ? `onclick="playTurn(${player}, ${index})"` : "";
+            let onclickAttr = playable ? `onclick="initiateMove(${player}, ${index})"` : "";
             let playableClass = playable ? (player === 1 ? "playable-p1" : "playable-p2") : "";
-            let isCapturing = (capturingPits.length > 0 && capturingPits.includes(index) && capturingPits.player === player) ? "capturing" : "";
+            let isCapturing = (capturingPits.length > 0 && capturingPits.includes(index)) ? "capturing" : "";
             return `
               <div class="pit ${playableClass} ${isCapturing}" ${onclickAttr}>
                 <span class="pit-label">P${index}</span>
@@ -688,10 +725,53 @@ elif page == "Omweso Math Arena":
             `;
           }
 
-          async function playTurn(player, startPit) {
+          function testCapture(board, oppBoard, startPit, dir) {
+            let tempBoard = [...board];
+            let tempOpp = [...oppBoard];
+            let seeds = tempBoard[startPit];
+            tempBoard[startPit] = 0;
+            let curr = startPit;
+            let steps = 0;
+            while (seeds > 0 && steps < 200) {
+              steps++;
+              if (dir === -1) curr = (curr - 1 + 16) % 16;
+              else curr = (curr + 1) % 16;
+              tempBoard[curr] += 1;
+              seeds -= 1;
+              if (seeds === 0 && curr <= 7 && tempBoard[curr] > 1) {
+                let oppIn = 7 - curr;
+                let oppOut = 8 + curr;
+                if (tempOpp[oppIn] > 0 && tempOpp[oppOut] > 0) return true;
+              }
+            }
+            return false;
+          }
+
+          function initiateMove(player, startPit) {
+            pendingPlayer = player;
+            pendingStartPit = startPit;
+            let board = (player === 1) ? p1 : p2;
+            let oppBoard = (player === 1) ? p2 : p1;
+
+            // Check if end pits (0 or 7) with options for both directions
+            if ((startPit === 0 || startPit === 7) && board[startPit] >= 2) {
+              let canAnti = testCapture(board, oppBoard, startPit, -1);
+              let canClock = testCapture(board, oppBoard, startPit, 1);
+              if (canAnti && canClock) {
+                document.getElementById('direction-modal').style.display = 'flex';
+                return;
+              }
+            }
+            executeMoveWithDir(-1); // Default anti-clockwise
+          }
+
+          async function executeMoveWithDir(dir) {
+            document.getElementById('direction-modal').style.display = 'none';
             if (isAnimating) return;
             isAnimating = true;
 
+            let player = pendingPlayer;
+            let startPit = pendingStartPit;
             let board = (player === 1) ? p1 : p2;
             let opponentBoard = (player === 1) ? p2 : p1;
 
@@ -700,11 +780,13 @@ elif page == "Omweso Math Arena":
             let curr = startPit;
             renderBoard();
 
-            document.getElementById('status-bar').innerText = `Player ${player} picking up ${seedsInHand} seeds from Pit ${startPit}...`;
+            document.getElementById('status-bar').innerText = `Player ${player} sowing ${dir === -1 ? 'anti-clockwise' : 'clockwise'} from Pit ${startPit}...`;
 
             while (seedsInHand > 0) {
               await sleep(150);
-              curr = (curr - 1 + 16) % 16;
+              if (dir === -1) curr = (curr - 1 + 16) % 16;
+              else curr = (curr + 1) % 16;
+
               board[curr] += 1;
               seedsInHand -= 1;
               playSeedSound();
@@ -718,7 +800,6 @@ elif page == "Omweso Math Arena":
                     let captured = opponentBoard[oppIn] + opponentBoard[oppOut];
                     
                     capturingPits = [oppIn, oppOut];
-                    capturingPits.player = (player === 1) ? 2 : 1;
                     renderBoard();
                     document.getElementById('status-bar').innerText = `✨ PLAYER ${player} OKUTTA CAPTURE! Taking seeds from opponent Pits ${oppIn} & ${oppOut}!`;
                     playSeedSound();
@@ -730,21 +811,20 @@ elif page == "Omweso Math Arena":
                     renderBoard();
 
                     seedsInHand = captured;
-                    curr = (startPit + 1) % 16;
+                    curr = (dir === -1) ? (startPit + 1) % 16 : (startPit - 1 + 16) % 16;
                     continue;
                   }
                 }
                 if (board[curr] >= 2) {
                   seedsInHand = board[curr];
                   board[curr] = 0;
-                  document.getElementById('status-bar').innerText = `🔄 RELAY! Picking up ${seedsInHand} seeds from Pit ${curr} anti-clockwise!`;
+                  document.getElementById('status-bar').innerText = `🔄 RELAY! Picking up ${seedsInHand} seeds from Pit ${curr}!`;
                   await sleep(350);
                   continue;
                 }
               }
             }
 
-            // Switch turn to the other player
             currentTurn = (currentTurn === 1) ? 2 : 1;
             isAnimating = false;
             renderBoard();
@@ -767,7 +847,7 @@ elif page == "Omweso Math Arena":
         </body>
         </html>
         """
-        st.components.v1.html(omweso_2p_html, height=540, scrolling=False)
+        st.components.v1.html(omweso_reverse_html, height=560, scrolling=False)
 
     with tab_puzzle:
         tier = st.selectbox("Select NCDC Level", list(OMWESO_PUZZLES.keys()))
