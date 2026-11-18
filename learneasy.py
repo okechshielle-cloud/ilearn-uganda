@@ -309,10 +309,10 @@ OMWESO_PUZZLES = {
         "ncdc_strand": "Operations & Remainders (P4–P5)"
     },
     "P6–P7 (Relay Chain & Okutta Capture)": {
-        "question": "Your Pit 5 has 1 seed across from opponent pits holding 2 seeds each. Which pit do you play to trigger Okutta?",
-        "options": ["Play Pit 2", "Play Pit 5", "Play Pit 0", "Cannot capture"],
-        "answer": "Play Pit 2",
-        "explanation": "Pit 2 has 3 seeds (2 + 3 = 5). Landing in occupied Pit 5 triggers Okutta across from opponent's inner Pit 2 and outer Pit 13, capturing 4 seeds!",
+        "question": "Your landing pit (Pit X) has opponent seeds directly across in the inner and outer opposite pits. How many opposite pits are captured?",
+        "options": ["1 pit", "2 pits", "4 pits", "All pits"],
+        "answer": "2 pits",
+        "explanation": "Okutta capture picks from only the opposite two pits (inner and outer opposite) where a player lands.",
         "ncdc_strand": "Modular Arithmetic & Multi-Step Problem Solving (P6–P7)"
     }
 }
@@ -461,12 +461,12 @@ if page == "Take Quiz":
 
 elif page == "Omweso Math Arena":
     st.title("🎲 Omweso Math Arena (Interactive Finger Guide)")
-    st.caption("Ugandan Traditional Rules: Virtual Finger Tracking for Sowing & Capturing (*Okutta*)")
+    st.caption("Ugandan Traditional Rules: Capture Opposite Two Pits Only & Virtual Finger Sowing")
 
     tab_play, tab_puzzle = st.tabs(["🕹️ Pass & Play (Locality Rules)", "🧩 NCDC Curriculum Puzzles"])
 
     with tab_play:
-        omweso_finger_html = """
+        omweso_exact_capture_html = """
         <!DOCTYPE html>
         <html>
         <head>
@@ -554,7 +554,6 @@ elif page == "Omweso Math Arena":
             box-shadow: 1px 2px 3px rgba(0,0,0,0.8), inset -1px -1px 2px rgba(0,0,0,0.5);
             display: inline-block;
           }
-          /* Virtual Finger Indicator */
           #game-finger {
             position: absolute;
             font-size: 32px;
@@ -622,7 +621,7 @@ elif page == "Omweso Math Arena":
         </head>
         <body>
 
-          <div id="status-bar">Game Active: Tap any pit (2+ seeds) to start sowing with the virtual finger guide!</div>
+          <div id="status-bar">Game Active: Tap any pit (2+ seeds) to start sowing!</div>
 
           <!-- Left Corner Reverse Choice Modal -->
           <div id="direction-modal">
@@ -775,10 +774,10 @@ elif page == "Omweso Math Arena":
               else curr = (curr + 1) % 16;
               tempBoard[curr] += 1;
               seeds -= 1;
-              if (seeds === 0 && curr <= 7 && tempBoard[curr] > 1) {
-                let oppIn = 7 - curr;
-                let oppOut = 8 + curr;
-                if (tempOpp[oppIn] > 0 && tempOpp[oppOut] > 0) return true;
+              if (seeds === 0) {
+                // Determine opposite single pit directly across based on landing pit index
+                let oppTarget = curr <= 7 ? (7 - curr) : (23 - curr);
+                if (tempOpp[oppTarget] > 0) return true;
               }
             }
             return false;
@@ -815,12 +814,10 @@ elif page == "Omweso Math Arena":
             let curr = startPit;
             renderBoard();
 
-            // Point finger at the starting pit where seeds are picked up
             pointFingerAtPit(player, startPit);
             document.getElementById('status-bar').innerText = `👆🏿 Player ${player} picks up ${seedsInHand} seeds from Pit ${startPit}!`;
             await sleep(600);
 
-            // If reverse (clockwise) move was chosen from left corner
             if (dir === 1) {
               document.getElementById('status-bar').innerText = `👉 Reversing (clockwise) from left corner Pit ${startPit}...`;
               let tempSeeds = seedsInHand;
@@ -837,39 +834,31 @@ elif page == "Omweso Math Arena":
                 await sleep(180);
               }
 
-              if (tempCurr <= 7 && board[tempCurr] > 1) {
-                let oppIn = 7 - tempCurr;
-                let oppOut = 8 + tempCurr;
-                if (opponentBoard[oppIn] > 0 && opponentBoard[oppOut] > 0) {
-                  let captured = opponentBoard[oppIn] + opponentBoard[oppOut];
-                  capturingPits = [oppIn, oppOut];
-                  pointFingerAtPit(player === 1 ? 2 : 1, oppIn);
-                  renderBoard();
-                  document.getElementById('status-bar').innerText = `✨ LEFT CORNER REVERSE CAPTURE! Finger takes opponent Pits ${oppIn} & ${oppOut}!`;
-                  playSeedSound();
-                  await sleep(1000);
+              // Landing on capture (Opposite single pit directly across)
+              let oppTarget = tempCurr <= 7 ? (7 - tempCurr) : (23 - tempCurr);
+              if (opponentBoard[oppTarget] > 0) {
+                let captured = opponentBoard[oppTarget];
+                capturingPits = [oppTarget];
+                pointFingerAtPit(player === 1 ? 2 : 1, oppTarget);
+                renderBoard();
+                document.getElementById('status-bar').innerText = `✨ LEFT CORNER REVERSE CAPTURE! Finger takes opposite Pit ${oppTarget}!`;
+                playSeedSound();
+                await sleep(1000);
 
-                  if (oppIn === 0 || oppIn === 7 || oppOut === 8 || oppOut === 15) {
-                    if (player === 1) p1CornerCapturesCount++; else p2CornerCapturesCount++;
-                  }
-
-                  opponentBoard[oppIn] = 0;
-                  opponentBoard[oppOut] = 0;
-                  capturingPits = [];
-                  renderBoard();
-
-                  if (checkLossConditions(opponentBoard, player)) { hideFinger(); isAnimating = false; return; }
-
-                  document.getElementById('status-bar').innerText = `🔄 Resuming normal movement from original start Pit ${startPit} anti-clockwise!`;
-                  seedsInHand = captured;
-                  curr = startPit;
-                  dir = -1;
-                } else {
-                  hideFinger();
-                  isAnimating = false;
-                  renderBoard();
-                  return;
+                if (oppTarget === 0 || oppTarget === 7 || oppTarget === 8 || oppTarget === 15) {
+                  if (player === 1) p1CornerCapturesCount++; else p2CornerCapturesCount++;
                 }
+
+                opponentBoard[oppTarget] = 0;
+                capturingPits = [];
+                renderBoard();
+
+                if (checkLossConditions(opponentBoard, player)) { hideFinger(); isAnimating = false; return; }
+
+                document.getElementById('status-bar').innerText = `🔄 Resuming normal movement from original start Pit ${startPit} anti-clockwise!`;
+                seedsInHand = captured;
+                curr = startPit;
+                dir = -1;
               } else {
                 hideFinger();
                 isAnimating = false;
@@ -889,38 +878,36 @@ elif page == "Omweso Math Arena":
               renderBoard();
 
               if (seedsInHand === 0) {
-                if (curr <= 7 && board[curr] > 1) {
-                  let oppIn = 7 - curr;
-                  let oppOut = 8 + curr;
-                  if (opponentBoard[oppIn] > 0 && opponentBoard[oppOut] > 0) {
-                    let captured = opponentBoard[oppIn] + opponentBoard[oppOut];
-                    
-                    capturingPits = [oppIn, oppOut];
-                    pointFingerAtPit(player === 1 ? 2 : 1, oppIn);
-                    renderBoard();
-                    document.getElementById('status-bar').innerText = `✨ PLAYER ${player} OKUTTA CAPTURE! Finger takes seeds from opponent Pits ${oppIn} & ${oppOut}!`;
-                    playSeedSound();
-                    await sleep(1000);
+                // Okutta Capture: Check the exact opposite pit directly across on opponent's side
+                let oppTarget = curr <= 7 ? (7 - curr) : (23 - curr);
+                if (opponentBoard[oppTarget] > 0) {
+                  let captured = opponentBoard[oppTarget];
+                  
+                  capturingPits = [oppTarget];
+                  pointFingerAtPit(player === 1 ? 2 : 1, oppTarget);
+                  renderBoard();
+                  document.getElementById('status-bar').innerText = `✨ PLAYER ${player} OKUTTA CAPTURE! Finger takes seeds from opposite Pit ${oppTarget}!`;
+                  playSeedSound();
+                  await sleep(1000);
 
-                    if (oppIn === 0 || oppIn === 7 || oppOut === 8 || oppOut === 15) {
-                      if (player === 1) p1CornerCapturesCount++; else p2CornerCapturesCount++;
-                    }
-
-                    opponentBoard[oppIn] = 0;
-                    opponentBoard[oppOut] = 0;
-                    capturingPits = [];
-                    renderBoard();
-
-                    if (checkLossConditions(opponentBoard, player)) { hideFinger(); isAnimating = false; return; }
-
-                    document.getElementById('status-bar').innerText = `🔄 Resuming movement from original start Pit ${startPit} with captured seeds!`;
-                    seedsInHand = captured;
-                    curr = startPit;
-                    pointFingerAtPit(player, startPit);
-                    await sleep(400);
-                    continue;
+                  if (oppTarget === 0 || oppTarget === 7 || oppTarget === 8 || oppTarget === 15) {
+                    if (player === 1) p1CornerCapturesCount++; else p2CornerCapturesCount++;
                   }
+
+                  opponentBoard[oppTarget] = 0;
+                  capturingPits = [];
+                  renderBoard();
+
+                  if (checkLossConditions(opponentBoard, player)) { hideFinger(); isAnimating = false; return; }
+
+                  document.getElementById('status-bar').innerText = `🔄 Resuming movement from original start Pit ${startPit} with captured seeds!`;
+                  seedsInHand = captured;
+                  curr = startPit;
+                  pointFingerAtPit(player, startPit);
+                  await sleep(400);
+                  continue;
                 }
+
                 if (board[curr] >= 2) {
                   seedsInHand = board[curr];
                   board[curr] = 0;
@@ -956,7 +943,7 @@ elif page == "Omweso Math Arena":
         </body>
         </html>
         """
-        st.components.v1.html(omweso_finger_html, height=580, scrolling=False)
+        st.components.v1.html(omweso_exact_capture_html, height=580, scrolling=False)
 
     with tab_puzzle:
         tier = st.selectbox("Select NCDC Level", list(OMWESO_PUZZLES.keys()))
