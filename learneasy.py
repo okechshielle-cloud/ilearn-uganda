@@ -33,32 +33,32 @@ FALLBACK_LOGO_SVG = (
     "</svg>"
 )
 
-# Margin accent colors per selected tab so selecting a tab highlights the margin rail
+# Margin and main content border accent colors per selected tab
 TAB_MARGIN_STYLES: Dict[str, Dict[str, str]] = {
     "Take Quiz": {
         "accent": "#0B6E3F",
-        "bg": "rgba(255, 255, 255, 0.78)",
+        "border_tint": "rgba(11, 110, 63, 0.34)",
         "pill_bg": "#dcfce7",
         "pill_text": "#064e2c",
         "note": "Practice & Assessment Margin",
     },
     "NCDC Syllabus": {
         "accent": "#15803d",
-        "bg": "rgba(255, 255, 255, 0.78)",
+        "border_tint": "rgba(21, 128, 61, 0.34)",
         "pill_bg": "#e0f2fe",
         "pill_text": "#075985",
         "note": "Curriculum Guide Margin",
     },
     "Dashboard": {
         "accent": "#b45309",
-        "bg": "rgba(255, 255, 255, 0.78)",
+        "border_tint": "rgba(180, 83, 9, 0.34)",
         "pill_bg": "#fef9c3",
         "pill_text": "#854d0e",
         "note": "Standings & Analytics Margin",
     },
     "Omweso Lab": {
         "accent": "#b91c1c",
-        "bg": "rgba(255, 255, 255, 0.78)",
+        "border_tint": "rgba(185, 28, 28, 0.34)",
         "pill_bg": "#fee2e2",
         "pill_text": "#991b1b",
         "note": "Strategy Board Margin",
@@ -796,10 +796,11 @@ def main() -> None:
     active_tab = st.session_state.get("active_tab", "Take Quiz")
     margin_theme = TAB_MARGIN_STYLES.get(active_tab, TAB_MARGIN_STYLES["Take Quiz"])
     accent = margin_theme["accent"]
+    border_tint = margin_theme["border_tint"]
     pill_bg = margin_theme["pill_bg"]
     pill_text = margin_theme["pill_text"]
 
-    # Unified general app display + margin accent synced to the selected tab
+    # Unified general app display + margin & workspace frame synced to selected tab
     st.markdown(
         "<style>"
         ".stApp {"
@@ -809,24 +810,24 @@ def main() -> None:
         "linear-gradient(180deg, #BDDAC7 0%, #ADD0B9 55%, #9DC5AC 100%);"
         "background-attachment: fixed;"
         "}"
-        f'.ug-margin-rail {{'
-        f'border-left: 6px solid {accent};'
-        f'background: rgba(255, 255, 255, 0.84);'
-        f'border-radius: 12px;'
-        f'padding: 0.75rem 0.85rem;'
-        f'box-shadow: 0 4px 14px rgba(6, 45, 25, 0.08);'
-        f'transition: border-color 0.2s ease;'
-        f'}}'
-        f'.ug-margin-badge {{'
-        f'display: inline-block;'
-        f'background: {pill_bg};'
-        f'color: {pill_text};'
-        f'font-size: 0.75rem;'
-        f'font-weight: 700;'
-        f'padding: 0.2rem 0.55rem;'
-        f'border-radius: 999px;'
-        f'margin-top: 0.35rem;'
-        f'}}'
+        f".ug-margin-rail {{"
+        f"border-left: 6px solid {accent};"
+        f"background: rgba(255, 255, 255, 0.88);"
+        f"border-radius: 12px;"
+        f"padding: 0.75rem 0.85rem;"
+        f"box-shadow: 0 4px 14px rgba(6, 45, 25, 0.08);"
+        f"transition: border-color 0.2s ease;"
+        f"}}"
+        f".ug-margin-badge {{"
+        f"display: inline-block;"
+        f"background: {pill_bg};"
+        f"color: {pill_text};"
+        f"font-size: 0.75rem;"
+        f"font-weight: 700;"
+        f"padding: 0.2rem 0.55rem;"
+        f"border-radius: 999px;"
+        f"margin-top: 0.35rem;"
+        f"}}"
         ".top-left-tab-label {"
         "font-size: 0.78rem; font-weight: 700; color: #064e2c; margin-bottom: 0.25rem;"
         "}"
@@ -852,6 +853,14 @@ def main() -> None:
         "padding: 0.8rem 0.95rem; background: rgba(255, 255, 255, 0.94); margin-bottom: 0.5rem;"
         "box-shadow: 0 4px 12px rgba(6, 45, 25, 0.09);"
         "}"
+        f'[data-testid="stHorizontalBlock"]:last-of-type > [data-testid="stColumn"]:nth-child(2) {{'
+        f"background: rgba(255, 255, 255, 0.90);"
+        f"border: 1.5px solid {border_tint};"
+        f"border-left: 6px solid {accent};"
+        f"border-radius: 16px;"
+        f"padding: 1.35rem 1.55rem;"
+        f"box-shadow: 0 8px 24px rgba(6, 45, 25, 0.12);"
+        f"}}"
         "</style>",
         unsafe_allow_html=True,
     )
@@ -912,7 +921,7 @@ def main() -> None:
 
     st.divider()
 
-    # Unified general display container for all tabs
+    # Unified general display container for all tabs (framed with frosted card + tab accent border)
     _, tab_content_col = st.columns([1, 3])
 
     with tab_content_col:
