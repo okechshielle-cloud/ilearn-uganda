@@ -315,7 +315,7 @@ NCDC_MATH_CURRICULUM: Dict[str, List[Dict[str, Any]]] = {
 
 
 # ==============================================================================
-# 3. QUIZ BANK (ALL CLASSES P1–P7, DISTRIBUTED OPTIONS A–D)
+# 3. QUIZ BANK (ALL CLASSES P1–P7, WITH LINE-BY-LINE DETAILED EXPLANATIONS)
 # ==============================================================================
 
 QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
@@ -328,6 +328,11 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
             "options": ["7", "8", "9", "6"],
             "ans": "8",
             "explanation": "5 + 3 = 8.",
+            "step_by_step": [
+                "Line 1 — Start with the first number: 5.",
+                "Line 2 — Count forward by 3 steps (ones): 6, 7, 8.",
+                "Line 3 — The final sum is 8.",
+            ],
             "diagram_type": None,
         },
         {
@@ -338,6 +343,11 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
             "options": ["13", "16", "15", "12"],
             "ans": "15",
             "explanation": "Counting in ones: 13, 14, 15.",
+            "step_by_step": [
+                "Line 1 — Locate 14 on the counting sequence in ones.",
+                "Line 2 — Add 1 to move to the immediate next number: 14 + 1 = 15.",
+                "Line 3 — Therefore, 15 comes right after 14.",
+            ],
             "diagram_type": None,
         },
     ],
@@ -350,6 +360,11 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
             "options": ["Ones", "Tens", "Hundreds", "Thousands"],
             "ans": "Hundreds",
             "explanation": "In 428, 4 is in the Hundreds position.",
+            "step_by_step": [
+                "Line 1 — Break 428 into place-value positions from right to left.",
+                "Line 2 — 8 is in the Ones place, 2 is in the Tens place, and 4 is in the Hundreds place.",
+                "Line 3 — So the place value of 4 in 428 is Hundreds.",
+            ],
             "diagram_type": None,
         },
         {
@@ -360,6 +375,12 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
             "options": ["167", "187", "177", "157"],
             "ans": "177",
             "explanation": "145 + 32 = 177.",
+            "step_by_step": [
+                "Line 1 — Add the Ones column: 5 + 2 = 7.",
+                "Line 2 — Add the Tens column: 4 + 3 = 7.",
+                "Line 3 — Bring down the Hundreds digit: 1.",
+                "Line 4 — Combine the digits to get 177.",
+            ],
             "diagram_type": None,
         },
     ],
@@ -372,6 +393,11 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
             "options": ["5", "8", "4", "6"],
             "ans": "6",
             "explanation": "24 ÷ 4 = 6 mangoes each.",
+            "step_by_step": [
+                "Line 1 — Identify total mangoes = 24 and number of pupils = 4.",
+                "Line 2 — Divide equally: 24 ÷ 4.",
+                "Line 3 — Since 4 × 6 = 24, each pupil gets 6 mangoes.",
+            ],
             "diagram_type": None,
         },
         {
@@ -382,6 +408,11 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
             "options": ["1/2", "1/4", "3/4", "1/3"],
             "ans": "1/4",
             "explanation": "One quarter means 1 out of 4 equal parts, written as 1/4.",
+            "step_by_step": [
+                "Line 1 — Divide a whole into 4 equal parts (denominator = 4).",
+                "Line 2 — Take 1 of those equal parts (numerator = 1).",
+                "Line 3 — Write as a fraction: 1/4.",
+            ],
             "diagram_type": None,
         },
     ],
@@ -394,6 +425,11 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
             "options": ["{1}", "{2, 3}", "{4}", "{1, 2, 3, 4}"],
             "ans": "{2, 3}",
             "explanation": "The elements common to both sets A and B are 2 and 3.",
+            "step_by_step": [
+                "Line 1 — Recall that A ∩ B (intersection) means members found in BOTH A and B.",
+                "Line 2 — Check elements of A ({1, 2, 3}) against B ({2, 3, 4}): 2 and 3 appear in both.",
+                "Line 3 — Write the intersection set: {2, 3}.",
+            ],
             "diagram_type": None,
         },
         {
@@ -404,6 +440,11 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
             "options": ["26", "16", "24", "34"],
             "ans": "24",
             "explanation": "XX = 20 and IV = 4, so XXIV = 24.",
+            "step_by_step": [
+                "Line 1 — Split XXIV into recognizable Roman parts: XX and IV.",
+                "Line 2 — Convert each part: XX = 10 + 10 = 20, and IV = 5 - 1 = 4.",
+                "Line 3 — Add them together: 20 + 4 = 24.",
+            ],
             "diagram_type": None,
         },
     ],
@@ -416,6 +457,11 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
             "options": ["12", "48", "24", "2"],
             "ans": "24",
             "explanation": "Multiples of 6: 6, 12, 18, 24... Multiples of 8: 8, 16, 24... Smallest common is 24.",
+            "step_by_step": [
+                "Line 1 — List multiples of 6: 6, 12, 18, 24, 30...",
+                "Line 2 — List multiples of 8: 8, 16, 24, 32...",
+                "Line 3 — Identify the smallest number appearing in both lists: 24.",
+            ],
             "diagram_type": None,
         },
         {
@@ -426,6 +472,11 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
             "options": ["26 sq cm", "13 sq cm", "36 sq cm", "18 sq cm"],
             "ans": "36 sq cm",
             "explanation": "Area = length × width = 9 cm × 4 cm = 36 sq cm.",
+            "step_by_step": [
+                "Line 1 — State the formula for area of a rectangle: Area = Length × Width.",
+                "Line 2 — Substitute the given measurements: Area = 9 cm × 4 cm.",
+                "Line 3 — Multiply: 9 × 4 = 36 sq cm.",
+            ],
             "diagram_type": None,
         },
     ],
@@ -438,6 +489,11 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
             "options": ["{b, c}", "{e, f, a, i, g}", "{a, i}", "{e, f, g}"],
             "ans": "{e, f, a, i, g}",
             "explanation": "B - A = {b, c}, so (B - A)' includes all elements in universal set E outside {b, c}.",
+            "step_by_step": [
+                "Line 1 — List all elements in the universal set E from the Venn diagram: E = {e, f, a, i, b, c, g}.",
+                "Line 2 — Find set B - A (elements in B that are not in A): {b, c}.",
+                "Line 3 — Take the complement (B - A)' by excluding {b, c} from E: {e, f, a, i, g}.",
+            ],
             "diagram_type": "venn",
         },
         {
@@ -448,6 +504,11 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
             "options": ["111", "99", "109", "119"],
             "ans": "109",
             "explanation": "C = 100 and IX = 9, so CIX = 100 + 9 = 109.",
+            "step_by_step": [
+                "Line 1 — Separate CIX into C and IX.",
+                "Line 2 — Convert C = 100 and IX = 10 - 1 = 9.",
+                "Line 3 — Add the values: 100 + 9 = 109.",
+            ],
             "diagram_type": None,
         },
         {
@@ -458,6 +519,12 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
             "options": ["Base six", "Base four", "Base eight", "Base five"],
             "ans": "Base five",
             "explanation": "2n + 1 = 11 -> 2n = 10 -> n = 5 (base five).",
+            "step_by_step": [
+                "Line 1 — Expand 21_n in base ten: (2 × n^1) + (1 × n^0) = 2n + 1.",
+                "Line 2 — Set up the equation: 2n + 1 = 11.",
+                "Line 3 — Subtract 1 from both sides: 2n = 10.",
+                "Line 4 — Divide by 2: n = 5, which is Base five.",
+            ],
             "diagram_type": None,
         },
         {
@@ -468,6 +535,11 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
             "options": ["6", "18", "180", "30"],
             "ans": "6",
             "explanation": "Common prime factors with the lowest powers give 2¹ × 3¹ = 6.",
+            "step_by_step": [
+                "Line 1 — Write prime factors of Q = 2² × 3² and P = 2¹ × 3¹ × 5¹.",
+                "Line 2 — Identify common prime bases in both Q and P: 2 and 3 (5 is only in P).",
+                "Line 3 — Pick the lowest power of each common prime: 2¹ × 3¹ = 2 × 3 = 6.",
+            ],
             "diagram_type": None,
         },
         {
@@ -481,6 +553,11 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
             "options": ["3/8", "1/8", "1/2", "7/8"],
             "ans": "1/8",
             "explanation": "50% = 4/8; 4/8 + 3/8 = 7/8; remaining fraction for Posho = 1 - 7/8 = 1/8.",
+            "step_by_step": [
+                "Line 1 — Convert 50% to a fraction with denominator 8: 50% = 1/2 = 4/8.",
+                "Line 2 — Add the fraction for Matooke and Rice: 4/8 + 3/8 = 7/8.",
+                "Line 3 — Subtract from 1 whole class: 1 - 7/8 = 8/8 - 7/8 = 1/8.",
+            ],
             "diagram_type": None,
         },
         {
@@ -494,6 +571,11 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
             "options": ["6", "24", "18", "42"],
             "ans": "18",
             "explanation": "Matooke = 50% of 48 = 24 pupils; Posho = 1/8 of 48 = 6 pupils; difference = 24 - 6 = 18.",
+            "step_by_step": [
+                "Line 1 — Find pupils who ate Matooke: 50% of 48 = (50/100) × 48 = 24 pupils.",
+                "Line 2 — Find pupils who ate Posho: (1/8) × 48 = 6 pupils.",
+                "Line 3 — Subtract Posho pupils from Matooke pupils: 24 - 6 = 18 more pupils.",
+            ],
             "diagram_type": None,
         },
         {
@@ -504,6 +586,11 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
             "options": ["70", "50", "80", "70 and 50"],
             "ans": "70 and 50",
             "explanation": "Both 70 and 50 appear twice, making the distribution bimodal with modal marks 70 and 50.",
+            "step_by_step": [
+                "Line 1 — List Paul's marks from the table: 70, 80, 70, 50, 90, 50.",
+                "Line 2 — Count how often each mark appears: 70 appears 2 times; 50 appears 2 times; 80 and 90 appear 1 time each.",
+                "Line 3 — Since 70 and 50 tie for the highest frequency (2), the modal marks are 70 and 50.",
+            ],
             "diagram_type": "marks_table",
         },
         {
@@ -514,6 +601,11 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
             "options": ["11/12", "4/10", "5/6", "7/12"],
             "ans": "11/12",
             "explanation": "The LCD of 4 and 6 is 12: 9/12 + 2/12 = 11/12.",
+            "step_by_step": [
+                "Line 1 — Find the Lowest Common Denominator (LCD) of 4 and 6, which is 12.",
+                "Line 2 — Convert to equivalent fractions: 3/4 = 9/12 and 1/6 = 2/12.",
+                "Line 3 — Add the numerators over 12: (9 + 2)/12 = 11/12.",
+            ],
             "diagram_type": None,
         },
         {
@@ -524,6 +616,12 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
             "options": ["sh 12,500", "sh 13,500", "sh 14,500", "sh 7,500"],
             "ans": "sh 13,500",
             "explanation": "Total cost = 3 × sh 4,500 = sh 13,500.",
+            "step_by_step": [
+                "Line 1 — Note the cost of 1 book = sh 4,500 and number of books = 3.",
+                "Line 2 — Multiply: 3 × sh 4,000 = sh 12,000.",
+                "Line 3 — Multiply the remaining sh 500: 3 × sh 500 = sh 1,500.",
+                "Line 4 — Add both parts: sh 12,000 + sh 1,500 = sh 13,500.",
+            ],
             "diagram_type": None,
         },
         {
@@ -534,6 +632,12 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
             "options": ["9:15 a.m.", "9:35 a.m.", "9:25 a.m.", "8:85 a.m."],
             "ans": "9:25 a.m.",
             "explanation": "8:40 + 20 minutes = 9:00 a.m., plus 25 minutes = 9:25 a.m.",
+            "step_by_step": [
+                "Line 1 — Start time is 8:40 a.m. and duration is 45 minutes.",
+                "Line 2 — Add 20 minutes to reach the next full hour: 8:40 a.m. + 20 min = 9:00 a.m.",
+                "Line 3 — Subtract 20 from 45 to find remaining minutes: 45 - 20 = 25 minutes.",
+                "Line 4 — Add the remaining 25 minutes to 9:00 a.m. to get 9:25 a.m.",
+            ],
             "diagram_type": None,
         },
         {
@@ -544,6 +648,11 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
             "options": ["25°", "125°", "295°", "115°"],
             "ans": "115°",
             "explanation": "Angles on a straight line add up to 180°: x = 180° - 65° = 115°.",
+            "step_by_step": [
+                "Line 1 — Recall that adjacent angles on a straight line sum to 180°.",
+                "Line 2 — Set up the equation: 65° + x = 180°.",
+                "Line 3 — Subtract 65° from 180°: x = 180° - 65° = 115°.",
+            ],
             "diagram_type": None,
         },
         {
@@ -554,6 +663,12 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
             "options": ["6k + 2m", "6k + 4m", "2k + 2m", "8km"],
             "ans": "6k + 2m",
             "explanation": "Collect like terms: (4k + 2k) + (3m - m) = 6k + 2m.",
+            "step_by_step": [
+                "Line 1 — Group like terms with variable k: 4k + 2k.",
+                "Line 2 — Group like terms with variable m: 3m - m.",
+                "Line 3 — Simplify k terms: 4k + 2k = 6k.",
+                "Line 4 — Simplify m terms: 3m - 1m = 2m, giving 6k + 2m.",
+            ],
             "diagram_type": None,
         },
         {
@@ -567,6 +682,11 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
             "options": ["14 m", "18 m", "20 m", "9 m"],
             "ans": "18 m",
             "explanation": "Plot Q width = 10 m - 4 m = 6 m and height = 3 m, so perimeter = 2 × (6 + 3) = 18 m.",
+            "step_by_step": [
+                "Line 1 — Find the horizontal length (width) of plot Q: total top span is 10 m and plot P takes 4 m, so 10 m - 4 m = 6 m.",
+                "Line 2 — Find the vertical height of plot Q, which matches plot P at 3 m.",
+                "Line 3 — Calculate perimeter of rectangular plot Q: 2 × (Length + Width) = 2 × (6 m + 3 m) = 2 × 9 m = 18 m.",
+            ],
             "diagram_type": "okello_land",
         },
         {
@@ -580,6 +700,11 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
             "options": ["50 sq m", "36 sq m", "80 sq m", "68 sq m"],
             "ans": "80 sq m",
             "explanation": "Total width = 10 m and total height = 3 m + 5 m = 8 m, giving 10 m × 8 m = 80 sq m.",
+            "step_by_step": [
+                "Line 1 — Find total horizontal width across the whole land: 10 m.",
+                "Line 2 — Find total vertical height: upper section (P/Q) is 3 m + lower section (R) is 5 m = 8 m.",
+                "Line 3 — Multiply total width by total height: 10 m × 8 m = 80 sq m.",
+            ],
             "diagram_type": None,
         },
         {
@@ -593,6 +718,13 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
             "options": ["22.5", "90", "15", "30"],
             "ans": "30",
             "explanation": "x + 0.5x = 45 -> 1.5x = 45 -> x = 30 boys.",
+            "step_by_step": [
+                "Line 1 — Let the number of boys be x.",
+                "Line 2 — Write the equation from the statement: x + (1/2)x = 45.",
+                "Line 3 — Combine like terms: (3/2)x = 45.",
+                "Line 4 — Multiply both sides by 2: 3x = 90.",
+                "Line 5 — Divide by 3: x = 90 ÷ 3 = 30 boys.",
+            ],
             "diagram_type": None,
         },
         {
@@ -607,6 +739,12 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
             "options": ["26", "12", "19", "47"],
             "ans": "26",
             "explanation": "26 ÷ 7 = 3 remainder 5, and 26 ÷ 6 = 4 remainder 2.",
+            "step_by_step": [
+                "Line 1 — List numbers leaving remainder 5 when divided by 7: 5, 12, 19, 26, 33...",
+                "Line 2 — List numbers leaving remainder 2 when divided by 6: 2, 8, 14, 20, 26, 32...",
+                "Line 3 — Find the common number in both sequences: 26.",
+                "Line 4 — Verify: 26 ÷ 7 = 3 rem 5, and 26 ÷ 6 = 4 rem 2.",
+            ],
             "diagram_type": None,
         },
         {
@@ -620,6 +758,11 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
             "options": ["6 kg", "-6 kg", "144 kg", "150 kg"],
             "ans": "-6 kg",
             "explanation": "5 boys sum = 5 × 30 = 150 kg; 6 people sum = 6 × 24 = 144 kg; difference = 144 - 150 = -6 kg.",
+            "step_by_step": [
+                "Line 1 — Calculate total mass of the 5 boys: 5 × 30 kg = 150 kg.",
+                "Line 2 — Calculate total mass of all 6 people (5 boys + 1 teacher): 6 × 24 kg = 144 kg.",
+                "Line 3 — Subtract total mass of the 5 boys from total mass of the 6 people: 144 kg - 150 kg = -6 kg.",
+            ],
             "diagram_type": None,
         },
         {
@@ -630,6 +773,10 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
             "options": ["12, 24, 36, 48", "2, 3, 4, 6", "1, 2, 3, 4, 6, 12", "1, 3, 4, 12"],
             "ans": "1, 2, 3, 4, 6, 12",
             "explanation": "The factors of 12 are 1, 2, 3, 4, 6, and 12.",
+            "step_by_step": [
+                "Line 1 — Find pairs of whole numbers that multiply to 12: 1 × 12, 2 × 6, and 3 × 4.",
+                "Line 2 — Arrange all distinct factors in ascending order: 1, 2, 3, 4, 6, 12.",
+            ],
             "diagram_type": None,
         },
         {
@@ -643,6 +790,11 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
             "options": ["48", "12", "2", "24"],
             "ans": "24",
             "explanation": "The least number divisible by both 6 and 8 is LCM(6, 8) = 24.",
+            "step_by_step": [
+                "Line 1 — 'Least number shared equally by either 6 or 8 without remainder' means LCM(6, 8).",
+                "Line 2 — Multiples of 6: 6, 12, 18, 24...; Multiples of 8: 8, 16, 24...",
+                "Line 3 — The smallest common multiple is 24 sweets.",
+            ],
             "diagram_type": None,
         },
     ],
@@ -655,6 +807,11 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
             "options": ["50 km/h", "90 km/h", "540 km/h", "60 km/h"],
             "ans": "60 km/h",
             "explanation": "Speed = Distance ÷ Time = 180 km ÷ 3 hr = 60 km/h.",
+            "step_by_step": [
+                "Line 1 — Identify Distance = 180 km and Time = 3 hours.",
+                "Line 2 — Apply the formula: Average Speed = Distance ÷ Time.",
+                "Line 3 — Divide: 180 ÷ 3 = 60 km/h.",
+            ],
             "diagram_type": None,
         },
         {
@@ -665,10 +822,55 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
             "options": ["12", "6", "9", "3"],
             "ans": "6",
             "explanation": "2x = 18 - 6 = 12 -> x = 6.",
+            "step_by_step": [
+                "Line 1 — Start with the equation: 2x + 6 = 18.",
+                "Line 2 — Subtract 6 from both sides: 2x = 18 - 6 = 12.",
+                "Line 3 — Divide both sides by 2: x = 12 ÷ 2 = 6.",
+            ],
             "diagram_type": None,
         },
     ],
 }
+
+
+def build_question_lookup() -> Dict[str, Dict[str, Any]]:
+    lookup: Dict[str, Dict[str, Any]] = {}
+    for cls_code, q_list in QUIZ_BANK.items():
+        for q_item in q_list:
+            q_id = str(q_item.get("id", ""))
+            lookup[f"{cls_code}:{q_id}"] = {**q_item, "class": cls_code}
+            lookup[q_item["question"]] = {**q_item, "class": cls_code}
+    return lookup
+
+
+QUESTION_LOOKUP = build_question_lookup()
+
+
+def get_detailed_lines_for_record(record: Dict[str, Any]) -> List[str]:
+    q_uid = str(record.get("q_uid", ""))
+    q_id = str(record.get("Question ID", ""))
+    cls_code = str(record.get("Class", ""))
+    q_text = str(record.get("Question", ""))
+
+    matched = (
+        QUESTION_LOOKUP.get(q_uid)
+        or QUESTION_LOOKUP.get(f"{cls_code}:{q_id}")
+        or QUESTION_LOOKUP.get(q_text)
+    )
+    if matched and matched.get("step_by_step"):
+        return list(matched["step_by_step"])
+    if matched and matched.get("explanation"):
+        return [f"Line 1 — {matched['explanation']}"]
+    return [f"Line 1 — Evaluated answer '{record.get('Selected', '')}' for {q_text}."]
+
+
+def render_line_by_line_explanation(record: Dict[str, Any], correct_ans: Optional[str] = None) -> None:
+    lines = get_detailed_lines_for_record(record)
+    st.markdown("**Line-by-Line Detailed Explanation:**")
+    for line in lines:
+        st.markdown(f"- {line}")
+    if correct_ans:
+        st.markdown(f"- **Correct Answer:** `{correct_ans}` | **Marks Earned:** `{record.get('Marks', 0)}/{record.get('Max Marks', 1)}`")
 
 
 # ==============================================================================
@@ -993,6 +1195,7 @@ def init_state() -> None:
     st.session_state.setdefault("omweso_game", OmwesoGame())
     st.session_state.setdefault("pupil_info", {"name": "", "school": "", "district": "Kampala"})
     st.session_state.setdefault("attempt_records", [])
+    st.session_state.setdefault("last_checked_feedback", {})
     st.session_state.setdefault("sync_status", "")
 
     if not st.session_state.get("sheet_hydrated", False):
@@ -1200,14 +1403,15 @@ def main() -> None:
                     index=None,
                     key=f"q_{selected_class}_{idx}",
                 )
+                q_id = str(q.get("id", f"{selected_class}_q{idx + 1}"))
+                q_uid = f"{selected_class}:{q_id}"
+
                 if st.button("Check Answer", key=f"btn_{selected_class}_{idx}"):
                     if not pupil_name.strip() or not school_name.strip() or not district_name:
                         st.warning("Please enter your name, school name, and select a district before checking your answer.")
                     elif pick is None:
                         st.warning("Please select an option before checking your answer.")
                     else:
-                        q_id = str(q.get("id", f"{selected_class}_q{idx + 1}"))
-                        q_uid = f"{selected_class}:{q_id}"
                         ok = pick == q["ans"]
                         max_marks = int(q.get("marks", 1))
                         earned = max_marks if ok else 0
@@ -1237,14 +1441,22 @@ def main() -> None:
 
                         synced, sync_msg = append_attempt_to_google_sheet(record)
                         st.session_state["sync_status"] = sync_msg
+                        st.session_state["last_checked_feedback"][q_uid] = {
+                            "ok": ok,
+                            "ans": q["ans"],
+                            "record": record,
+                            "sync_msg": sync_msg if synced else "",
+                        }
 
-                        if ok:
-                            st.success(f"Correct! {q['explanation']}")
-                        else:
-                            st.error(f"Incorrect. Answer: **{q['ans']}** — {q['explanation']}")
-
-                        if synced:
-                            st.caption(sync_msg)
+                fb = st.session_state["last_checked_feedback"].get(q_uid)
+                if fb:
+                    if fb["ok"]:
+                        st.success(f"Correct! Selected: **{fb['record']['Selected']}**")
+                    else:
+                        st.error(f"Incorrect. Selected: **{fb['record']['Selected']}** | Answer: **{fb['ans']}**")
+                    render_line_by_line_explanation(fb["record"], correct_ans=fb["ans"])
+                    if fb.get("sync_msg"):
+                        st.caption(fb["sync_msg"])
                 st.divider()
 
         elif active_tab == "NCDC Syllabus":
@@ -1361,6 +1573,22 @@ def main() -> None:
             st.dataframe(pd.DataFrame(rows), use_container_width=True, hide_index=True)
 
             if all_records:
+                st.markdown("### Line-by-Line Detailed Explanations for Attempted Questions")
+                for idx_rec, rec in enumerate(reversed(all_records)):
+                    status_tag = "Correct" if rec.get("Correct") else "Incorrect"
+                    title_label = (
+                        f"{rec.get('Class', '')} • {rec.get('Pupil Name', 'Pupil')} — "
+                        f"{rec.get('Question', '')} [{status_tag}]"
+                    )
+                    with st.expander(title_label, expanded=(idx_rec == 0)):
+                        st.caption(
+                            f"School: {rec.get('School', '—')} | District: {rec.get('District', '—')} | "
+                            f"Selected Answer: {rec.get('Selected', '—')} | Timestamp: {rec.get('Timestamp', '—')}"
+                        )
+                        matched_q = QUESTION_LOOKUP.get(str(rec.get("q_uid", ""))) or QUESTION_LOOKUP.get(str(rec.get("Question", "")))
+                        correct_val = matched_q.get("ans") if matched_q else None
+                        render_line_by_line_explanation(rec, correct_ans=correct_val)
+
                 st.markdown("### Recorded Quiz Attempts")
                 records_df = pd.DataFrame(all_records)
                 st.dataframe(records_df, use_container_width=True, hide_index=True)
