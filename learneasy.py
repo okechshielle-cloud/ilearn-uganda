@@ -33,6 +33,38 @@ FALLBACK_LOGO_SVG = (
     "</svg>"
 )
 
+# Margin accent colors per selected tab so selecting a tab highlights the margin rail
+TAB_MARGIN_STYLES: Dict[str, Dict[str, str]] = {
+    "Take Quiz": {
+        "accent": "#0B6E3F",
+        "bg": "rgba(255, 255, 255, 0.78)",
+        "pill_bg": "#dcfce7",
+        "pill_text": "#064e2c",
+        "note": "Practice & Assessment Margin",
+    },
+    "NCDC Syllabus": {
+        "accent": "#15803d",
+        "bg": "rgba(255, 255, 255, 0.78)",
+        "pill_bg": "#e0f2fe",
+        "pill_text": "#075985",
+        "note": "Curriculum Guide Margin",
+    },
+    "Dashboard": {
+        "accent": "#b45309",
+        "bg": "rgba(255, 255, 255, 0.78)",
+        "pill_bg": "#fef9c3",
+        "pill_text": "#854d0e",
+        "note": "Standings & Analytics Margin",
+    },
+    "Omweso Lab": {
+        "accent": "#b91c1c",
+        "bg": "rgba(255, 255, 255, 0.78)",
+        "pill_bg": "#fee2e2",
+        "pill_text": "#991b1b",
+        "note": "Strategy Board Margin",
+    },
+}
+
 
 # ==============================================================================
 # 1. LOGO & IN-MEMORY DIAGRAM RENDERER
@@ -761,6 +793,13 @@ def init_state() -> None:
 def main() -> None:
     init_state()
 
+    active_tab = st.session_state.get("active_tab", "Take Quiz")
+    margin_theme = TAB_MARGIN_STYLES.get(active_tab, TAB_MARGIN_STYLES["Take Quiz"])
+    accent = margin_theme["accent"]
+    pill_bg = margin_theme["pill_bg"]
+    pill_text = margin_theme["pill_text"]
+
+    # Unified general app display + margin accent synced to the selected tab
     st.markdown(
         "<style>"
         ".stApp {"
@@ -770,17 +809,31 @@ def main() -> None:
         "linear-gradient(180deg, #BDDAC7 0%, #ADD0B9 55%, #9DC5AC 100%);"
         "background-attachment: fixed;"
         "}"
-        '[data-testid="stVerticalBlock"] > div:has(> div > .stMarkdown), '
-        '[data-testid="stForm"] {'
-        "border-radius: 10px;"
-        "}"
+        f'.ug-margin-rail {{'
+        f'border-left: 6px solid {accent};'
+        f'background: rgba(255, 255, 255, 0.84);'
+        f'border-radius: 12px;'
+        f'padding: 0.75rem 0.85rem;'
+        f'box-shadow: 0 4px 14px rgba(6, 45, 25, 0.08);'
+        f'transition: border-color 0.2s ease;'
+        f'}}'
+        f'.ug-margin-badge {{'
+        f'display: inline-block;'
+        f'background: {pill_bg};'
+        f'color: {pill_text};'
+        f'font-size: 0.75rem;'
+        f'font-weight: 700;'
+        f'padding: 0.2rem 0.55rem;'
+        f'border-radius: 999px;'
+        f'margin-top: 0.35rem;'
+        f'}}'
         ".top-left-tab-label {"
         "font-size: 0.78rem; font-weight: 700; color: #064e2c; margin-bottom: 0.25rem;"
         "}"
         ".ug-title-banner {"
         "display: flex; align-items: center; gap: 0.9rem; padding: 0.8rem 1.1rem;"
         "background: rgba(255, 255, 255, 0.93); border: 1px solid rgba(6, 78, 44, 0.24);"
-        "border-left: 6px solid #064e2c; border-radius: 14px;"
+        f"border-left: 6px solid {accent}; border-radius: 14px;"
         "box-shadow: 0 6px 18px rgba(6, 45, 25, 0.12);"
         "}"
         ".ug-flag-stripes {"
@@ -810,6 +863,7 @@ def main() -> None:
     logo_kind, logo_val = get_logo_source()
     left_bar_col, header_col = st.columns([1.6, 5.4])
     with left_bar_col:
+        st.markdown('<div class="ug-margin-rail">', unsafe_allow_html=True)
         if logo_kind == "file":
             st.image(logo_val, width=116)
         else:
@@ -824,6 +878,13 @@ def main() -> None:
             TABS,
             label_visibility="collapsed",
             key="active_tab",
+        )
+        margin_theme = TAB_MARGIN_STYLES.get(active_tab, TAB_MARGIN_STYLES["Take Quiz"])
+        st.markdown(
+            f'<div class="ug-margin-badge">● {active_tab}</div>'
+            f'<div style="font-size:0.74rem; color:#374151; margin-top:0.3rem;">{margin_theme["note"]}</div>'
+            "</div>",
+            unsafe_allow_html=True,
         )
 
     with header_col:
@@ -851,7 +912,7 @@ def main() -> None:
 
     st.divider()
 
-    # Align opened tab content three-quarters (3/4) to the right
+    # Unified general display container for all tabs
     _, tab_content_col = st.columns([1, 3])
 
     with tab_content_col:
