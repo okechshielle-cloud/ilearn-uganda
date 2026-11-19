@@ -636,15 +636,23 @@ def main() -> None:
     st.markdown(
         """
         <style>
-        div[data-testid="stRadio"] > div[role="radiogroup"] {
-            justify-content: flex-end;
-            gap: 0.35rem;
-            background: #f4f6f9;
-            padding: 0.25rem 0.45rem;
-            border-radius: 8px;
-            border: 1px solid #dfe4ec;
-            width: fit-content;
-            margin-left: auto;
+        .top-right-tab-bar {
+            position: fixed;
+            top: 3.25rem;
+            right: 1.25rem;
+            z-index: 999;
+            background: #ffffff;
+            border: 1px solid #d7dde6;
+            border-radius: 10px;
+            padding: 0.35rem 0.6rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            min-width: 195px;
+        }
+        .top-right-tab-label {
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: #4b5563;
+            margin-bottom: 0.15rem;
         }
         </style>
         """,
@@ -655,37 +663,26 @@ def main() -> None:
     if st.session_state["selected_class"] not in class_list:
         st.session_state["selected_class"] = "P6"
 
-    header_left, header_right = st.columns([2.2, 2.8], vertical_alignment="center")
-    with header_left:
-        st.title("iLearn-Uganda: NCDC Primary Mathematics (P1 – P7)")
-    with header_right:
-        active_tab = st.radio(
-            "Navigation Tabs",
+    _, right_bar_col = st.columns([6, 1.4])
+    with right_bar_col:
+        st.markdown('<div class="top-right-tab-label">Tab Selector</div>', unsafe_allow_html=True)
+        active_tab = st.selectbox(
+            "Tab Selector",
             TABS,
-            horizontal=True,
             label_visibility="collapsed",
             key="active_tab",
         )
 
+    st.title("iLearn-Uganda: NCDC Primary Mathematics (P1 – P7)")
     st.divider()
 
     if active_tab == "Take Quiz":
-        take_quiz_mode = st.selectbox(
-            "Take Quiz",
-            ["Take Quiz", "Select Class"],
-            key="take_quiz_mode",
+        selected_class = st.selectbox(
+            "Select Class",
+            class_list,
+            key="selected_class",
+            help="Choose P1 through P7 to load that class's mathematics quiz.",
         )
-        if take_quiz_mode == "Select Class":
-            selected_class = st.selectbox(
-                "Select Class",
-                class_list,
-                key="selected_class",
-                help="Choose P1 through P7 to load that class's mathematics quiz.",
-            )
-        else:
-            selected_class = st.session_state["selected_class"]
-            st.info("Select **Select Class** above to choose a class (P1–P7) and start the quiz.")
-
         st.subheader(f"{selected_class} Mathematics Quiz")
 
         questions = QUIZ_BANK.get(selected_class, [])
