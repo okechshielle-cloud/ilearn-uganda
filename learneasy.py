@@ -33,33 +33,33 @@ FALLBACK_LOGO_SVG = (
     "</svg>"
 )
 
-# Margin and main content border accent colors per selected tab
+# Subtle, low-tint margin and main content border accent colors per selected tab
 TAB_MARGIN_STYLES: Dict[str, Dict[str, str]] = {
     "Take Quiz": {
-        "accent": "#0B6E3F",
-        "border_tint": "rgba(11, 110, 63, 0.34)",
-        "pill_bg": "#dcfce7",
-        "pill_text": "#064e2c",
+        "accent": "rgba(11, 110, 63, 0.55)",
+        "border_tint": "rgba(11, 110, 63, 0.14)",
+        "pill_bg": "rgba(220, 252, 231, 0.65)",
+        "pill_text": "#14532d",
         "note": "Practice & Assessment Margin",
     },
     "NCDC Syllabus": {
-        "accent": "#15803d",
-        "border_tint": "rgba(21, 128, 61, 0.34)",
-        "pill_bg": "#e0f2fe",
+        "accent": "rgba(21, 128, 61, 0.55)",
+        "border_tint": "rgba(21, 128, 61, 0.14)",
+        "pill_bg": "rgba(224, 242, 254, 0.65)",
         "pill_text": "#075985",
         "note": "Curriculum Guide Margin",
     },
     "Dashboard": {
-        "accent": "#b45309",
-        "border_tint": "rgba(180, 83, 9, 0.34)",
-        "pill_bg": "#fef9c3",
+        "accent": "rgba(180, 83, 9, 0.55)",
+        "border_tint": "rgba(180, 83, 9, 0.14)",
+        "pill_bg": "rgba(254, 249, 195, 0.65)",
         "pill_text": "#854d0e",
         "note": "Standings & Analytics Margin",
     },
     "Omweso Lab": {
-        "accent": "#b91c1c",
-        "border_tint": "rgba(185, 28, 28, 0.34)",
-        "pill_bg": "#fee2e2",
+        "accent": "rgba(185, 28, 28, 0.55)",
+        "border_tint": "rgba(185, 28, 28, 0.14)",
+        "pill_bg": "rgba(254, 226, 226, 0.65)",
         "pill_text": "#991b1b",
         "note": "Strategy Board Margin",
     },
@@ -800,22 +800,22 @@ def main() -> None:
     pill_bg = margin_theme["pill_bg"]
     pill_text = margin_theme["pill_text"]
 
-    # Unified general app display + margin & workspace frame synced to selected tab
+    # Unified general app display + soft, low-tint margin & workspace frame
     st.markdown(
         "<style>"
         ".stApp {"
-        "background: radial-gradient(circle at 12% 10%, rgba(11, 110, 63, 0.22), transparent 40%),"
-        "radial-gradient(circle at 88% 14%, rgba(252, 220, 4, 0.10), transparent 36%),"
-        "radial-gradient(circle at 75% 88%, rgba(6, 78, 44, 0.20), transparent 45%),"
-        "linear-gradient(180deg, #BDDAC7 0%, #ADD0B9 55%, #9DC5AC 100%);"
+        "background: radial-gradient(circle at 12% 10%, rgba(11, 110, 63, 0.06), transparent 38%),"
+        "radial-gradient(circle at 88% 14%, rgba(252, 220, 4, 0.04), transparent 34%),"
+        "radial-gradient(circle at 75% 88%, rgba(6, 78, 44, 0.05), transparent 42%),"
+        "linear-gradient(180deg, #F1F6F3 0%, #E7EFEA 55%, #DDE8E1 100%);"
         "background-attachment: fixed;"
         "}"
         f".ug-margin-rail {{"
-        f"border-left: 6px solid {accent};"
-        f"background: rgba(255, 255, 255, 0.88);"
+        f"border-left: 5px solid {accent};"
+        f"background: rgba(255, 255, 255, 0.92);"
         f"border-radius: 12px;"
         f"padding: 0.75rem 0.85rem;"
-        f"box-shadow: 0 4px 14px rgba(6, 45, 25, 0.08);"
+        f"box-shadow: 0 3px 10px rgba(15, 35, 25, 0.04);"
         f"transition: border-color 0.2s ease;"
         f"}}"
         f".ug-margin-badge {{"
@@ -829,13 +829,13 @@ def main() -> None:
         f"margin-top: 0.35rem;"
         f"}}"
         ".top-left-tab-label {"
-        "font-size: 0.78rem; font-weight: 700; color: #064e2c; margin-bottom: 0.25rem;"
+        "font-size: 0.78rem; font-weight: 700; color: #14532d; margin-bottom: 0.25rem;"
         "}"
         ".ug-title-banner {"
         "display: flex; align-items: center; gap: 0.9rem; padding: 0.8rem 1.1rem;"
-        "background: rgba(255, 255, 255, 0.93); border: 1px solid rgba(6, 78, 44, 0.24);"
-        f"border-left: 6px solid {accent}; border-radius: 14px;"
-        "box-shadow: 0 6px 18px rgba(6, 45, 25, 0.12);"
+        "background: rgba(255, 255, 255, 0.95); border: 1px solid rgba(15, 35, 25, 0.08);"
+        f"border-left: 5px solid {accent}; border-radius: 14px;"
+        "box-shadow: 0 4px 14px rgba(15, 35, 25, 0.05);"
         "}"
         ".ug-flag-stripes {"
         "display: inline-flex; flex-direction: column; width: 15px; height: 46px;"
@@ -849,17 +849,17 @@ def main() -> None:
         ".ug-brand-yellow { color: #C9A800; }"
         ".ug-brand-red { color: #D90000; }"
         ".badge-card {"
-        "border: 1px solid rgba(6, 78, 44, 0.22); border-radius: 12px;"
-        "padding: 0.8rem 0.95rem; background: rgba(255, 255, 255, 0.94); margin-bottom: 0.5rem;"
-        "box-shadow: 0 4px 12px rgba(6, 45, 25, 0.09);"
+        "border: 1px solid rgba(15, 35, 25, 0.08); border-radius: 12px;"
+        "padding: 0.8rem 0.95rem; background: rgba(255, 255, 255, 0.96); margin-bottom: 0.5rem;"
+        "box-shadow: 0 2px 8px rgba(15, 35, 25, 0.04);"
         "}"
         f'[data-testid="stHorizontalBlock"]:last-of-type > [data-testid="stColumn"]:nth-child(2) {{'
-        f"background: rgba(255, 255, 255, 0.90);"
-        f"border: 1.5px solid {border_tint};"
-        f"border-left: 6px solid {accent};"
+        f"background: rgba(255, 255, 255, 0.94);"
+        f"border: 1px solid {border_tint};"
+        f"border-left: 5px solid {accent};"
         f"border-radius: 16px;"
         f"padding: 1.35rem 1.55rem;"
-        f"box-shadow: 0 8px 24px rgba(6, 45, 25, 0.12);"
+        f"box-shadow: 0 5px 18px rgba(15, 35, 25, 0.05);"
         f"}}"
         "</style>",
         unsafe_allow_html=True,
@@ -921,7 +921,7 @@ def main() -> None:
 
     st.divider()
 
-    # Unified general display container for all tabs (framed with frosted card + tab accent border)
+    # Unified general display container for all tabs
     _, tab_content_col = st.columns([1, 3])
 
     with tab_content_col:
