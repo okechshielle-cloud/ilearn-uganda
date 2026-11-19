@@ -1,3 +1,4 @@
+import base64
 import io
 import os
 import random
@@ -15,18 +16,36 @@ st.set_page_config(page_title="iLearn-Uganda | Primary Maths", layout="wide")
 
 LOGO_FILENAMES = ["ilearn_uganda_logo.png", "image_b5d6e7.png", "logo.png"]
 
+# Clean SVG fallback emblem in iLearn-Uganda's emerald & gold palette if no PNG file is found
+FALLBACK_LOGO_SVG = (
+    '<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">'
+    "<defs>"
+    '<linearGradient id="g" x1="0" y1="0" x2="1" y2="1">'
+    '<stop offset="0%" stop-color="#13a65b"/>'
+    '<stop offset="100%" stop-color="#064e2c"/>'
+    "</linearGradient>"
+    "</defs>"
+    '<rect x="8" y="8" width="112" height="112" rx="26" fill="url(#g)"/>'
+    '<path d="M28 84 Q46 76 64 84 Q82 76 100 84 L100 42 Q82 36 64 44 Q46 36 28 42 Z" fill="none" stroke="#ffffff" stroke-width="4" stroke-linejoin="round"/>'
+    '<line x1="64" y1="44" x2="64" y2="84" stroke="#ffffff" stroke-width="3.5"/>'
+    '<circle cx="64" cy="48" r="14" fill="#0d7c47" stroke="#ffffff" stroke-width="3.5"/>'
+    '<path d="M64 56 L64 45 M64 49 Q57 44 58 39 Q63 40 64 46 M64 49 Q71 44 70 39 Q65 40 64 46" fill="none" stroke="#FCDC04" stroke-width="2.5" stroke-linecap="round"/>'
+    "</svg>"
+)
+
 
 # ==============================================================================
 # 1. LOGO & IN-MEMORY DIAGRAM RENDERER
 # ==============================================================================
 
 
-def find_logo_path() -> Optional[str]:
-    """Finds the user's logo image in the current app directory."""
+def get_logo_source() -> tuple[str, Any]:
+    """Returns ('file', path) if a local logo file exists, else ('svg_uri', data_uri)."""
     for fname in LOGO_FILENAMES:
         if os.path.exists(fname):
-            return fname
-    return None
+            return ("file", fname)
+    encoded = base64.b64encode(FALLBACK_LOGO_SVG.encode("utf-8")).decode("utf-8")
+    return ("svg_uri", f"data:image/svg+xml;base64,{encoded}")
 
 
 @st.cache_data(show_spinner=False)
@@ -784,11 +803,16 @@ def main() -> None:
     if st.session_state["selected_class"] not in class_list:
         st.session_state["selected_class"] = "P6"
 
-    logo_path = find_logo_path()
+    logo_kind, logo_val = get_logo_source()
     left_bar_col, header_col = st.columns([1.6, 5.4])
     with left_bar_col:
-        if logo_path:
-            st.image(logo_path, width=120)
+        if logo_kind == "file":
+            st.image(logo_val, width=116)
+        else:
+            st.markdown(
+                f'<img src="{logo_val}" alt="iLearn-Uganda Logo" width="116" style="border-radius:18px;"/>',
+                unsafe_allow_html=True,
+            )
         st.caption("NCDC Primary Maths Hub")
         st.markdown('<div class="top-left-tab-label">Tab Selector</div>', unsafe_allow_html=True)
         active_tab = st.selectbox(
