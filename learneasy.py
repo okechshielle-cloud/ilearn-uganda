@@ -201,7 +201,7 @@ NCDC_MATH_CURRICULUM: Dict[str, List[Dict[str, Any]]] = {
 
 
 # ==============================================================================
-# 3. QUIZ BANK (DISTRIBUTED OPTIONS A–D, COMPLETE P6 SET)
+# 3. QUIZ BANK (ALL CLASSES P1–P7, DISTRIBUTED OPTIONS A–D)
 # ==============================================================================
 
 QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
@@ -210,60 +210,110 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
             "id": "p1_1",
             "topic": "Counting",
             "marks": 1,
-            "question": "5 + 3 = ?",
+            "question": "1– Add: 5 + 3 = ?",
             "options": ["7", "8", "9", "6"],
             "ans": "8",
             "explanation": "5 + 3 = 8.",
             "diagram_type": None,
-        }
+        },
+        {
+            "id": "p1_2",
+            "topic": "Number Recognition",
+            "marks": 1,
+            "question": "2– Which number comes right after 14?",
+            "options": ["13", "16", "15", "12"],
+            "ans": "15",
+            "explanation": "Counting in ones: 13, 14, 15.",
+            "diagram_type": None,
+        },
     ],
     "P2": [
         {
             "id": "p2_1",
             "topic": "Place Value",
             "marks": 1,
-            "question": "Place value of 4 in 428?",
+            "question": "1– What is the place value of 4 in 428?",
             "options": ["Ones", "Tens", "Hundreds", "Thousands"],
             "ans": "Hundreds",
-            "explanation": "4 is in the Hundreds place.",
+            "explanation": "In 428, 4 is in the Hundreds position.",
             "diagram_type": None,
-        }
+        },
+        {
+            "id": "p2_2",
+            "topic": "Addition",
+            "marks": 1,
+            "question": "2– Work out: 145 + 32.",
+            "options": ["167", "187", "177", "157"],
+            "ans": "177",
+            "explanation": "145 + 32 = 177.",
+            "diagram_type": None,
+        },
     ],
     "P3": [
         {
             "id": "p3_1",
             "topic": "Division",
             "marks": 1,
-            "question": "24 mangoes shared equally among 4 pupils = ?",
+            "question": "1– 24 mangoes shared equally among 4 pupils gives how many each?",
             "options": ["5", "8", "4", "6"],
             "ans": "6",
-            "explanation": "24 ÷ 4 = 6.",
+            "explanation": "24 ÷ 4 = 6 mangoes each.",
             "diagram_type": None,
-        }
+        },
+        {
+            "id": "p3_2",
+            "topic": "Fractions",
+            "marks": 1,
+            "question": "2– Which fraction represents one quarter?",
+            "options": ["1/2", "1/4", "3/4", "1/3"],
+            "ans": "1/4",
+            "explanation": "One quarter means 1 out of 4 equal parts, written as 1/4.",
+            "diagram_type": None,
+        },
     ],
     "P4": [
         {
             "id": "p4_1",
             "topic": "Sets",
             "marks": 1,
-            "question": "A = {1, 2, 3}, B = {2, 3, 4}. Find A ∩ B.",
-            "options": ["{2, 3}", "{1}", "{4}", "{1, 2, 3, 4}"],
+            "question": "1– Given A = {1, 2, 3} and B = {2, 3, 4}, find A ∩ B.",
+            "options": ["{1}", "{2, 3}", "{4}", "{1, 2, 3, 4}"],
             "ans": "{2, 3}",
-            "explanation": "Common elements are 2 and 3.",
+            "explanation": "The elements common to both sets A and B are 2 and 3.",
             "diagram_type": None,
-        }
+        },
+        {
+            "id": "p4_2",
+            "topic": "Roman Numerals",
+            "marks": 1,
+            "question": "2– Write XXIV in Hindu-Arabic numerals.",
+            "options": ["26", "16", "24", "34"],
+            "ans": "24",
+            "explanation": "XX = 20 and IV = 4, so XXIV = 24.",
+            "diagram_type": None,
+        },
     ],
     "P5": [
         {
             "id": "p5_1",
-            "topic": "LCM",
+            "topic": "Factors & Multiples",
             "marks": 1,
-            "question": "LCM of 6 and 8?",
-            "options": ["12", "24", "48", "2"],
+            "question": "1– Find the Lowest Common Multiple (LCM) of 6 and 8.",
+            "options": ["12", "48", "24", "2"],
             "ans": "24",
-            "explanation": "LCM(6, 8) = 24.",
+            "explanation": "Multiples of 6: 6, 12, 18, 24... Multiples of 8: 8, 16, 24... Smallest common is 24.",
             "diagram_type": None,
-        }
+        },
+        {
+            "id": "p5_2",
+            "topic": "Measurement",
+            "marks": 2,
+            "question": "2– Find the area of a rectangle measuring 9 cm by 4 cm.",
+            "options": ["26 sq cm", "13 sq cm", "36 sq cm", "18 sq cm"],
+            "ans": "36 sq cm",
+            "explanation": "Area = length × width = 9 cm × 4 cm = 36 sq cm.",
+            "diagram_type": None,
+        },
     ],
     "P6": [
         {
@@ -485,14 +535,24 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
     "P7": [
         {
             "id": "p7_1",
-            "topic": "Speed",
+            "topic": "Speed, Distance & Time",
             "marks": 2,
-            "question": "180 km in 3 hours. Speed = ?",
-            "options": ["50 km/h", "60 km/h", "90 km/h", "540 km/h"],
+            "question": "1– A car travels 180 km in 3 hours. Find its average speed.",
+            "options": ["50 km/h", "90 km/h", "540 km/h", "60 km/h"],
             "ans": "60 km/h",
-            "explanation": "180 ÷ 3 = 60 km/h.",
+            "explanation": "Speed = Distance ÷ Time = 180 km ÷ 3 hr = 60 km/h.",
             "diagram_type": None,
-        }
+        },
+        {
+            "id": "p7_2",
+            "topic": "Algebra",
+            "marks": 2,
+            "question": "2– Solve for x: 2x + 6 = 18.",
+            "options": ["12", "6", "9", "3"],
+            "ans": "6",
+            "explanation": "2x = 18 - 6 = 12 -> x = 6.",
+            "diagram_type": None,
+        },
     ],
 }
 
@@ -562,6 +622,7 @@ class OmwesoGame:
 def init_state() -> None:
     st.session_state.setdefault("quiz_score", {"attempted": 0, "correct": 0, "marks": 0})
     st.session_state.setdefault("answered_ids", set())
+    st.session_state.setdefault("selected_class", "P6")
     st.session_state.setdefault("omweso_game", OmwesoGame())
 
 
@@ -570,17 +631,25 @@ def main() -> None:
     st.title("iLearn-Uganda: NCDC Primary Mathematics (P1 – P7)")
 
     class_list = list(QUIZ_BANK.keys())
-    selected_class = st.sidebar.selectbox("Select Class", class_list, index=5)
+    if st.session_state["selected_class"] not in class_list:
+        st.session_state["selected_class"] = "P6"
 
     tab_quiz, tab_syllabus, tab_dashboard, tab_omweso = st.tabs([
-        "Class Quiz",
+        "Take Quiz",
         "NCDC Syllabus",
         "Dashboard",
         "Omweso Lab",
     ])
 
     with tab_quiz:
+        selected_class = st.selectbox(
+            "Select Class",
+            class_list,
+            key="selected_class",
+            help="Choose P1 through P7 to load that class's mathematics quiz.",
+        )
         st.subheader(f"{selected_class} Mathematics Quiz")
+
         questions = QUIZ_BANK.get(selected_class, [])
         for idx, q in enumerate(questions):
             st.markdown(f"**{q['question']}** *(Topic: {q['topic']} | {q.get('marks', 1)} mark(s))*")
@@ -615,8 +684,9 @@ def main() -> None:
             st.divider()
 
     with tab_syllabus:
-        st.subheader(f"{selected_class} Syllabus Overview")
-        for topic_row in NCDC_MATH_CURRICULUM.get(selected_class, []):
+        active_cls = st.session_state["selected_class"]
+        st.subheader(f"{active_cls} Syllabus Overview")
+        for topic_row in NCDC_MATH_CURRICULUM.get(active_cls, []):
             with st.expander(f"{topic_row['topic']} ({topic_row['periods']} periods)", expanded=True):
                 st.caption(topic_row["curriculum_type"])
                 st.write(topic_row["learning_outcomes"])
