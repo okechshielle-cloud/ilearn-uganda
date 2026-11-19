@@ -42,7 +42,6 @@ def get_diagram_png(diagram_type: Optional[str]) -> Optional[bytes]:
         ax.add_patch(circle_a)
         ax.add_patch(circle_b)
 
-        # Capital letters A and B positioned on top of each circle
         ax.text(3.9, 5.95, "A", fontsize=13, fontweight="bold", ha="center", va="bottom")
         ax.text(6.1, 5.95, "B", fontsize=13, fontweight="bold", ha="center", va="bottom")
 
@@ -636,23 +635,11 @@ def main() -> None:
     st.markdown(
         """
         <style>
-        .top-right-tab-bar {
-            position: fixed;
-            top: 3.25rem;
-            right: 1.25rem;
-            z-index: 999;
-            background: #ffffff;
-            border: 1px solid #d7dde6;
-            border-radius: 10px;
-            padding: 0.35rem 0.6rem;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-            min-width: 195px;
-        }
-        .top-right-tab-label {
-            font-size: 0.72rem;
+        .top-left-tab-label {
+            font-size: 0.75rem;
             font-weight: 600;
             color: #4b5563;
-            margin-bottom: 0.15rem;
+            margin-bottom: 0.2rem;
         }
         </style>
         """,
@@ -663,9 +650,9 @@ def main() -> None:
     if st.session_state["selected_class"] not in class_list:
         st.session_state["selected_class"] = "P6"
 
-    _, right_bar_col = st.columns([6, 1.4])
-    with right_bar_col:
-        st.markdown('<div class="top-right-tab-label">Tab Selector</div>', unsafe_allow_html=True)
+    left_bar_col, _ = st.columns([1.6, 5.4])
+    with left_bar_col:
+        st.markdown('<div class="top-left-tab-label">Tab Selector</div>', unsafe_allow_html=True)
         active_tab = st.selectbox(
             "Tab Selector",
             TABS,
@@ -687,11 +674,11 @@ def main() -> None:
 
         questions = QUIZ_BANK.get(selected_class, [])
         for idx, q in enumerate(questions):
-            st.markdown(f"**{q['question']}** *(Topic: {q['topic']} | {q.get('marks', 1)} mark(s))*")
+            st.markdown(f"**{q['question']}** *({q.get('marks', 1)} mark(s))*")
 
             png = get_diagram_png(q.get("diagram_type"))
             if png:
-                st.image(png, caption=f"{q['topic']} Diagram")
+                st.image(png, caption="Diagram")
 
             pick = st.radio(
                 "Select answer:",
