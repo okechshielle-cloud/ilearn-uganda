@@ -1,4 +1,3 @@
-import base64
 import io
 import os
 import random
@@ -22,16 +21,11 @@ LOGO_FILENAMES = ["ilearn_uganda_logo.png", "image_b5d6e7.png", "logo.png"]
 # ==============================================================================
 
 
-@st.cache_data(show_spinner=False)
-def get_logo_data_uri() -> Optional[str]:
-    """Loads the user's logo file from the app directory as a base64 data URI."""
+def find_logo_path() -> Optional[str]:
+    """Finds the user's logo image in the current app directory."""
     for fname in LOGO_FILENAMES:
         if os.path.exists(fname):
-            with open(fname, "rb") as f:
-                encoded = base64.b64encode(f.read()).decode("utf-8")
-            ext = os.path.splitext(fname)[1].lower().lstrip(".") or "png"
-            mime = "jpeg" if ext in {"jpg", "jpeg"} else ext
-            return f"data:image/{mime};base64,{encoded}"
+            return fname
     return None
 
 
@@ -745,104 +739,44 @@ def init_state() -> None:
     st.session_state.setdefault("attempt_records", [])
 
 
-def render_brand_badge_html(logo_uri: Optional[str]) -> str:
-    """Renders the user's logo in a clean card or a matching fallback emblem."""
-    if logo_uri:
-        return (
-            f'<img src="{logo_uri}" alt="iLearn-Uganda Logo" '
-            'style="width: 112px; height: auto; border-radius: 16px; '
-            'box-shadow: 0 6px 18px rgba(10, 92, 54, 0.16); '
-            'border: 2px solid rgba(13, 124, 71, 0.22); display: block;" />'
-        )
-    return """
-    <div style="
-        width: 104px; height: 104px; border-radius: 22px;
-        background: linear-gradient(160deg, #13a65b 0%, #064e2c 100%);
-        display: flex; flex-direction: column; align-items: center; justify-content: center;
-        color: #ffffff; box-shadow: 0 6px 18px rgba(10, 92, 54, 0.18);
-        border: 2px solid rgba(252, 220, 4, 0.45);
-    ">
-        <div style="font-size: 2.1rem; line-height: 1;">💡</div>
-        <div style="font-size: 0.72rem; font-weight: 700; margin-top: 0.25rem; letter-spacing: 0.03em;">iLearn-UG</div>
-    </div>
-    """
-
-
 def main() -> None:
     init_state()
-    logo_uri = get_logo_data_uri()
 
-    # Relative background: soft ivory-to-sage gradient + subtle math/growth tint
     st.markdown(
-        """
-        <style>
-        .stApp {
-            background:
-                radial-gradient(circle at 12% 10%, rgba(19, 166, 91, 0.08), transparent 36%),
-                radial-gradient(circle at 88% 14%, rgba(252, 220, 4, 0.09), transparent 34%),
-                radial-gradient(circle at 75% 88%, rgba(217, 0, 0, 0.05), transparent 40%),
-                linear-gradient(180deg, #F8FBF9 0%, #EFF6F1 55%, #E7F1EA 100%);
-            background-attachment: fixed;
-        }
-        .brand-sidebar-card {
-            background: rgba(255, 255, 255, 0.82);
-            backdrop-filter: blur(6px);
-            border: 1px solid rgba(11, 110, 63, 0.16);
-            border-radius: 14px;
-            padding: 0.85rem;
-            margin-bottom: 0.65rem;
-            box-shadow: 0 4px 14px rgba(15, 45, 28, 0.06);
-        }
-        .top-left-tab-label {
-            font-size: 0.78rem;
-            font-weight: 700;
-            color: #14532d;
-            margin-bottom: 0.25rem;
-            letter-spacing: 0.02em;
-        }
-        .ug-title-banner {
-            display: flex;
-            align-items: center;
-            gap: 0.9rem;
-            padding: 0.75rem 1.05rem;
-            background: rgba(255, 255, 255, 0.84);
-            border: 1px solid rgba(11, 110, 63, 0.16);
-            border-left: 5px solid #0B6E3F;
-            border-radius: 14px;
-            box-shadow: 0 4px 16px rgba(15, 45, 28, 0.06);
-        }
-        .ug-flag-stripes {
-            display: inline-flex;
-            flex-direction: column;
-            width: 15px;
-            height: 46px;
-            border-radius: 3px;
-            overflow: hidden;
-            border: 1px solid #cbd5e1;
-            flex-shrink: 0;
-        }
-        .ug-stripe-black { flex: 1; background-color: #000000; }
-        .ug-stripe-yellow { flex: 1; background-color: #FCDC04; }
-        .ug-stripe-red { flex: 1; background-color: #D90000; }
-        .ug-main-heading {
-            font-size: 2rem;
-            font-weight: 700;
-            line-height: 1.2;
-            margin: 0;
-        }
-        .ug-brand-black { color: #000000; }
-        .ug-brand-yellow { color: #C9A800; }
-        .ug-brand-red { color: #D90000; }
-        .badge-card {
-            border: 1px solid rgba(11, 110, 63, 0.16);
-            border-radius: 12px;
-            padding: 0.8rem 0.95rem;
-            background: rgba(255, 255, 255, 0.88);
-            margin-bottom: 0.5rem;
-            box-shadow: 0 3px 10px rgba(15, 45, 28, 0.05);
-        }
-        </style>
-        """,
+        "<style>"
+        ".stApp {"
+        "background: radial-gradient(circle at 12% 10%, rgba(19, 166, 91, 0.08), transparent 36%),"
+        "radial-gradient(circle at 88% 14%, rgba(252, 220, 4, 0.09), transparent 34%),"
+        "radial-gradient(circle at 75% 88%, rgba(217, 0, 0, 0.05), transparent 40%),"
+        "linear-gradient(180deg, #F8FBF9 0%, #EFF6F1 55%, #E7F1EA 100%);"
+        "background-attachment: fixed;"
+        "}"
+        ".top-left-tab-label {"
+        "font-size: 0.78rem; font-weight: 700; color: #14532d; margin-bottom: 0.25rem;"
+        "}"
+        ".ug-title-banner {"
+        "display: flex; align-items: center; gap: 0.9rem; padding: 0.75rem 1.05rem;"
+        "background: rgba(255, 255, 255, 0.86); border: 1px solid rgba(11, 110, 63, 0.16);"
+        "border-left: 5px solid #0B6E3F; border-radius: 14px;"
+        "box-shadow: 0 4px 16px rgba(15, 45, 28, 0.06);"
+        "}"
+        ".ug-flag-stripes {"
+        "display: inline-flex; flex-direction: column; width: 15px; height: 46px;"
+        "border-radius: 3px; overflow: hidden; border: 1px solid #cbd5e1; flex-shrink: 0;"
+        "}"
+        ".ug-stripe-black { flex: 1; background-color: #000000; }"
+        ".ug-stripe-yellow { flex: 1; background-color: #FCDC04; }"
+        ".ug-stripe-red { flex: 1; background-color: #D90000; }"
+        ".ug-main-heading { font-size: 2rem; font-weight: 700; line-height: 1.2; margin: 0; }"
+        ".ug-brand-black { color: #000000; }"
+        ".ug-brand-yellow { color: #C9A800; }"
+        ".ug-brand-red { color: #D90000; }"
+        ".badge-card {"
+        "border: 1px solid rgba(11, 110, 63, 0.16); border-radius: 12px;"
+        "padding: 0.8rem 0.95rem; background: rgba(255, 255, 255, 0.88); margin-bottom: 0.5rem;"
+        "box-shadow: 0 3px 10px rgba(15, 45, 28, 0.05);"
+        "}"
+        "</style>",
         unsafe_allow_html=True,
     )
 
@@ -850,21 +784,12 @@ def main() -> None:
     if st.session_state["selected_class"] not in class_list:
         st.session_state["selected_class"] = "P6"
 
+    logo_path = find_logo_path()
     left_bar_col, header_col = st.columns([1.6, 5.4])
     with left_bar_col:
-        st.markdown(
-            f"""
-            <div class="brand-sidebar-card">
-                <div style="display:flex; justify-content:center;">
-                    {render_brand_badge_html(logo_uri)}
-                </div>
-                <div style="text-align:center; font-size:0.78rem; color:#166534; font-weight:600; margin-top:0.45rem;">
-                    NCDC Primary Maths Hub
-                </div>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
+        if logo_path:
+            st.image(logo_path, width=120)
+        st.caption("NCDC Primary Maths Hub")
         st.markdown('<div class="top-left-tab-label">Tab Selector</div>', unsafe_allow_html=True)
         active_tab = st.selectbox(
             "Tab Selector",
@@ -875,23 +800,24 @@ def main() -> None:
 
     with header_col:
         st.markdown(
-            """
-            <div class="ug-title-banner">
-                <div class="ug-flag-stripes" title="Uganda Flag Colors: Black, Yellow, Red">
-                    <div class="ug-stripe-black"></div>
-                    <div class="ug-stripe-yellow"></div>
-                    <div class="ug-stripe-red"></div>
-                </div>
-                <div>
-                    <h1 class="ug-main-heading">
-                        <span class="ug-brand-black">iLearn</span><span class="ug-brand-yellow">-</span><span class="ug-brand-red">Uganda</span>: NCDC Primary Mathematics (P1 – P7)
-                    </h1>
-                    <div style="font-size:0.88rem; color:#374151; margin-top:0.2rem;">
-                        Growing bright minds from the roots up • Interactive Practice, Syllabus &amp; Omweso Lab
-                    </div>
-                </div>
-            </div>
-            """,
+            '<div class="ug-title-banner">'
+            '<div class="ug-flag-stripes" title="Uganda Flag Colors: Black, Yellow, Red">'
+            '<div class="ug-stripe-black"></div>'
+            '<div class="ug-stripe-yellow"></div>'
+            '<div class="ug-stripe-red"></div>'
+            "</div>"
+            "<div>"
+            '<h1 class="ug-main-heading">'
+            '<span class="ug-brand-black">iLearn</span>'
+            '<span class="ug-brand-yellow">-</span>'
+            '<span class="ug-brand-red">Uganda</span>'
+            ": NCDC Primary Mathematics (P1 – P7)"
+            "</h1>"
+            '<div style="font-size:0.88rem; color:#374151; margin-top:0.2rem;">'
+            "Growing bright minds from the roots up • Interactive Practice, Syllabus &amp; Omweso Lab"
+            "</div>"
+            "</div>"
+            "</div>",
             unsafe_allow_html=True,
         )
 
@@ -1049,24 +975,20 @@ def main() -> None:
                     if i < len(leaderboard_df):
                         row = leaderboard_df.iloc[i]
                         st.markdown(
-                            f"""
-                            <div class="badge-card">
-                                <div style="font-size:1.25rem;">{icon} <strong>{badge_title}</strong></div>
-                                <div style="font-size:1rem; margin-top:0.25rem;"><strong>{row['Pupil Name']}</strong></div>
-                                <div style="font-size:0.85rem; color:#4b5563;">{row['School']} ({row['District']}) • {row['Class']}</div>
-                                <div style="font-size:0.9rem; margin-top:0.35rem;"><strong>Marks: {row['Marks']}</strong> ({row['Correct']}/{row['Attempted']} correct)</div>
-                            </div>
-                            """,
+                            '<div class="badge-card">'
+                            f'<div style="font-size:1.25rem;">{icon} <strong>{badge_title}</strong></div>'
+                            f'<div style="font-size:1rem; margin-top:0.25rem;"><strong>{row["Pupil Name"]}</strong></div>'
+                            f'<div style="font-size:0.85rem; color:#4b5563;">{row["School"]} ({row["District"]}) • {row["Class"]}</div>'
+                            f'<div style="font-size:0.9rem; margin-top:0.35rem;"><strong>Marks: {row["Marks"]}</strong> ({row["Correct"]}/{row["Attempted"]} correct)</div>'
+                            "</div>",
                             unsafe_allow_html=True,
                         )
                     else:
                         st.markdown(
-                            f"""
-                            <div class="badge-card">
-                                <div style="font-size:1.25rem;">{icon} <strong>{badge_title}</strong></div>
-                                <div style="font-size:0.9rem; color:#6b7280; margin-top:0.35rem;">Awaiting pupil score</div>
-                            </div>
-                            """,
+                            '<div class="badge-card">'
+                            f'<div style="font-size:1.25rem;">{icon} <strong>{badge_title}</strong></div>'
+                            '<div style="font-size:0.9rem; color:#6b7280; margin-top:0.35rem;">Awaiting pupil score</div>'
+                            "</div>",
                             unsafe_allow_html=True,
                         )
 
