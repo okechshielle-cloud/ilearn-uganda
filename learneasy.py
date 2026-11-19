@@ -627,6 +627,8 @@ def init_state() -> None:
     st.session_state.setdefault("selected_class", "P6")
     st.session_state.setdefault("active_tab", "Take Quiz")
     st.session_state.setdefault("omweso_game", OmwesoGame())
+    st.session_state.setdefault("pupil_info", {"name": "", "school": "", "district": ""})
+    st.session_state.setdefault("attempt_records", [])
 
 
 def main() -> None:
@@ -668,6 +670,36 @@ def main() -> None:
 
     with tab_content_col:
         if active_tab == "Take Quiz":
+            st.markdown("### Pupil Details")
+            p_col1, p_col2, p_col3 = st.columns(3)
+            with p_col1:
+                pupil_name = st.text_input(
+                    "Pupil Name",
+                    value=st.session_state["pupil_info"]["name"],
+                    placeholder="Enter full name",
+                    key="input_pupil_name",
+                )
+            with p_col2:
+                school_name = st.text_input(
+                    "School Name",
+                    value=st.session_state["pupil_info"]["school"],
+                    placeholder="Enter school name",
+                    key="input_school_name",
+                )
+            with p_col3:
+                district_name = st.text_input(
+                    "District",
+                    value=st.session_state["pupil_info"]["district"],
+                    placeholder="Enter district",
+                    key="input_district_name",
+                )
+
+            st.session_state["pupil_info"] = {
+                "name": pupil_name.strip(),
+                "school": school_name.strip(),
+                "district": district_name.strip(),
+            }
+
             selected_class = st.selectbox(
                 "Select Class",
                 class_list,
@@ -675,6 +707,13 @@ def main() -> None:
                 help="Choose P1 through P7 to load that class's mathematics quiz.",
             )
             st.subheader(f"{selected_class} Mathematics Quiz")
+
+            if pupil_name.strip() or school_name.strip() or district_name.strip():
+                st.caption(
+                    f"Candidate: **{pupil_name.strip() or 'Not provided'}** | "
+                    f"School: **{school_name.strip() or 'Not provided'}** | "
+                    f"District: **{district_name.strip() or 'Not provided'}**"
+                )
 
             questions = QUIZ_BANK.get(selected_class, [])
             for idx, q in enumerate(questions):
@@ -691,17 +730,30 @@ def main() -> None:
                     key=f"q_{selected_class}_{idx}",
                 )
                 if st.button("Check Answer", key=f"btn_{selected_class}_{idx}"):
-                    if pick is None:
+                    if not pupil_name.strip() or not school_name.strip() or not district_name.strip():
+                        st.warning("Please enter your name, school name, and district before checking your answer.")
+                    elif pick is None:
                         st.warning("Please select an option before checking your answer.")
                     else:
                         q_uid = f"{selected_class}:{q['id']}"
                         ok = pick == q["ans"]
+                        earned = q.get("marks", 1) if ok else 0
                         if q_uid not in st.session_state["answered_ids"]:
                             st.session_state["answered_ids"].add(q_uid)
                             st.session_state["quiz_score"]["attempted"] += 1
                             if ok:
                                 st.session_state["quiz_score"]["correct"] += 1
-                                st.session_state["quiz_score"]["marks"] += q.get("marks", 1)
+                                st.session_state["quiz_score"]["marks"] += earned
+                            st.session_state["attempt_records"].append({
+                                "Pupil Name": pupil_name.strip(),
+                                "School": school_name.strip(),
+                                "District": district_name.strip(),
+                                "Class": selected_class,
+                                "Question": q["question"],
+                                "Selected": pick,
+                                "Correct": ok,
+                                "Marks": earned,
+                            })
 
                         if ok:
                             st.success(f"Correct! {q['explanation']}")
@@ -722,6 +774,14 @@ def main() -> None:
 
         elif active_tab == "Dashboard":
             st.subheader("Progress & Coverage Dashboard")
+            p_info = st.session_state["pupil_info"]
+            if any(p_info.values()):
+                st.info(
+                    f"**Pupil:** {p_info['name'] or '—'} | "
+                    f"**School:** {p_info['school'] or '—'} | "
+                    f"**District:** {p_info['district'] or '—'}"
+                )
+
             stats = st.session_state["quiz_score"]
             p6_total_marks = sum(item.get("marks", 1) for item in QUIZ_BANK["P6"])
             c1, c2, c3 = st.columns(3)
@@ -739,6 +799,10 @@ def main() -> None:
                 for cls, items in NCDC_MATH_CURRICULUM.items()
             ]
             st.dataframe(pd.DataFrame(rows))
+
+            if st.session_state["attempt_records"]:
+                st.markdown("### Recorded Quiz Attempts")
+                st.dataframe(pd.DataFrame(st.session_state["attempt_records"]))
 
         elif active_tab == "Omweso Lab":
             st.subheader("Traditional Ugandan Omweso")
