@@ -657,7 +657,12 @@ BADGE_TIERS = [
 ]
 
 
-def build_leaderboard(records: List[Dict[str, Any]], limit: int = 25) -> pd.DataFrame:
+def build_leaderboard(
+    records: List[Dict[str, Any]],
+    limit: int = 25,
+    class_filter: str = "All",
+    district_filter: str = "All",
+) -> pd.DataFrame:
     """Aggregates pupil quiz attempt records into a ranked leaderboard up to `limit`."""
     if not records:
         return pd.DataFrame(
@@ -665,6 +670,16 @@ def build_leaderboard(records: List[Dict[str, Any]], limit: int = 25) -> pd.Data
         )
 
     df = pd.DataFrame(records)
+    if class_filter != "All":
+        df = df[df["Class"] == class_filter]
+    if district_filter != "All":
+        df = df[df["District"] == district_filter]
+
+    if df.empty:
+        return pd.DataFrame(
+            columns=["Rank", "Badge", "Pupil Name", "School", "District", "Class", "Correct", "Attempted", "Marks"]
+        )
+
     grouped = (
         df.groupby(["Pupil Name", "School", "District", "Class"], as_index=False)
         .agg(
@@ -880,7 +895,24 @@ def main() -> None:
             c2.metric("Correct Answers", stats["correct"])
             c3.metric("Marks Earned (P6 Max)", f"{stats['marks']} / {p6_total_marks}")
 
-            leaderboard_df = build_leaderboard(st.session_state["attempt_records"], limit=25)
+            all_records = st.session_state["attempt_records"]
+            available_classes = ["All"] + sorted({r["Class"] for r in all_records}) if all_records else ["All"] + class_list
+            available_districts = (
+                ["All"] + sorted({r["District"] for r in all_records}) if all_records else ["All"] + UGANDA_DISTRICTS
+            )
+
+            f_col1, f_col2 = st.columns(2)
+            with f_col1:
+                class_filter = st.selectbox("Filter Leaderboard by Class", available_classes, key="lb_class_filter")
+            with f_col2:
+                district_filter = st.selectbox("Filter Leaderboard by District", available_districts, key="lb_district_filter")
+
+            leaderboard_df = build_leaderboard(
+                all_records,
+                limit=25,
+                class_filter=class_filter,
+                district_filter=district_filter,
+            )
 
             st.markdown("### Top Three Badges")
             b_cols = st.columns(3)
@@ -913,8 +945,15 @@ def main() -> None:
             st.markdown("### Top 25 Performers")
             if not leaderboard_df.empty:
                 st.dataframe(leaderboard_df, use_container_width=True, hide_index=True)
+                lb_csv_bytes = leaderboard_df.to_csv(index=False).encode("utf-8")
+                st.download_button(
+                    label="Download Top 25 Performers (CSV)",
+                    data=lb_csv_bytes,
+                    file_name="ilearn_uganda_top_25_performers.csv",
+                    mime="text/csv",
+                )
             else:
-                st.caption("Complete quiz questions to populate the Top 25 Performers leaderboard.")
+                st.caption("No matching pupil quiz attempts yet for the selected filters.")
 
             rows = [
                 {
@@ -928,9 +967,9 @@ def main() -> None:
             st.markdown("### NCDC Syllabus Coverage")
             st.dataframe(pd.DataFrame(rows))
 
-            if st.session_state["attempt_records"]:
+            if all_records:
                 st.markdown("### Recorded Quiz Attempts")
-                records_df = pd.DataFrame(st.session_state["attempt_records"])
+                records_df = pd.DataFrame(all_records)
                 st.dataframe(records_df)
                 csv_bytes = records_df.to_csv(index=False).encode("utf-8")
                 st.download_button(
