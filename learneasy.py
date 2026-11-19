@@ -448,7 +448,7 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
             "topic": "Measurement & Geometry",
             "marks": 2,
             "question": (
-                "12– The diagram below shows how Mr. Okello used his land. He used plot P to keep goats, "
+                "The diagram below shows how Mr. Okello used his land. He used plot P to keep goats, "
                 "plot Q to keep pigs and R to keep cattle. (i) Work out the total distance round the plot he used to keep pigs."
             ),
             "options": ["14 m", "18 m", "20 m", "9 m"],
@@ -461,7 +461,7 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
             "topic": "Measurement & Geometry",
             "marks": 4,
             "question": (
-                "12– (ii) Find the size of the land area he has altogether which keep all his goats, "
+                "(ii) Find the size of the land area he has altogether which keeps all his goats, "
                 "pigs and cattle in square metres."
             ),
             "options": ["50 sq m", "36 sq m", "80 sq m", "68 sq m"],
