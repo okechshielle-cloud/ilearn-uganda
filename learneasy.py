@@ -102,8 +102,40 @@ def get_diagram_png(diagram_type: Optional[str]) -> Optional[bytes]:
 
 
 # ==============================================================================
-# 2. NCDC PRIMARY MATHEMATICS CURRICULUM (P1 - P7)
+# 2. NCDC PRIMARY MATHEMATICS CURRICULUM (P1 - P7) & UGANDA DISTRICTS
 # ==============================================================================
+
+UGANDA_DISTRICTS: List[str] = sorted([
+    # Central Region
+    "Buikwe", "Bukomansimbi", "Butambala", "Buvuma", "Gomba", "Kalangala",
+    "Kalungu", "Kampala", "Kasanda", "Kayunga", "Kiboga", "Kyankwanzi",
+    "Kyotera", "Luweero", "Lwengo", "Lyantonde", "Masaka", "Mityana",
+    "Mpigi", "Mubende", "Mukono", "Nakaseke", "Nakasongola", "Rakai",
+    "Sembabule", "Wakiso",
+    # Eastern Region
+    "Amuria", "Budaka", "Bududa", "Bugiri", "Bugweri", "Bukedea",
+    "Bukwo", "Bulambuli", "Busia", "Butaleja", "Butebo", "Buyende",
+    "Iganga", "Jinja", "Kaberamaido", "Kalaki", "Kaliro", "Kamuli",
+    "Kapchorwa", "Kapelebyong", "Katakwi", "Kibuku", "Kumi", "Kween",
+    "Luuka", "Manafwa", "Mayuge", "Mbale", "Namayingo", "Namisindwa",
+    "Namutumba", "Ngora", "Pallisa", "Serere", "Sironko", "Soroti",
+    "Tororo",
+    # Northern Region
+    "Abim", "Adjumani", "Agago", "Alebtong", "Amolatar", "Amudat",
+    "Amuru", "Apac", "Arua", "Dokolo", "Gulu", "Kaabong",
+    "Karenga", "Kitgum", "Koboko", "Kole", "Kotido", "Kwania",
+    "Lamwo", "Lira", "Madi-Okollo", "Maracha", "Moroto", "Moyo",
+    "Nabilatuk", "Nakapiripirit", "Napak", "Nebbi", "Nwoya", "Obongi",
+    "Omoro", "Otuke", "Oyam", "Pader", "Pakwach", "Yumbe",
+    "Zombo",
+    # Western Region
+    "Buhweju", "Buliisa", "Bundibugyo", "Bunyangabu", "Bushenyi", "Hoima",
+    "Ibanda", "Isingiro", "Kabale", "Kabarole", "Kagadi", "Kakumiro",
+    "Kamwenge", "Kanungu", "Kasese", "Kazo", "Kibaale", "Kikuube",
+    "Kiruhura", "Kiryandongo", "Kisoro", "Kitagwenda", "Kyankwanzi", "Kyegegwa",
+    "Kyenjojo", "Masindi", "Mbarara", "Mitooma", "Ntoroko", "Ntungamo",
+    "Rubirizi", "Rukiga", "Rukungiri", "Rwampara", "Sheema",
+])
 
 NCDC_MATH_CURRICULUM: Dict[str, List[Dict[str, Any]]] = {
     "P1": [
@@ -627,7 +659,7 @@ def init_state() -> None:
     st.session_state.setdefault("selected_class", "P6")
     st.session_state.setdefault("active_tab", "Take Quiz")
     st.session_state.setdefault("omweso_game", OmwesoGame())
-    st.session_state.setdefault("pupil_info", {"name": "", "school": "", "district": ""})
+    st.session_state.setdefault("pupil_info", {"name": "", "school": "", "district": "Kampala"})
     st.session_state.setdefault("attempt_records", [])
 
 
@@ -687,17 +719,19 @@ def main() -> None:
                     key="input_school_name",
                 )
             with p_col3:
-                district_name = st.text_input(
+                saved_district = st.session_state["pupil_info"]["district"]
+                default_idx = UGANDA_DISTRICTS.index(saved_district) if saved_district in UGANDA_DISTRICTS else 0
+                district_name = st.selectbox(
                     "District",
-                    value=st.session_state["pupil_info"]["district"],
-                    placeholder="Enter district",
-                    key="input_district_name",
+                    UGANDA_DISTRICTS,
+                    index=default_idx,
+                    key="select_district_name",
                 )
 
             st.session_state["pupil_info"] = {
                 "name": pupil_name.strip(),
                 "school": school_name.strip(),
-                "district": district_name.strip(),
+                "district": district_name,
             }
 
             selected_class = st.selectbox(
@@ -708,11 +742,11 @@ def main() -> None:
             )
             st.subheader(f"{selected_class} Mathematics Quiz")
 
-            if pupil_name.strip() or school_name.strip() or district_name.strip():
+            if pupil_name.strip() or school_name.strip() or district_name:
                 st.caption(
                     f"Candidate: **{pupil_name.strip() or 'Not provided'}** | "
                     f"School: **{school_name.strip() or 'Not provided'}** | "
-                    f"District: **{district_name.strip() or 'Not provided'}**"
+                    f"District: **{district_name}**"
                 )
 
             questions = QUIZ_BANK.get(selected_class, [])
@@ -730,8 +764,8 @@ def main() -> None:
                     key=f"q_{selected_class}_{idx}",
                 )
                 if st.button("Check Answer", key=f"btn_{selected_class}_{idx}"):
-                    if not pupil_name.strip() or not school_name.strip() or not district_name.strip():
-                        st.warning("Please enter your name, school name, and district before checking your answer.")
+                    if not pupil_name.strip() or not school_name.strip() or not district_name:
+                        st.warning("Please enter your name, school name, and select a district before checking your answer.")
                     elif pick is None:
                         st.warning("Please select an option before checking your answer.")
                     else:
@@ -747,7 +781,7 @@ def main() -> None:
                             st.session_state["attempt_records"].append({
                                 "Pupil Name": pupil_name.strip(),
                                 "School": school_name.strip(),
-                                "District": district_name.strip(),
+                                "District": district_name,
                                 "Class": selected_class,
                                 "Question": q["question"],
                                 "Selected": pick,
@@ -802,7 +836,15 @@ def main() -> None:
 
             if st.session_state["attempt_records"]:
                 st.markdown("### Recorded Quiz Attempts")
-                st.dataframe(pd.DataFrame(st.session_state["attempt_records"]))
+                records_df = pd.DataFrame(st.session_state["attempt_records"])
+                st.dataframe(records_df)
+                csv_bytes = records_df.to_csv(index=False).encode("utf-8")
+                st.download_button(
+                    label="Download Quiz Results (CSV)",
+                    data=csv_bytes,
+                    file_name="ilearn_uganda_quiz_results.csv",
+                    mime="text/csv",
+                )
 
         elif active_tab == "Omweso Lab":
             st.subheader("Traditional Ugandan Omweso")
