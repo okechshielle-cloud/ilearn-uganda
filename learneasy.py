@@ -1,8 +1,12 @@
 import base64
+from datetime import datetime
 import io
+import json
 import os
 import random
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
+from urllib import error as urlerror
+from urllib import request as urlrequest
 
 import matplotlib
 
@@ -13,6 +17,22 @@ import pandas as pd
 import streamlit as st
 
 st.set_page_config(page_title="iLearn-Uganda | Primary Maths", layout="wide")
+
+SPREADSHEET_ID = "12Kv-84apVPF5BRDF84wiWJ5l3j8X9rAYHpu3A9KAhWo"
+QUIZ_LOG_SHEET_NAME = "Quiz_Marks_Log"
+QUIZ_LOG_HEADERS = [
+    "Timestamp",
+    "Pupil Name",
+    "School",
+    "District",
+    "Class",
+    "Question ID",
+    "Question",
+    "Selected Answer",
+    "Correct",
+    "Marks Earned",
+    "Max Marks",
+]
 
 LOGO_FILENAMES = ["ilearn_uganda_logo.png", "image_b5d6e7.png", "logo.png"]
 
@@ -652,7 +672,192 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
 
 
 # ==============================================================================
-# 4. TRADITIONAL UGANDAN OMWESO ENGINE
+# 4. GOOGLE SHEETS PERSISTENCE LAYER (ALL CLASSES P1–P7)
+# ==============================================================================
+
+
+def _get_secret_or_env(key: str, default: Any = None) -> Any:
+    try:
+        if key in st.secrets:
+            return st.secrets[key]
+    except Exception:
+        pass
+    return os.environ.get(key, default)
+
+
+def _get_webhook_url() -> Optional[str]:
+    url = _get_secret_or_env("GSHEET_WEBHOOK_URL") or _get_secret_or_env("GOOGLE_SHEETS_WEBHOOK_URL")
+    return str(url).strip() if url else None
+
+
+def _get_service_account_dict() -> Optional[Dict[str, Any]]:
+    raw = _get_secret_or_env("GCP_SERVICE_ACCOUNT") or _get_secret_or_env("GOOGLE_SERVICE_ACCOUNT_JSON")
+    if not raw:
+        return None
+    if isinstance(raw, dict):
+        return dict(raw)
+    try:
+        return json.loads(str(raw))
+    except Exception:
+        return None
+
+
+@st.cache_resource(show_spinner=False)
+def _get_gspread_worksheet():
+    sa_info = _get_service_account_dict()
+    if not sa_info:
+        return None
+    try:
+        import gspread  # type: ignore
+        from google.oauth2.service_account import Credentials  # type: ignore
+
+        scopes = ["https://www.googleapis.com/auth/spreadsheets"]
+        creds = Credentials.from_service_account_info(sa_info, scopes=scopes)
+        client = gspread.authorize(creds)
+        sheet_id = str(_get_secret_or_env("GSHEET_SPREADSHEET_ID", SPREADSHEET_ID)).strip()
+        spreadsheet = client.open_by_key(sheet_id)
+        try:
+            return spreadsheet.worksheet(QUIZ_LOG_SHEET_NAME)
+        except Exception:
+            return spreadsheet.add_worksheet(title=QUIZ_LOG_SHEET_NAME, rows=500, cols=len(QUIZ_LOG_HEADERS))
+    except Exception:
+        return None
+
+
+def _parse_bool(val: Any) -> bool:
+    if isinstance(val, bool):
+        return val
+    return str(val).strip().upper() in {"TRUE", "1", "YES", "Y"}
+
+
+def _parse_int(val: Any, fallback: int = 0) -> int:
+    try:
+        return int(float(str(val).strip()))
+    except Exception:
+        return fallback
+
+
+def _rows_to_records(rows: List[List[Any]]) -> List[Dict[str, Any]]:
+    if not rows:
+        return []
+    start_idx = 1 if rows[0] and str(rows[0][0]).strip().lower() == "timestamp" else 0
+    records: List[Dict[str, Any]] = []
+    for r in rows[start_idx:]:
+        if len(r) < 10 or not str(r[1]).strip():
+            continue
+        cls_val = str(r[4]).strip()
+        if cls_val not in QUIZ_BANK:
+            continue
+        q_text = str(r[6]).strip()
+        q_id = str(r[5]).strip()
+        q_uid = f"{cls_val}:{q_id}" if q_id else f"{cls_val}:{q_text}"
+        records.append({
+            "Timestamp": str(r[0]).strip(),
+            "Pupil Name": str(r[1]).strip(),
+            "School": str(r[2]).strip(),
+            "District": str(r[3]).strip(),
+            "Class": cls_val,
+            "Question ID": q_id,
+            "q_uid": q_uid,
+            "Question": q_text,
+            "Selected": str(r[7]).strip(),
+            "Correct": _parse_bool(r[8]),
+            "Marks": _parse_int(r[9], 0),
+            "Max Marks": _parse_int(r[10] if len(r) > 10 else 1, 1),
+        })
+    return records
+
+
+@st.cache_data(ttl=30, show_spinner=False)
+def load_records_from_google_sheet() -> Tuple[List[Dict[str, Any]], str]:
+    """Reads Quiz_Marks_Log from Google Sheets so marks survive Streamlit app reboots."""
+    ws = _get_gspread_worksheet()
+    if ws is not None:
+        try:
+            values = ws.get_all_values()
+            return _rows_to_records(values), "Google Sheets (Live Sync Connected)"
+        except Exception as exc:
+            return [], f"Google Sheets read fallback ({exc})"
+
+    webhook_url = _get_webhook_url()
+    if webhook_url:
+        try:
+            req_url = f"{webhook_url}{'&' if '?' in webhook_url else '?'}sheet={QUIZ_LOG_SHEET_NAME}"
+            with urlrequest.urlopen(req_url, timeout=8) as resp:
+                payload = json.loads(resp.read().decode("utf-8"))
+                rows = payload.get("rows", []) if isinstance(payload, dict) else []
+                return _rows_to_records(rows), "Google Sheets (Webhook Sync Connected)"
+        except Exception as exc:
+            return [], f"Webhook read fallback ({exc})"
+
+    return [], "Session Memory Only (Add service account or webhook secret to sync Google Sheets)"
+
+
+def append_attempt_to_google_sheet(record: Dict[str, Any]) -> Tuple[bool, str]:
+    """Appends a single pupil quiz attempt row across any class (P1–P7) to Quiz_Marks_Log."""
+    row_values = [
+        record["Timestamp"],
+        record["Pupil Name"],
+        record["School"],
+        record["District"],
+        record["Class"],
+        record["Question ID"],
+        record["Question"],
+        record["Selected"],
+        "TRUE" if record["Correct"] else "FALSE",
+        int(record["Marks"]),
+        int(record["Max Marks"]),
+    ]
+
+    ws = _get_gspread_worksheet()
+    if ws is not None:
+        try:
+            existing = ws.get_all_values()
+            if not existing:
+                ws.append_row(QUIZ_LOG_HEADERS, value_input_option="USER_ENTERED")
+            ws.append_row(row_values, value_input_option="USER_ENTERED")
+            load_records_from_google_sheet.clear()
+            return True, "Saved to Google Sheet (Quiz_Marks_Log)"
+        except Exception as exc:
+            return False, f"Could not write to Google Sheet: {exc}"
+
+    webhook_url = _get_webhook_url()
+    if webhook_url:
+        try:
+            payload = json.dumps({"sheet": QUIZ_LOG_SHEET_NAME, "row": row_values}).encode("utf-8")
+            req = urlrequest.Request(
+                webhook_url,
+                data=payload,
+                headers={"Content-Type": "application/json"},
+                method="POST",
+            )
+            with urlrequest.urlopen(req, timeout=8) as resp:
+                if 200 <= resp.status < 300:
+                    load_records_from_google_sheet.clear()
+                    return True, "Saved to Google Sheet via webhook"
+                return False, f"Webhook returned HTTP {resp.status}"
+        except (urlerror.URLError, TimeoutError, Exception) as exc:
+            return False, f"Webhook write failed: {exc}"
+
+    return False, "Saved in app session (configure Google Sheet credentials for reboot persistence)"
+
+
+def _sync_state_from_records(records: List[Dict[str, Any]]) -> None:
+    answered_ids = {r["q_uid"] for r in records if r.get("q_uid")}
+    total_attempted = len(records)
+    total_correct = sum(1 for r in records if r.get("Correct"))
+    total_marks = sum(int(r.get("Marks", 0)) for r in records)
+    st.session_state["attempt_records"] = records
+    st.session_state["answered_ids"] = answered_ids
+    st.session_state["quiz_score"] = {
+        "attempted": total_attempted,
+        "correct": total_correct,
+        "marks": total_marks,
+    }
+
+
+# ==============================================================================
+# 5. TRADITIONAL UGANDAN OMWESO ENGINE
 # ==============================================================================
 
 
@@ -709,7 +914,7 @@ class OmwesoGame:
 
 
 # ==============================================================================
-# 5. LEADERBOARD & BADGES HELPERS
+# 6. LEADERBOARD & BADGES HELPERS
 # ==============================================================================
 
 BADGE_TIERS = [
@@ -725,7 +930,7 @@ def build_leaderboard(
     class_filter: str = "All",
     district_filter: str = "All",
 ) -> pd.DataFrame:
-    """Aggregates pupil quiz attempt records into a ranked leaderboard up to `limit`."""
+    """Aggregates pupil quiz attempt records across P1–P7 into a ranked leaderboard up to `limit`."""
     if not records:
         return pd.DataFrame(
             columns=["Rank", "Badge", "Pupil Name", "School", "District", "Class", "Correct", "Attempted", "Marks"]
@@ -774,7 +979,7 @@ def build_leaderboard(
 
 
 # ==============================================================================
-# 6. MAIN STREAMLIT BLOCK
+# 7. MAIN STREAMLIT BLOCK
 # ==============================================================================
 
 TABS = ["Take Quiz", "NCDC Syllabus", "Dashboard", "Omweso Lab"]
@@ -788,6 +993,14 @@ def init_state() -> None:
     st.session_state.setdefault("omweso_game", OmwesoGame())
     st.session_state.setdefault("pupil_info", {"name": "", "school": "", "district": "Kampala"})
     st.session_state.setdefault("attempt_records", [])
+    st.session_state.setdefault("sync_status", "")
+
+    if not st.session_state.get("sheet_hydrated", False):
+        persisted_records, status_msg = load_records_from_google_sheet()
+        st.session_state["sync_status"] = status_msg
+        if persisted_records:
+            _sync_state_from_records(persisted_records)
+        st.session_state["sheet_hydrated"] = True
 
 
 def main() -> None:
@@ -880,7 +1093,7 @@ def main() -> None:
                 f'<img src="{logo_val}" alt="iLearn-Uganda Logo" width="116" style="border-radius:18px;"/>',
                 unsafe_allow_html=True,
             )
-        st.caption("NCDC Primary Maths Hub")
+        st.caption("NCDC Primary Maths Hub (P1–P7)")
         st.markdown('<div class="top-left-tab-label">Tab Selector</div>', unsafe_allow_html=True)
         active_tab = st.selectbox(
             "Tab Selector",
@@ -993,30 +1206,45 @@ def main() -> None:
                     elif pick is None:
                         st.warning("Please select an option before checking your answer.")
                     else:
-                        q_uid = f"{selected_class}:{q['id']}"
+                        q_id = str(q.get("id", f"{selected_class}_q{idx + 1}"))
+                        q_uid = f"{selected_class}:{q_id}"
                         ok = pick == q["ans"]
-                        earned = q.get("marks", 1) if ok else 0
+                        max_marks = int(q.get("marks", 1))
+                        earned = max_marks if ok else 0
+
+                        record = {
+                            "Timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                            "Pupil Name": pupil_name.strip(),
+                            "School": school_name.strip(),
+                            "District": district_name,
+                            "Class": selected_class,
+                            "Question ID": q_id,
+                            "q_uid": q_uid,
+                            "Question": q["question"],
+                            "Selected": pick,
+                            "Correct": ok,
+                            "Marks": earned,
+                            "Max Marks": max_marks,
+                        }
+
                         if q_uid not in st.session_state["answered_ids"]:
                             st.session_state["answered_ids"].add(q_uid)
                             st.session_state["quiz_score"]["attempted"] += 1
                             if ok:
                                 st.session_state["quiz_score"]["correct"] += 1
                                 st.session_state["quiz_score"]["marks"] += earned
-                            st.session_state["attempt_records"].append({
-                                "Pupil Name": pupil_name.strip(),
-                                "School": school_name.strip(),
-                                "District": district_name,
-                                "Class": selected_class,
-                                "Question": q["question"],
-                                "Selected": pick,
-                                "Correct": ok,
-                                "Marks": earned,
-                            })
+                            st.session_state["attempt_records"].append(record)
+
+                        synced, sync_msg = append_attempt_to_google_sheet(record)
+                        st.session_state["sync_status"] = sync_msg
 
                         if ok:
                             st.success(f"Correct! {q['explanation']}")
                         else:
                             st.error(f"Incorrect. Answer: **{q['ans']}** — {q['explanation']}")
+
+                        if synced:
+                            st.caption(sync_msg)
                 st.divider()
 
         elif active_tab == "NCDC Syllabus":
@@ -1031,7 +1259,18 @@ def main() -> None:
                     st.markdown("**Life Skills & Values:** " + ", ".join(topic_row["life_skills_values"]))
 
         elif active_tab == "Dashboard":
-            st.subheader("Progress & Coverage Dashboard")
+            st.subheader("Progress & Coverage Dashboard (P1 – P7)")
+            if st.session_state.get("sync_status"):
+                st.caption(f"Persistence Status: {st.session_state['sync_status']}")
+
+            if st.button("Reload Marks from Google Sheet"):
+                load_records_from_google_sheet.clear()
+                refreshed_records, status_msg = load_records_from_google_sheet()
+                st.session_state["sync_status"] = status_msg
+                if refreshed_records:
+                    _sync_state_from_records(refreshed_records)
+                st.rerun()
+
             p_info = st.session_state["pupil_info"]
             if any(p_info.values()):
                 st.info(
@@ -1040,15 +1279,19 @@ def main() -> None:
                     f"**District:** {p_info['district'] or '—'}"
                 )
 
+            all_records = st.session_state["attempt_records"]
             stats = st.session_state["quiz_score"]
-            p6_total_marks = sum(item.get("marks", 1) for item in QUIZ_BANK["P6"])
+            all_classes_max_marks = sum(
+                int(item.get("marks", 1))
+                for cls_items in QUIZ_BANK.values()
+                for item in cls_items
+            )
             c1, c2, c3 = st.columns(3)
             c1.metric("Questions Attempted", stats["attempted"])
             c2.metric("Correct Answers", stats["correct"])
-            c3.metric("Marks Earned (P6 Max)", f"{stats['marks']} / {p6_total_marks}")
+            c3.metric("Marks Earned (P1–P7 Bank)", f"{stats['marks']} / {all_classes_max_marks}")
 
-            all_records = st.session_state["attempt_records"]
-            available_classes = ["All"] + sorted({r["Class"] for r in all_records}) if all_records else ["All"] + class_list
+            available_classes = ["All"] + class_list
             available_districts = (
                 ["All"] + sorted({r["District"] for r in all_records}) if all_records else ["All"] + UGANDA_DISTRICTS
             )
@@ -1090,7 +1333,7 @@ def main() -> None:
                             unsafe_allow_html=True,
                         )
 
-            st.markdown("### Top 25 Performers")
+            st.markdown("### Top 25 Performers (P1 – P7)")
             if not leaderboard_df.empty:
                 st.dataframe(leaderboard_df, use_container_width=True, hide_index=True)
                 lb_csv_bytes = leaderboard_df.to_csv(index=False).encode("utf-8")
@@ -1109,16 +1352,18 @@ def main() -> None:
                     "Model": items[0]["curriculum_type"],
                     "Periods": sum(x["periods"] for x in items),
                     "Quiz Questions": len(QUIZ_BANK.get(cls, [])),
+                    "Recorded Attempts": sum(1 for r in all_records if r.get("Class") == cls),
+                    "Recorded Marks": sum(int(r.get("Marks", 0)) for r in all_records if r.get("Class") == cls),
                 }
                 for cls, items in NCDC_MATH_CURRICULUM.items()
             ]
-            st.markdown("### NCDC Syllabus Coverage")
-            st.dataframe(pd.DataFrame(rows))
+            st.markdown("### NCDC Syllabus & Marks Coverage (P1 – P7)")
+            st.dataframe(pd.DataFrame(rows), use_container_width=True, hide_index=True)
 
             if all_records:
                 st.markdown("### Recorded Quiz Attempts")
                 records_df = pd.DataFrame(all_records)
-                st.dataframe(records_df)
+                st.dataframe(records_df, use_container_width=True, hide_index=True)
                 csv_bytes = records_df.to_csv(index=False).encode("utf-8")
                 st.download_button(
                     label="Download Quiz Results (CSV)",
