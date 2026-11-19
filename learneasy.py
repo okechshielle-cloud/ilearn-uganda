@@ -320,7 +320,7 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
         {
             "id": "p6_q01_sets",
             "topic": "Set Concepts",
-            "marks": 1,
+            "marks": 2,
             "question": "1– Given that the Venn diagram below, list elements of set (B–A)'.",
             "options": ["{b, c}", "{e, f, a, i, g}", "{a, i}", "{e, f, g}"],
             "ans": "{e, f, a, i, g}",
@@ -330,7 +330,7 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
         {
             "id": "p6_q02_roman",
             "topic": "Whole Numbers & Numerals",
-            "marks": 1,
+            "marks": 2,
             "question": "2– Write CIX in Hindu Arabic numeral.",
             "options": ["111", "99", "109", "119"],
             "ans": "109",
@@ -340,7 +340,7 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
         {
             "id": "p6_q03_base",
             "topic": "Number Bases",
-            "marks": 1,
+            "marks": 2,
             "question": "3– Given that 21_n = 11_ten. find the base represented by n.",
             "options": ["Base six", "Base four", "Base eight", "Base five"],
             "ans": "Base five",
@@ -350,7 +350,7 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
         {
             "id": "p6_q04_gcf",
             "topic": "Factors & Multiples",
-            "marks": 1,
+            "marks": 2,
             "question": "4– If Q = 2² × 3² and P = 2 × 3 × 5. find the Greatest Common Factor (G.C.F) of Q and P.",
             "options": ["6", "18", "180", "30"],
             "ans": "6",
@@ -360,7 +360,7 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
         {
             "id": "p6_q05i_posho",
             "topic": "Fractions & Percentages",
-            "marks": 1,
+            "marks": 2,
             "question": (
                 "5– In a class of 48 pupils who attended a birthday party, 50% of the pupils ate "
                 "Matooke, 3/8 ate Rice and the rest ate Posho. (i) Find the fraction of pupils who ate Posho."
@@ -386,7 +386,7 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
         {
             "id": "p6_q06_mode",
             "topic": "Data Handling & Statistics",
-            "marks": 1,
+            "marks": 2,
             "question": "6– Given that Paul scored the marks given below in the mid-term examination. Find Paul's modal mark.",
             "options": ["70", "50", "80", "70 and 50"],
             "ans": "70 and 50",
