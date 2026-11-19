@@ -1,271 +1,303 @@
-import random
-from typing import Any, Dict, List
+import io
+from typing import Any, Dict, List, Optional
 
+import matplotlib
+
+matplotlib.use("Agg")
+import matplotlib.patches as patches
+import matplotlib.pyplot as plt
 import pandas as pd
 import streamlit as st
 
-st.set_page_config(page_title="iLearn-Uganda | Primary Maths", layout="wide")
 
-try:
-    from p6_quiz_module import P6_QUESTIONS, render_p6_dashboard_card, render_p6_quiz_tab
+@st.cache_data(show_spinner=False)
+def get_diagram_png(diagram_type: str) -> Optional[bytes]:
+    """Generates clean mathematical diagrams in memory as PNG bytes."""
+    buf = io.BytesIO()
 
-    P6_MODULE_AVAILABLE = True
-    P6_MODULE_ERROR = ""
-except Exception as exc:
-    P6_QUESTIONS = []
-    P6_MODULE_AVAILABLE = False
-    P6_MODULE_ERROR = str(exc)
+    if diagram_type == "venn":
+        fig, ax = plt.subplots(figsize=(5.8, 4.2))
+        ax.set_xlim(0, 10)
+        ax.set_ylim(0, 7.5)
+        ax.set_aspect("equal")
+        ax.axis("off")
 
+        univ = patches.Rectangle((0.6, 0.5), 8.8, 6.2, linewidth=2, edgecolor="black", facecolor="white")
+        ax.add_patch(univ)
+        ax.text(0.6, 6.85, "E", fontsize=14, fontweight="bold")
 
-NCDC_MATH_CURRICULUM: Dict[str, List[Dict[str, Any]]] = {
-    "P1": [
-        {
-            "curriculum_type": "Thematic Curriculum",
-            "theme": "Our School and Neighbourhood",
-            "topic": "Pre-Number Activities & Counting (1–20)",
-            "periods": 18,
-            "sub_topics": ["Sorting and grouping objects", "Matching sets", "Counting 1 to 20"],
-            "learning_outcomes": "Learner counts, sorts, and relates real objects to numbers up to 20.",
-            "learning_aids": ["Bottle tops", "Beans/seeds", "Number cards"],
-            "life_skills_values": ["Sharing", "Orderliness", "Cooperation"],
-        }
-    ],
-    "P2": [
-        {
-            "curriculum_type": "Thematic Curriculum",
-            "theme": "Our Environment & Things We Make",
-            "topic": "Place Value & Numbers up to 999",
-            "periods": 22,
-            "sub_topics": ["Tens and Ones", "Introducing Hundreds", "Ordering up to 999"],
-            "learning_outcomes": "Learner identifies place values of Hundreds, Tens, and Ones.",
-            "learning_aids": ["Bundles of sticks", "Place value tins", "Abacus"],
-            "life_skills_values": ["Critical thinking", "Neatness"],
-        }
-    ],
-    "P3": [
-        {
-            "curriculum_type": "Thematic Curriculum",
-            "theme": "Managing Resources in Our Sub-County",
-            "topic": "Multiplication, Division & Basic Fractions",
-            "periods": 24,
-            "sub_topics": ["Tables 2, 3, 4, 5, 10", "Sharing equally", "Halves, quarters, thirds"],
-            "learning_outcomes": "Learner applies multiplication and division to everyday sharing.",
-            "learning_aids": ["Multiplication grid", "Paper strips", "Bottle tops"],
-            "life_skills_values": ["Fairness", "Resourcefulness"],
-        }
-    ],
-    "P4": [
-        {
-            "curriculum_type": "Subject-Based Syllabus (Transition Class)",
-            "theme": "Sets & Numeracy",
-            "topic": "Set Concepts, Whole Numbers & Fractions",
-            "periods": 40,
-            "sub_topics": ["Venn diagrams", "Place value up to 99,999", "Roman numerals (I–L)"],
-            "learning_outcomes": "Learner represents sets on Venn diagrams and works with numbers to 99,999.",
-            "learning_aids": ["Strings/hoops", "Place value chart", "Fraction strips"],
-            "life_skills_values": ["Classification", "Logical reasoning"],
-        }
-    ],
-    "P5": [
-        {
-            "curriculum_type": "Subject-Based Syllabus",
-            "theme": "Numeracy & Geometry",
-            "topic": "Number Patterns, Angles, Perimeter & Area",
-            "periods": 46,
-            "sub_topics": ["Place value to Millions", "Prime factors, LCM and GCF", "Perimeter and area"],
-            "learning_outcomes": "Learner finds LCM/GCF and calculates perimeter and area.",
-            "learning_aids": ["Abacus", "Factor charts", "Mathematical set"],
-            "life_skills_values": ["Analytical thinking", "Accuracy"],
-        }
-    ],
-    "P6": [
-        {
-            "curriculum_type": "Subject-Based Syllabus",
-            "theme": "Sets, Numeracy, Measurement & Data Handling",
-            "topic": "Sets, Bases, Fractions, Perimeter/Area, Statistics & Algebra",
-            "periods": 48,
-            "sub_topics": [
-                "Set complements and Venn diagrams",
-                "Roman numerals and number bases",
-                "GCF, LCM, and remainder problems",
-                "Fractions, percentages, mean, and mode",
-                "Perimeter and area of land plots",
-                "Simple linear equations",
-            ],
-            "learning_outcomes": "Learner solves multi-step problems in sets, bases, measurement, statistics, and algebra.",
-            "learning_aids": ["Venn charts", "Grid paper", "Mid-term mark sheets"],
-            "life_skills_values": ["Problem solving", "Data interpretation"],
-        }
-    ],
-    "P7": [
-        {
-            "curriculum_type": "Subject-Based Syllabus (PLE Consolidation)",
-            "theme": "Geometry, Measurement & Algebra",
-            "topic": "Bearings, Speed-Distance-Time, Volume & Equations",
-            "periods": 30,
-            "sub_topics": ["Scale drawing and bearings", "Speed, distance, and time", "Volume and equations"],
-            "learning_outcomes": "Learner consolidates upper-primary mathematics for PLE readiness.",
-            "learning_aids": ["Mathematical set", "3D nets", "Past papers"],
-            "life_skills_values": ["Critical thinking", "Self-reliance"],
-        }
-    ],
-}
+        circle_a = patches.Circle((3.9, 3.6), 2.1, linewidth=2, edgecolor="black", facecolor="none")
+        circle_b = patches.Circle((6.1, 3.6), 2.1, linewidth=2, edgecolor="black", facecolor="none")
+        ax.add_patch(circle_a)
+        ax.add_patch(circle_b)
 
-OTHER_CLASS_QUIZZES: Dict[str, List[Dict[str, Any]]] = {
-    "P1": [{"id": "p1_1", "topic": "Counting", "marks": 1, "question": "5 + 3 = ?", "options": ["7", "8", "9", "6"], "ans": "8", "explanation": "5 + 3 = 8."}],
-    "P2": [{"id": "p2_1", "topic": "Place Value", "marks": 1, "question": "Place value of 4 in 428?", "options": ["Ones", "Tens", "Hundreds", "Thousands"], "ans": "Hundreds", "explanation": "4 is in the Hundreds place."}],
-    "P3": [{"id": "p3_1", "topic": "Division", "marks": 1, "question": "24 mangoes shared equally among 4 pupils = ?", "options": ["5", "6", "8", "4"], "ans": "6", "explanation": "24 ÷ 4 = 6."}],
-    "P4": [{"id": "p4_1", "topic": "Sets", "marks": 1, "question": "A = {1, 2, 3}, B = {2, 3, 4}. Find A ∩ B.", "options": ["{1}", "{2, 3}", "{4}", "{1, 2, 3, 4}"], "ans": "{2, 3}", "explanation": "Common elements are 2 and 3."}],
-    "P5": [{"id": "p5_1", "topic": "LCM", "marks": 1, "question": "LCM of 6 and 8?", "options": ["12", "24", "48", "2"], "ans": "24", "explanation": "LCM(6, 8) = 24."}],
-    "P7": [{"id": "p7_1", "topic": "Speed", "marks": 2, "question": "180 km in 3 hours. Speed = ?", "options": ["50 km/h", "60 km/h", "90 km/h", "540 km/h"], "ans": "60 km/h", "explanation": "180 ÷ 3 = 60 km/h."}],
-}
+        ax.text(2.7, 5.1, "A", fontsize=13, fontweight="bold")
+        ax.text(7.1, 5.1, "B", fontsize=13, fontweight="bold")
+
+        ax.text(2.5, 4.0, "e", fontsize=13)
+        ax.text(2.8, 2.5, "f", fontsize=13)
+        ax.text(4.9, 4.1, "a", fontsize=13)
+        ax.text(4.9, 2.8, "i", fontsize=13)
+        ax.text(7.2, 4.0, "b", fontsize=13)
+        ax.text(7.0, 2.5, "c", fontsize=13)
+        ax.text(8.5, 1.0, "g", fontsize=13)
+
+        plt.tight_layout()
+        fig.savefig(buf, format="png", dpi=160, bbox_inches="tight")
+        plt.close(fig)
+        return buf.getvalue()
+
+    if diagram_type == "marks_table":
+        fig, ax = plt.subplots(figsize=(7.2, 1.8))
+        ax.axis("off")
+        columns = ["Maths", "Eng", "SST", "SCI", "CAPE 1", "Kiswahili"]
+        rows = [["70", "80", "70", "50", "90", "50"]]
+        table = ax.table(cellText=rows, colLabels=columns, cellLoc="center", loc="center")
+        table.auto_set_font_size(False)
+        table.set_fontsize(11)
+        table.scale(1.1, 1.8)
+        plt.tight_layout()
+        fig.savefig(buf, format="png", dpi=160, bbox_inches="tight")
+        plt.close(fig)
+        return buf.getvalue()
+
+    if diagram_type == "okello_land":
+        fig, ax = plt.subplots(figsize=(6.2, 4.5))
+        ax.set_xlim(-1.3, 11.6)
+        ax.set_ylim(-1.2, 9.0)
+        ax.set_aspect("equal")
+        ax.axis("off")
+
+        plot_r = patches.Rectangle((0, 0), 10, 5, linewidth=2, edgecolor="black", facecolor="white")
+        ax.add_patch(plot_r)
+        ax.text(5.0, 2.3, "R", fontsize=14, fontweight="bold", ha="center")
+        ax.text(5.0, -0.75, "10 m", fontsize=12, fontweight="bold", ha="center")
+        ax.text(10.35, 2.4, "5 m", fontsize=12, fontweight="bold", va="center")
+
+        plot_p = patches.Rectangle((0, 5), 4, 3, linewidth=2, edgecolor="black", facecolor="white")
+        ax.add_patch(plot_p)
+        ax.text(2.0, 6.3, "P", fontsize=14, fontweight="bold", ha="center")
+        ax.text(2.0, 5.25, "4 m", fontsize=11, ha="center")
+        ax.text(-1.05, 6.4, "3 m", fontsize=12, fontweight="bold", va="center")
+
+        plot_q = patches.Rectangle((4, 5), 6, 3, linewidth=2, edgecolor="black", facecolor="white")
+        ax.add_patch(plot_q)
+        ax.text(7.0, 6.3, "Q", fontsize=14, fontweight="bold", ha="center")
+        ax.text(7.0, 5.25, "6 m", fontsize=11, ha="center")
+
+        plt.tight_layout()
+        fig.savefig(buf, format="png", dpi=160, bbox_inches="tight")
+        plt.close(fig)
+        return buf.getvalue()
+
+    return None
 
 
-class OmwesoGame:
-    def __init__(self) -> None:
-        self.board = [
-            [4] * 8 + [0] * 8,
-            [4] * 8 + [0] * 8,
-        ]
-        self.turn = 0
-        self.log = ["Board initialized with 32 seeds per player."]
+P6_QUESTIONS: List[Dict[str, Any]] = [
+    {
+        "id": "p6_q01_sets",
+        "topic": "Set Concepts",
+        "marks": 1,
+        "question": "1– Given that the Venn diagram below, list elements of set (B–A)'.",
+        "options": ["{e, f, a, i, g}", "{b, c}", "{a, i}", "{e, f, g}"],
+        "ans": "{e, f, a, i, g}",
+        "explanation": "B - A = {b, c}, so (B - A)' includes all elements in universal set E outside {b, c}.",
+        "diagram_type": "venn",
+    },
+    {
+        "id": "p6_q02_roman",
+        "topic": "Whole Numbers & Numerals",
+        "marks": 1,
+        "question": "2– Write CIX in Hindu Arabic numeral.",
+        "options": ["109", "111", "99", "119"],
+        "ans": "109",
+        "explanation": "C = 100 and IX = 9, so CIX = 100 + 9 = 109.",
+        "diagram_type": None,
+    },
+    {
+        "id": "p6_q03_base",
+        "topic": "Number Bases",
+        "marks": 1,
+        "question": "3– Given that 21_n = 11_ten. find the base represented by n.",
+        "options": ["Base five", "Base six", "Base four", "Base eight"],
+        "ans": "Base five",
+        "explanation": "2n + 1 = 11 -> 2n = 10 -> n = 5 (base five).",
+        "diagram_type": None,
+    },
+    {
+        "id": "p6_q04_gcf",
+        "topic": "Factors & Multiples",
+        "marks": 1,
+        "question": "4– If Q = 2² × 3² and P = 2 × 3 × 5. find the Greatest Common Factor (G.C.F) of Q and P.",
+        "options": ["6", "18", "180", "30"],
+        "ans": "6",
+        "explanation": "Common prime factors with the lowest powers give 2¹ × 3¹ = 6.",
+        "diagram_type": None,
+    },
+    {
+        "id": "p6_q05i_posho",
+        "topic": "Fractions & Percentages",
+        "marks": 1,
+        "question": (
+            "5– In a class of 48 pupils who attended a birthday party, 50% of the pupils ate "
+            "Matooke, 3/8 ate Rice and the rest ate Posho. (i) Find the fraction of pupils who ate Posho."
+        ),
+        "options": ["1/8", "3/8", "1/2", "7/8"],
+        "ans": "1/8",
+        "explanation": "50% = 4/8; 4/8 + 3/8 = 7/8; remaining fraction for Posho = 1 - 7/8 = 1/8.",
+        "diagram_type": None,
+    },
+    {
+        "id": "p6_q05ii_matooke_vs_posho",
+        "topic": "Fractions & Percentages",
+        "marks": 2,
+        "question": (
+            "5– In a class of 48 pupils who attended a birthday party, 50% of the pupils ate "
+            "Matooke, 3/8 ate Rice and the rest ate Posho. (ii) How many more pupils ate Matooke than Posho?"
+        ),
+        "options": ["18", "6", "24", "42"],
+        "ans": "18",
+        "explanation": "Matooke = 50% of 48 = 24 pupils; Posho = 1/8 of 48 = 6 pupils; difference = 24 - 6 = 18.",
+        "diagram_type": None,
+    },
+    {
+        "id": "p6_q06_mode",
+        "topic": "Data Handling & Statistics",
+        "marks": 1,
+        "question": "6– Given that Paul scored the marks given below in the mid-term examination. Find Paul's modal mark.",
+        "options": ["70 and 50", "70", "50", "80"],
+        "ans": "70 and 50",
+        "explanation": "Both 70 and 50 appear twice, making the distribution bimodal with modal marks 70 and 50.",
+        "diagram_type": "marks_table",
+    },
+    {
+        "id": "p6_q12i_perimeter",
+        "topic": "Measurement & Geometry",
+        "marks": 2,
+        "question": (
+            "12– The diagram below shows how Mr. Okello used his land. He used plot P to keep goats, "
+            "plot Q to keep pigs and R to keep cattle. (i) Work out the total distance round the plot he used to keep pigs."
+        ),
+        "options": ["18 m", "14 m", "20 m", "9 m"],
+        "ans": "18 m",
+        "explanation": "Plot Q width = 10 m - 4 m = 6 m and height = 3 m, so perimeter = 2 × (6 + 3) = 18 m.",
+        "diagram_type": "okello_land",
+    },
+    {
+        "id": "p6_q12ii_area",
+        "topic": "Measurement & Geometry",
+        "marks": 4,
+        "question": (
+            "12– (ii) Find the size of the land area he has altogether which keep all his goats, "
+            "pigs and cattle in square metres."
+        ),
+        "options": ["80 sq m", "50 sq m", "36 sq m", "68 sq m"],
+        "ans": "80 sq m",
+        "explanation": "Total width = 10 m and total height = 3 m + 5 m = 8 m, giving 10 m × 8 m = 80 sq m.",
+        "diagram_type": "okello_land",
+    },
+    {
+        "id": "p6_q13_algebra",
+        "topic": "Algebra & Equations",
+        "marks": 5,
+        "question": (
+            "13– A boy said that they served with some cups of tea such that if a half of their "
+            "total joins them, their sum could be 45. How many boys were they?"
+        ),
+        "options": ["30", "22.5", "90", "15"],
+        "ans": "30",
+        "explanation": "x + 0.5x = 45 -> 1.5x = 45 -> x = 30 boys.",
+        "diagram_type": None,
+    },
+    {
+        "id": "p6_q14_remainders",
+        "topic": "Number Patterns & Remainders",
+        "marks": 5,
+        "question": (
+            "14– Sarah dug two lines of 7 pits and 6 pits respectively. She had some bean seeds in her "
+            "hands whereby if she distributes them in the 7 pits equally, 5 seeds remain and if she "
+            "distributes them in the one of 6 pits, 2 seeds remain. How many seeds was she having?"
+        ),
+        "options": ["26", "12", "19", "47"],
+        "ans": "26",
+        "explanation": "26 ÷ 7 = 3 remainder 5, and 26 ÷ 6 = 4 remainder 2.",
+        "diagram_type": None,
+    },
+    {
+        "id": "p6_q15_mean",
+        "topic": "Statistics & Mean",
+        "marks": 5,
+        "question": (
+            "15– The mean mass of 5 boys is 30 kg. When their teacher joins them, the mean mass "
+            "changes to 24. Find the mass of the teacher."
+        ),
+        "options": ["-6 kg", "6 kg", "144 kg", "150 kg"],
+        "ans": "-6 kg",
+        "explanation": "5 boys sum = 5 × 30 = 150 kg; 6 people sum = 6 × 24 = 144 kg; difference = 144 - 150 = -6 kg.",
+        "diagram_type": None,
+    },
+    {
+        "id": "p6_q16a_factors",
+        "topic": "Factors & Multiples",
+        "marks": 2,
+        "question": "16– (a) List all the factors of 12.",
+        "options": ["1, 2, 3, 4, 6, 12", "12, 24, 36, 48", "2, 3, 4, 6", "1, 2, 3, 6, 12"],
+        "ans": "1, 2, 3, 4, 6, 12",
+        "explanation": "The factors of 12 are 1, 2, 3, 4, 6, and 12.",
+        "diagram_type": None,
+    },
+    {
+        "id": "p6_q16b_lcm",
+        "topic": "Factors & Multiples (LCM)",
+        "marks": 3,
+        "question": (
+            "16– (b) What is the least number of sweets that can be shared by either "
+            "6 or 8 boys equally without a remainder?"
+        ),
+        "options": ["24", "48", "12", "2"],
+        "ans": "24",
+        "explanation": "The least number divisible by both 6 and 8 is LCM(6, 8) = 24.",
+        "diagram_type": None,
+    },
+]
 
-    def get_opposite_enemy_pits(self, inner_idx: int):
-        col_from_left = 15 - inner_idx
-        return 8 + col_from_left, 7 - col_from_left
 
-    def sow(self, player: int, pit_idx: int, reverse: bool = False) -> bool:
-        seeds = self.board[player][pit_idx]
-        if seeds < 2:
-            self.log.append("Choose a pit with at least 2 seeds.")
-            return False
+def render_p6_quiz_tab() -> None:
+    """Renders the P6 quiz with diagrams and session-state score tracking."""
+    st.session_state.setdefault("p6_score", {"attempted": 0, "correct": 0, "marks": 0})
+    st.session_state.setdefault("p6_answered", set())
 
-        if reverse and pit_idx not in {0, 1, 14, 15}:
-            reverse = False
+    for i, q in enumerate(P6_QUESTIONS):
+        st.markdown(f"**{q['question']}** *(Topic: {q['topic']} | {q['marks']} mark(s))*")
 
-        self.board[player][pit_idx] = 0
-        curr = pit_idx
-        step = -1 if reverse else 1
-        opp = 1 - player
+        if q.get("diagram_type"):
+            png = get_diagram_png(q["diagram_type"])
+            if png:
+                st.image(png, caption=f"{q['topic']} Diagram")
 
-        while True:
-            while seeds > 0:
-                curr = (curr + step) % 16
-                self.board[player][curr] += 1
-                seeds -= 1
+        choice = st.radio("Choose your answer:", q["options"], key=f"p6_opt_{i}")
+        if st.button("Check Answer", key=f"p6_chk_{i}"):
+            is_correct = choice == q["ans"]
+            if q["id"] not in st.session_state["p6_answered"]:
+                st.session_state["p6_answered"].add(q["id"])
+                st.session_state["p6_score"]["attempted"] += 1
+                if is_correct:
+                    st.session_state["p6_score"]["correct"] += 1
+                    st.session_state["p6_score"]["marks"] += q["marks"]
 
-            if self.board[player][curr] > 1:
-                if 8 <= curr <= 15:
-                    opp_inner, opp_outer = self.get_opposite_enemy_pits(curr)
-                    if self.board[opp][opp_inner] > 0 and self.board[opp][opp_outer] > 0:
-                        captured = self.board[opp][opp_inner] + self.board[opp][opp_outer]
-                        self.board[opp][opp_inner] = 0
-                        self.board[opp][opp_outer] = 0
-                        seeds = captured
-                        self.log.append(f"Player {player + 1} captured {captured} seeds!")
-                        continue
-                seeds = self.board[player][curr]
-                self.board[player][curr] = 0
+            if is_correct:
+                st.success(f"Correct! {q['explanation']}")
             else:
-                break
-
-        self.turn = opp
-        return True
+                st.error(f"Incorrect. Correct answer: **{q['ans']}** — {q['explanation']}")
+        st.divider()
 
 
-def init_state() -> None:
-    st.session_state.setdefault("general_score", {"attempted": 0, "correct": 0})
-    st.session_state.setdefault("general_answered", set())
-    st.session_state.setdefault("omweso_game", OmwesoGame())
-
-
-def main() -> None:
-    init_state()
-    st.title("iLearn-Uganda: NCDC Primary Mathematics (P1 – P7)")
-
-    class_list = list(NCDC_MATH_CURRICULUM.keys())
-    selected_class = st.sidebar.selectbox("Select Class", class_list, index=5)
-
-    tab_quiz, tab_syllabus, tab_dashboard, tab_omweso = st.tabs([
-        "Class Quiz",
-        "NCDC Syllabus",
-        "Dashboard",
-        "Omweso Lab",
-    ])
-
-    with tab_quiz:
-        st.subheader(f"{selected_class} Mathematics Quiz")
-        if selected_class == "P6":
-            if P6_MODULE_AVAILABLE:
-                render_p6_quiz_tab()
-            else:
-                st.error(f"Could not load p6_quiz_module.py: {P6_MODULE_ERROR}")
-        else:
-            for idx, q in enumerate(OTHER_CLASS_QUIZZES.get(selected_class, [])):
-                st.markdown(f"**{q['question']}** *(Topic: {q['topic']})*")
-                pick = st.radio("Select answer:", q["options"], key=f"gen_{selected_class}_{idx}")
-                if st.button("Check Answer", key=f"gen_btn_{selected_class}_{idx}"):
-                    q_uid = f"{selected_class}:{q['id']}"
-                    ok = pick == q["ans"]
-                    if q_uid not in st.session_state["general_answered"]:
-                        st.session_state["general_answered"].add(q_uid)
-                        st.session_state["general_score"]["attempted"] += 1
-                        if ok:
-                            st.session_state["general_score"]["correct"] += 1
-                    if ok:
-                        st.success(f"Correct! {q['explanation']}")
-                    else:
-                        st.error(f"Incorrect. Answer: **{q['ans']}** — {q['explanation']}")
-                st.divider()
-
-    with tab_syllabus:
-        st.subheader(f"{selected_class} Syllabus Overview")
-        for topic_row in NCDC_MATH_CURRICULUM[selected_class]:
-            with st.expander(f"{topic_row['topic']} ({topic_row['periods']} periods)", expanded=True):
-                st.caption(topic_row["curriculum_type"])
-                st.write(topic_row["learning_outcomes"])
-                st.markdown("**Sub-topics:** " + ", ".join(topic_row["sub_topics"]))
-                st.markdown("**Learning Aids:** " + ", ".join(topic_row["learning_aids"]))
-                st.markdown("**Life Skills & Values:** " + ", ".join(topic_row["life_skills_values"]))
-
-    with tab_dashboard:
-        st.subheader("Progress & Coverage Dashboard")
-        if P6_MODULE_AVAILABLE:
-            render_p6_dashboard_card()
-        rows = [
-            {
-                "Class": cls,
-                "Model": items[0]["curriculum_type"],
-                "Periods": sum(x["periods"] for x in items),
-            }
-            for cls, items in NCDC_MATH_CURRICULUM.items()
-        ]
-        st.dataframe(pd.DataFrame(rows))
-
-    with tab_omweso:
-        st.subheader("Traditional Ugandan Omweso")
-        game: OmwesoGame = st.session_state["omweso_game"]
-        cols = st.columns(8)
-        for c in range(8):
-            cols[c].metric(f"Outer {c + 1}", game.board[0][c])
-        inner_cols = st.columns(8)
-        for c in range(8):
-            idx = 15 - c
-            inner_cols[c].metric(f"Inner {c + 1} [#{idx}]", game.board[0][idx])
-
-        valid_pits = [i for i in range(16) if game.board[0][i] >= 2]
-        if valid_pits:
-            pit_choice = st.selectbox("Pick pit to sow:", valid_pits, format_func=lambda x: f"Pit #{x} ({game.board[0][x]})")
-            rev = st.checkbox("Reverse sow (left-corner pits 0, 1, 14, 15)")
-            if st.button("Sow"):
-                game.sow(0, pit_choice, reverse=rev)
-                opp_pits = [i for i in range(16) if game.board[1][i] >= 2]
-                if opp_pits:
-                    game.sow(1, random.choice(opp_pits), reverse=False)
-        if st.button("Reset Board"):
-            st.session_state["omweso_game"] = OmwesoGame()
-        st.info(game.log[-1])
-
-
-if __name__ == "__main__":
-    main()
+def render_p6_dashboard_card() -> None:
+    """Displays P6 quiz performance summary for the dashboard."""
+    stats = st.session_state.get("p6_score", {"attempted": 0, "correct": 0, "marks": 0})
+    total_marks = sum(q["marks"] for q in P6_QUESTIONS)
+    st.metric("P6 Quiz Score", f"{stats['marks']} / {total_marks} marks")
+    st.caption(f"Attempted: {stats['attempted']}/{len(P6_QUESTIONS)} | Correct: {stats['correct']}")
+    st.dataframe(
+        pd.DataFrame([{"ID": q["id"], "Topic": q["topic"], "Marks": q["marks"]} for q in P6_QUESTIONS]),
+    )
