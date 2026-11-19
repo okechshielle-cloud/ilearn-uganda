@@ -740,6 +740,34 @@ def main() -> None:
             color: #4b5563;
             margin-bottom: 0.2rem;
         }
+        .ug-title-banner {
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+            padding: 0.45rem 0.2rem;
+        }
+        .ug-flag-stripes {
+            display: inline-flex;
+            flex-direction: column;
+            width: 14px;
+            height: 44px;
+            border-radius: 3px;
+            overflow: hidden;
+            border: 1px solid #d1d5db;
+            flex-shrink: 0;
+        }
+        .ug-stripe-black { flex: 1; background-color: #000000; }
+        .ug-stripe-yellow { flex: 1; background-color: #FCDC04; }
+        .ug-stripe-red { flex: 1; background-color: #D90000; }
+        .ug-main-heading {
+            font-size: 2.1rem;
+            font-weight: 700;
+            line-height: 1.2;
+            margin: 0;
+        }
+        .ug-brand-black { color: #000000; }
+        .ug-brand-yellow { color: #D4B400; }
+        .ug-brand-red { color: #D90000; }
         .badge-card {
             border: 1px solid #dfe4ec;
             border-radius: 10px;
@@ -766,7 +794,21 @@ def main() -> None:
             key="active_tab",
         )
 
-    st.title("iLearn-Uganda: NCDC Primary Mathematics (P1 – P7)")
+    st.markdown(
+        """
+        <div class="ug-title-banner">
+            <div class="ug-flag-stripes" title="Uganda Flag Colors: Black, Yellow, Red">
+                <div class="ug-stripe-black"></div>
+                <div class="ug-stripe-yellow"></div>
+                <div class="ug-stripe-red"></div>
+            </div>
+            <h1 class="ug-main-heading">
+                <span class="ug-brand-black">iLearn</span><span class="ug-brand-yellow">-</span><span class="ug-brand-red">Uganda</span>: NCDC Primary Mathematics (P1 – P7)
+            </h1>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
     st.divider()
 
     # Align opened tab content three-quarters (3/4) to the right
