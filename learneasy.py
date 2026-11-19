@@ -467,7 +467,7 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
             "options": ["50 sq m", "36 sq m", "80 sq m", "68 sq m"],
             "ans": "80 sq m",
             "explanation": "Total width = 10 m and total height = 3 m + 5 m = 8 m, giving 10 m × 8 m = 80 sq m.",
-            "diagram_type": "okello_land",
+            "diagram_type": None,
         },
         {
             "id": "p6_q13_algebra",
