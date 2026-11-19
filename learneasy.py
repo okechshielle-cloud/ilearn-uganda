@@ -643,12 +643,22 @@ def main() -> None:
     ])
 
     with tab_quiz:
-        selected_class = st.selectbox(
-            "Select Class",
-            class_list,
-            key="selected_class",
-            help="Choose P1 through P7 to load that class's mathematics quiz.",
+        take_quiz_mode = st.selectbox(
+            "Take Quiz",
+            ["Take Quiz", "Select Class"],
+            key="take_quiz_mode",
         )
+        if take_quiz_mode == "Select Class":
+            selected_class = st.selectbox(
+                "Select Class",
+                class_list,
+                key="selected_class",
+                help="Choose P1 through P7 to load that class's mathematics quiz.",
+            )
+        else:
+            selected_class = st.session_state["selected_class"]
+            st.info("Select **Select Class** above to choose a class (P1–P7) and start the quiz.")
+
         st.subheader(f"{selected_class} Mathematics Quiz")
 
         questions = QUIZ_BANK.get(selected_class, [])
