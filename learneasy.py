@@ -1058,6 +1058,58 @@ def _sync_state_from_records(records: List[Dict[str, Any]]) -> None:
     }
 
 
+def record_single_answer(
+    q: Dict[str, Any],
+    idx: int,
+    selected_class: str,
+    pick: Any,
+    pupil_name: str,
+    school_name: str,
+    district_name: str,
+) -> Dict[str, Any]:
+    q_id = str(q.get("id", f"{selected_class}_q{idx + 1}"))
+    q_uid = f"{selected_class}:{q_id}"
+    ok = pick == q["ans"]
+    max_marks = int(q.get("marks", 1))
+    earned = max_marks if ok else 0
+
+    record = {
+        "Timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "Pupil Name": pupil_name.strip(),
+        "School": school_name.strip(),
+        "District": district_name,
+        "Class": selected_class,
+        "Question ID": q_id,
+        "q_uid": q_uid,
+        "Question": q["question"],
+        "Selected": pick,
+        "Correct": ok,
+        "Marks": earned,
+        "Max Marks": max_marks,
+    }
+
+    is_new = q_uid not in st.session_state["answered_ids"]
+    if is_new:
+        st.session_state["answered_ids"].add(q_uid)
+        st.session_state["quiz_score"]["attempted"] += 1
+        if ok:
+            st.session_state["quiz_score"]["correct"] += 1
+            st.session_state["quiz_score"]["marks"] += earned
+        st.session_state["attempt_records"].append(record)
+
+    synced, sync_msg = append_attempt_to_google_sheet(record)
+    st.session_state["sync_status"] = sync_msg
+
+    feedback_item = {
+        "ok": ok,
+        "ans": q["ans"],
+        "record": record,
+        "sync_msg": sync_msg if synced else "",
+    }
+    st.session_state["last_checked_feedback"][q_uid] = feedback_item
+    return feedback_item
+
+
 # ==============================================================================
 # 5. TRADITIONAL UGANDAN OMWESO ENGINE
 # ==============================================================================
@@ -1196,6 +1248,7 @@ def init_state() -> None:
     st.session_state.setdefault("pupil_info", {"name": "", "school": "", "district": "Kampala"})
     st.session_state.setdefault("attempt_records", [])
     st.session_state.setdefault("last_checked_feedback", {})
+    st.session_state.setdefault("submitted_quiz_summary", None)
     st.session_state.setdefault("sync_status", "")
 
     if not st.session_state.get("sheet_hydrated", False):
@@ -1390,6 +1443,8 @@ def main() -> None:
                 )
 
             questions = QUIZ_BANK.get(selected_class, [])
+            selected_picks: Dict[int, Any] = {}
+
             for idx, q in enumerate(questions):
                 st.markdown(f"**{q['question']}** *({q.get('marks', 1)} mark(s))*")
 
@@ -1403,6 +1458,7 @@ def main() -> None:
                     index=None,
                     key=f"q_{selected_class}_{idx}",
                 )
+                selected_picks[idx] = pick
                 q_id = str(q.get("id", f"{selected_class}_q{idx + 1}"))
                 q_uid = f"{selected_class}:{q_id}"
 
@@ -1412,41 +1468,16 @@ def main() -> None:
                     elif pick is None:
                         st.warning("Please select an option before checking your answer.")
                     else:
-                        ok = pick == q["ans"]
-                        max_marks = int(q.get("marks", 1))
-                        earned = max_marks if ok else 0
-
-                        record = {
-                            "Timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                            "Pupil Name": pupil_name.strip(),
-                            "School": school_name.strip(),
-                            "District": district_name,
-                            "Class": selected_class,
-                            "Question ID": q_id,
-                            "q_uid": q_uid,
-                            "Question": q["question"],
-                            "Selected": pick,
-                            "Correct": ok,
-                            "Marks": earned,
-                            "Max Marks": max_marks,
-                        }
-
-                        if q_uid not in st.session_state["answered_ids"]:
-                            st.session_state["answered_ids"].add(q_uid)
-                            st.session_state["quiz_score"]["attempted"] += 1
-                            if ok:
-                                st.session_state["quiz_score"]["correct"] += 1
-                                st.session_state["quiz_score"]["marks"] += earned
-                            st.session_state["attempt_records"].append(record)
-
-                        synced, sync_msg = append_attempt_to_google_sheet(record)
-                        st.session_state["sync_status"] = sync_msg
-                        st.session_state["last_checked_feedback"][q_uid] = {
-                            "ok": ok,
-                            "ans": q["ans"],
-                            "record": record,
-                            "sync_msg": sync_msg if synced else "",
-                        }
+                        fb_item = record_single_answer(
+                            q=q,
+                            idx=idx,
+                            selected_class=selected_class,
+                            pick=pick,
+                            pupil_name=pupil_name,
+                            school_name=school_name,
+                            district_name=district_name,
+                        )
+                        st.session_state["last_checked_feedback"][q_uid] = fb_item
 
                 fb = st.session_state["last_checked_feedback"].get(q_uid)
                 if fb:
@@ -1458,6 +1489,73 @@ def main() -> None:
                     if fb.get("sync_msg"):
                         st.caption(fb["sync_msg"])
                 st.divider()
+
+            st.markdown("### Submit Quiz")
+            sub_col1, sub_col2 = st.columns([1.4, 1.6])
+            with sub_col1:
+                submit_clicked = st.button("Submit Quiz", type="primary", use_container_width=True, key="btn_submit_quiz")
+            with sub_col2:
+                if st.button("Open Dashboard & Leaderboard", use_container_width=True, key="btn_go_dashboard"):
+                    st.session_state["active_tab"] = "Dashboard"
+                    st.rerun()
+
+            if submit_clicked:
+                if not pupil_name.strip() or not school_name.strip() or not district_name:
+                    st.warning("Please enter your name, school name, and select a district before submitting the quiz.")
+                else:
+                    answered_items: List[Dict[str, Any]] = []
+                    unanswered_count = 0
+                    for idx, q in enumerate(questions):
+                        chosen = selected_picks.get(idx)
+                        if chosen is None:
+                            unanswered_count += 1
+                            continue
+                        fb_item = record_single_answer(
+                            q=q,
+                            idx=idx,
+                            selected_class=selected_class,
+                            pick=chosen,
+                            pupil_name=pupil_name,
+                            school_name=school_name,
+                            district_name=district_name,
+                        )
+                        answered_items.append(fb_item)
+
+                    if not answered_items:
+                        st.warning("Select at least one answer above before clicking Submit Quiz.")
+                    else:
+                        total_earned = sum(int(item["record"]["Marks"]) for item in answered_items)
+                        total_possible = sum(int(item["record"]["Max Marks"]) for item in answered_items)
+                        total_right = sum(1 for item in answered_items if item["ok"])
+                        st.session_state["submitted_quiz_summary"] = {
+                            "class": selected_class,
+                            "pupil_name": pupil_name.strip(),
+                            "school_name": school_name.strip(),
+                            "district_name": district_name,
+                            "submitted_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                            "earned": total_earned,
+                            "possible": total_possible,
+                            "right": total_right,
+                            "count": len(answered_items),
+                            "unanswered": unanswered_count,
+                            "items": answered_items,
+                        }
+
+            summary = st.session_state.get("submitted_quiz_summary")
+            if summary:
+                st.success(
+                    f"Quiz submitted for **{summary['pupil_name']}** ({summary['class']}) — "
+                    f"Score: **{summary['earned']} / {summary['possible']} marks** "
+                    f"({summary['right']}/{summary['count']} answered correctly)"
+                )
+                if summary.get("unanswered", 0) > 0:
+                    st.caption(f"Note: {summary['unanswered']} question(s) in {summary['class']} had no option selected and were not scored.")
+                for item in summary.get("items", []):
+                    rec = item["record"]
+                    mark_status = "Correct" if item["ok"] else "Incorrect"
+                    with st.expander(f"{rec['Question']} — {mark_status} ({rec['Marks']}/{rec['Max Marks']} marks)", expanded=True):
+                        st.markdown(f"- **Your Answer:** `{rec['Selected']}` | **Correct Answer:** `{item['ans']}`")
+                        render_line_by_line_explanation(rec, correct_ans=item["ans"])
 
         elif active_tab == "NCDC Syllabus":
             active_cls = st.session_state["selected_class"]
