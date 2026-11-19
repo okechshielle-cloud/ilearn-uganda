@@ -53,7 +53,7 @@ FALLBACK_LOGO_SVG = (
     "</svg>"
 )
 
-# Slightly boosted, balanced margin and workspace accent colors per selected tab
+# Balanced margin and workspace accent colors per selected tab
 TAB_MARGIN_STYLES: Dict[str, Dict[str, str]] = {
     "Take Quiz": {
         "accent": "rgba(11, 110, 63, 0.72)",
@@ -91,7 +91,7 @@ TAB_MARGIN_STYLES: Dict[str, Dict[str, str]] = {
 # ==============================================================================
 
 
-def get_logo_source() -> tuple[str, Any]:
+def get_logo_source() -> Tuple[str, Any]:
     """Returns ('file', path) if a local logo file exists, else ('svg_uri', data_uri)."""
     for fname in LOGO_FILENAMES:
         if os.path.exists(fname):
@@ -847,10 +847,10 @@ QUESTION_LOOKUP = build_question_lookup()
 
 
 def get_detailed_lines_for_record(record: Dict[str, Any]) -> List[str]:
-    q_uid = str(record.get("q_uid", ""))
-    q_id = str(record.get("Question ID", ""))
-    cls_code = str(record.get("Class", ""))
-    q_text = str(record.get("Question", ""))
+    q_uid = str(record.get("q_uid", "") or "")
+    q_id = str(record.get("Question ID", "") or "")
+    cls_code = str(record.get("Class", "") or "")
+    q_text = str(record.get("Question", "") or "")
 
     matched = (
         QUESTION_LOOKUP.get(q_uid)
@@ -869,7 +869,7 @@ def render_line_by_line_explanation(record: Dict[str, Any], correct_ans: Optiona
     st.markdown("**Line-by-Line Detailed Explanation:**")
     for line in lines:
         st.markdown(f"- {line}")
-    if correct_ans:
+    if correct_ans is not None:
         st.markdown(f"- **Correct Answer:** `{correct_ans}` | **Marks Earned:** `{record.get('Marks', 0)}/{record.get('Max Marks', 1)}`")
 
 
@@ -945,24 +945,24 @@ def _rows_to_records(rows: List[List[Any]]) -> List[Dict[str, Any]]:
     start_idx = 1 if rows[0] and str(rows[0][0]).strip().lower() == "timestamp" else 0
     records: List[Dict[str, Any]] = []
     for r in rows[start_idx:]:
-        if len(r) < 10 or not str(r[1]).strip():
+        if not isinstance(r, list) or len(r) < 10 or not str(r[1] or "").strip():
             continue
-        cls_val = str(r[4]).strip()
+        cls_val = str(r[4] or "").strip()
         if cls_val not in QUIZ_BANK:
             continue
-        q_text = str(r[6]).strip()
-        q_id = str(r[5]).strip()
+        q_text = str(r[6] or "").strip()
+        q_id = str(r[5] or "").strip()
         q_uid = f"{cls_val}:{q_id}" if q_id else f"{cls_val}:{q_text}"
         records.append({
-            "Timestamp": str(r[0]).strip(),
-            "Pupil Name": str(r[1]).strip(),
-            "School": str(r[2]).strip(),
-            "District": str(r[3]).strip(),
+            "Timestamp": str(r[0] or "").strip(),
+            "Pupil Name": str(r[1] or "").strip(),
+            "School": str(r[2] or "").strip(),
+            "District": str(r[3] or "").strip(),
             "Class": cls_val,
             "Question ID": q_id,
             "q_uid": q_uid,
             "Question": q_text,
-            "Selected": str(r[7]).strip(),
+            "Selected": str(r[7] or "").strip(),
             "Correct": _parse_bool(r[8]),
             "Marks": _parse_int(r[9], 0),
             "Max Marks": _parse_int(r[10] if len(r) > 10 else 1, 1),
@@ -1069,14 +1069,14 @@ def record_single_answer(
 ) -> Dict[str, Any]:
     q_id = str(q.get("id", f"{selected_class}_q{idx + 1}"))
     q_uid = f"{selected_class}:{q_id}"
-    ok = pick == q["ans"]
+    ok = pick == q.get("ans")
     max_marks = int(q.get("marks", 1))
     earned = max_marks if ok else 0
 
     record = {
         "Timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-        "Pupil Name": pupil_name.strip(),
-        "School": school_name.strip(),
+        "Pupil Name": (pupil_name or "").strip(),
+        "School": (school_name or "").strip(),
         "District": district_name,
         "Class": selected_class,
         "Question ID": q_id,
@@ -1102,7 +1102,7 @@ def record_single_answer(
 
     feedback_item = {
         "ok": ok,
-        "ans": q["ans"],
+        "ans": q.get("ans"),
         "record": record,
         "sync_msg": sync_msg if synced else "",
     }
@@ -1124,7 +1124,7 @@ class OmwesoGame:
         self.turn = 0
         self.log = ["Board initialized with 32 seeds per player."]
 
-    def get_opposite_enemy_pits(self, inner_idx: int):
+    def get_opposite_enemy_pits(self, inner_idx: int) -> Tuple[int, int]:
         col_from_left = 15 - inner_idx
         return 8 + col_from_left, 7 - col_from_left
 
@@ -1191,6 +1191,11 @@ def build_leaderboard(
         )
 
     df = pd.DataFrame(records)
+    if df.empty:
+        return pd.DataFrame(
+            columns=["Rank", "Badge", "Pupil Name", "School", "District", "Class", "Correct", "Attempted", "Marks"]
+        )
+
     if class_filter != "All":
         df = df[df["Class"] == class_filter]
     if district_filter != "All":
@@ -1263,13 +1268,14 @@ def main() -> None:
     init_state()
 
     active_tab = st.session_state.get("active_tab", "Take Quiz")
+    if active_tab not in TABS:
+        active_tab = "Take Quiz"
     margin_theme = TAB_MARGIN_STYLES.get(active_tab, TAB_MARGIN_STYLES["Take Quiz"])
     accent = margin_theme["accent"]
     border_tint = margin_theme["border_tint"]
     pill_bg = margin_theme["pill_bg"]
     pill_text = margin_theme["pill_text"]
 
-    # Unified general app display + slightly boosted tint on margin & workspace frame
     st.markdown(
         "<style>"
         ".stApp {"
@@ -1335,7 +1341,7 @@ def main() -> None:
     )
 
     class_list = list(QUIZ_BANK.keys())
-    if st.session_state["selected_class"] not in class_list:
+    if st.session_state.get("selected_class") not in class_list:
         st.session_state["selected_class"] = "P6"
 
     logo_kind, logo_val = get_logo_source()
@@ -1354,6 +1360,7 @@ def main() -> None:
         active_tab = st.selectbox(
             "Tab Selector",
             TABS,
+            index=TABS.index(active_tab),
             label_visibility="collapsed",
             key="active_tab",
         )
@@ -1390,7 +1397,6 @@ def main() -> None:
 
     st.divider()
 
-    # Unified general display container for all tabs
     _, tab_content_col = st.columns([1, 3])
 
     with tab_content_col:
@@ -1400,19 +1406,19 @@ def main() -> None:
             with p_col1:
                 pupil_name = st.text_input(
                     "Pupil Name",
-                    value=st.session_state["pupil_info"]["name"],
+                    value=st.session_state["pupil_info"].get("name", ""),
                     placeholder="Enter full name",
                     key="input_pupil_name",
                 )
             with p_col2:
                 school_name = st.text_input(
                     "School Name",
-                    value=st.session_state["pupil_info"]["school"],
+                    value=st.session_state["pupil_info"].get("school", ""),
                     placeholder="Enter school name",
                     key="input_school_name",
                 )
             with p_col3:
-                saved_district = st.session_state["pupil_info"]["district"]
+                saved_district = st.session_state["pupil_info"].get("district", "Kampala")
                 default_idx = UGANDA_DISTRICTS.index(saved_district) if saved_district in UGANDA_DISTRICTS else 0
                 district_name = st.selectbox(
                     "District",
@@ -1421,9 +1427,11 @@ def main() -> None:
                     key="select_district_name",
                 )
 
+            clean_name = (pupil_name or "").strip()
+            clean_school = (school_name or "").strip()
             st.session_state["pupil_info"] = {
-                "name": pupil_name.strip(),
-                "school": school_name.strip(),
+                "name": clean_name,
+                "school": clean_school,
                 "district": district_name,
             }
 
@@ -1435,10 +1443,10 @@ def main() -> None:
             )
             st.subheader(f"{selected_class} Mathematics Quiz")
 
-            if pupil_name.strip() or school_name.strip() or district_name:
+            if clean_name or clean_school or district_name:
                 st.caption(
-                    f"Candidate: **{pupil_name.strip() or 'Not provided'}** | "
-                    f"School: **{school_name.strip() or 'Not provided'}** | "
+                    f"Candidate: **{clean_name or 'Not provided'}** | "
+                    f"School: **{clean_school or 'Not provided'}** | "
                     f"District: **{district_name}**"
                 )
 
@@ -1463,7 +1471,7 @@ def main() -> None:
                 q_uid = f"{selected_class}:{q_id}"
 
                 if st.button("Check Answer", key=f"btn_{selected_class}_{idx}"):
-                    if not pupil_name.strip() or not school_name.strip() or not district_name:
+                    if not clean_name or not clean_school or not district_name:
                         st.warning("Please enter your name, school name, and select a district before checking your answer.")
                     elif pick is None:
                         st.warning("Please select an option before checking your answer.")
@@ -1473,8 +1481,8 @@ def main() -> None:
                             idx=idx,
                             selected_class=selected_class,
                             pick=pick,
-                            pupil_name=pupil_name,
-                            school_name=school_name,
+                            pupil_name=clean_name,
+                            school_name=clean_school,
                             district_name=district_name,
                         )
                         st.session_state["last_checked_feedback"][q_uid] = fb_item
@@ -1495,12 +1503,10 @@ def main() -> None:
             with sub_col1:
                 submit_clicked = st.button("Submit Quiz", type="primary", use_container_width=True, key="btn_submit_quiz")
             with sub_col2:
-                if st.button("Open Dashboard & Leaderboard", use_container_width=True, key="btn_go_dashboard"):
-                    st.session_state["active_tab"] = "Dashboard"
-                    st.rerun()
+                open_dash_clicked = st.button("Open Dashboard & Leaderboard", use_container_width=True, key="btn_go_dashboard")
 
             if submit_clicked:
-                if not pupil_name.strip() or not school_name.strip() or not district_name:
+                if not clean_name or not clean_school or not district_name:
                     st.warning("Please enter your name, school name, and select a district before submitting the quiz.")
                 else:
                     answered_items: List[Dict[str, Any]] = []
@@ -1515,8 +1521,8 @@ def main() -> None:
                             idx=idx,
                             selected_class=selected_class,
                             pick=chosen,
-                            pupil_name=pupil_name,
-                            school_name=school_name,
+                            pupil_name=clean_name,
+                            school_name=clean_school,
                             district_name=district_name,
                         )
                         answered_items.append(fb_item)
@@ -1529,8 +1535,8 @@ def main() -> None:
                         total_right = sum(1 for item in answered_items if item["ok"])
                         st.session_state["submitted_quiz_summary"] = {
                             "class": selected_class,
-                            "pupil_name": pupil_name.strip(),
-                            "school_name": school_name.strip(),
+                            "pupil_name": clean_name,
+                            "school_name": clean_school,
                             "district_name": district_name,
                             "submitted_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                             "earned": total_earned,
@@ -1541,8 +1547,12 @@ def main() -> None:
                             "items": answered_items,
                         }
 
+            if open_dash_clicked:
+                st.session_state["active_tab"] = "Dashboard"
+                st.rerun()
+
             summary = st.session_state.get("submitted_quiz_summary")
-            if summary:
+            if isinstance(summary, dict):
                 st.success(
                     f"Quiz submitted for **{summary['pupil_name']}** ({summary['class']}) — "
                     f"Score: **{summary['earned']} / {summary['possible']} marks** "
@@ -1558,7 +1568,7 @@ def main() -> None:
                         render_line_by_line_explanation(rec, correct_ans=item["ans"])
 
         elif active_tab == "NCDC Syllabus":
-            active_cls = st.session_state["selected_class"]
+            active_cls = st.session_state.get("selected_class", "P6")
             st.subheader(f"{active_cls} Syllabus Overview")
             for topic_row in NCDC_MATH_CURRICULUM.get(active_cls, []):
                 with st.expander(f"{topic_row['topic']} ({topic_row['periods']} periods)", expanded=True):
@@ -1573,7 +1583,7 @@ def main() -> None:
             if st.session_state.get("sync_status"):
                 st.caption(f"Persistence Status: {st.session_state['sync_status']}")
 
-            if st.button("Reload Marks from Google Sheet"):
+            if st.button("Reload Marks from Google Sheet", key="btn_reload_sheet"):
                 load_records_from_google_sheet.clear()
                 refreshed_records, status_msg = load_records_from_google_sheet()
                 st.session_state["sync_status"] = status_msg
@@ -1581,29 +1591,31 @@ def main() -> None:
                     _sync_state_from_records(refreshed_records)
                 st.rerun()
 
-            p_info = st.session_state["pupil_info"]
+            p_info = st.session_state.get("pupil_info", {})
             if any(p_info.values()):
                 st.info(
-                    f"**Pupil:** {p_info['name'] or '—'} | "
-                    f"**School:** {p_info['school'] or '—'} | "
-                    f"**District:** {p_info['district'] or '—'}"
+                    f"**Pupil:** {p_info.get('name') or '—'} | "
+                    f"**School:** {p_info.get('school') or '—'} | "
+                    f"**District:** {p_info.get('district') or '—'}"
                 )
 
-            all_records = st.session_state["attempt_records"]
-            stats = st.session_state["quiz_score"]
+            all_records = st.session_state.get("attempt_records", [])
+            stats = st.session_state.get("quiz_score", {"attempted": 0, "correct": 0, "marks": 0})
             all_classes_max_marks = sum(
                 int(item.get("marks", 1))
                 for cls_items in QUIZ_BANK.values()
                 for item in cls_items
             )
             c1, c2, c3 = st.columns(3)
-            c1.metric("Questions Attempted", stats["attempted"])
-            c2.metric("Correct Answers", stats["correct"])
-            c3.metric("Marks Earned (P1–P7 Bank)", f"{stats['marks']} / {all_classes_max_marks}")
+            c1.metric("Questions Attempted", stats.get("attempted", 0))
+            c2.metric("Correct Answers", stats.get("correct", 0))
+            c3.metric("Marks Earned (P1–P7 Bank)", f"{stats.get('marks', 0)} / {all_classes_max_marks}")
 
             available_classes = ["All"] + class_list
             available_districts = (
-                ["All"] + sorted({r["District"] for r in all_records}) if all_records else ["All"] + UGANDA_DISTRICTS
+                ["All"] + sorted({r["District"] for r in all_records if r.get("District")})
+                if all_records
+                else ["All"] + UGANDA_DISTRICTS
             )
 
             f_col1, f_col2 = st.columns(2)
@@ -1715,14 +1727,15 @@ def main() -> None:
                     "Pick pit to sow:",
                     valid_pits,
                     format_func=lambda x: f"Pit #{x} ({game.board[0][x]})",
+                    key="omweso_pit_select",
                 )
-                rev = st.checkbox("Reverse sow (left-corner pits 0, 1, 14, 15)")
-                if st.button("Sow"):
+                rev = st.checkbox("Reverse sow (left-corner pits 0, 1, 14, 15)", key="omweso_rev_check")
+                if st.button("Sow", key="btn_omweso_sow"):
                     game.sow(0, pit_choice, reverse=rev)
                     opp_pits = [i for i in range(16) if game.board[1][i] >= 2]
                     if opp_pits:
                         game.sow(1, random.choice(opp_pits), reverse=False)
-            if st.button("Reset Board"):
+            if st.button("Reset Board", key="btn_omweso_reset"):
                 st.session_state["omweso_game"] = OmwesoGame()
             st.info(game.log[-1])
 
