@@ -619,30 +619,57 @@ class OmwesoGame:
 # 5. MAIN STREAMLIT BLOCK
 # ==============================================================================
 
+TABS = ["Take Quiz", "NCDC Syllabus", "Dashboard", "Omweso Lab"]
+
 
 def init_state() -> None:
     st.session_state.setdefault("quiz_score", {"attempted": 0, "correct": 0, "marks": 0})
     st.session_state.setdefault("answered_ids", set())
     st.session_state.setdefault("selected_class", "P6")
+    st.session_state.setdefault("active_tab", "Take Quiz")
     st.session_state.setdefault("omweso_game", OmwesoGame())
 
 
 def main() -> None:
     init_state()
-    st.title("iLearn-Uganda: NCDC Primary Mathematics (P1 – P7)")
+
+    st.markdown(
+        """
+        <style>
+        div[data-testid="stRadio"] > div[role="radiogroup"] {
+            justify-content: flex-end;
+            gap: 0.35rem;
+            background: #f4f6f9;
+            padding: 0.25rem 0.45rem;
+            border-radius: 8px;
+            border: 1px solid #dfe4ec;
+            width: fit-content;
+            margin-left: auto;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
 
     class_list = list(QUIZ_BANK.keys())
     if st.session_state["selected_class"] not in class_list:
         st.session_state["selected_class"] = "P6"
 
-    tab_quiz, tab_syllabus, tab_dashboard, tab_omweso = st.tabs([
-        "Take Quiz",
-        "NCDC Syllabus",
-        "Dashboard",
-        "Omweso Lab",
-    ])
+    header_left, header_right = st.columns([2.2, 2.8], vertical_alignment="center")
+    with header_left:
+        st.title("iLearn-Uganda: NCDC Primary Mathematics (P1 – P7)")
+    with header_right:
+        active_tab = st.radio(
+            "Navigation Tabs",
+            TABS,
+            horizontal=True,
+            label_visibility="collapsed",
+            key="active_tab",
+        )
 
-    with tab_quiz:
+    st.divider()
+
+    if active_tab == "Take Quiz":
         take_quiz_mode = st.selectbox(
             "Take Quiz",
             ["Take Quiz", "Select Class"],
@@ -694,7 +721,7 @@ def main() -> None:
                         st.error(f"Incorrect. Answer: **{q['ans']}** — {q['explanation']}")
             st.divider()
 
-    with tab_syllabus:
+    elif active_tab == "NCDC Syllabus":
         active_cls = st.session_state["selected_class"]
         st.subheader(f"{active_cls} Syllabus Overview")
         for topic_row in NCDC_MATH_CURRICULUM.get(active_cls, []):
@@ -705,7 +732,7 @@ def main() -> None:
                 st.markdown("**Learning Aids:** " + ", ".join(topic_row["learning_aids"]))
                 st.markdown("**Life Skills & Values:** " + ", ".join(topic_row["life_skills_values"]))
 
-    with tab_dashboard:
+    elif active_tab == "Dashboard":
         st.subheader("Progress & Coverage Dashboard")
         stats = st.session_state["quiz_score"]
         p6_total_marks = sum(item.get("marks", 1) for item in QUIZ_BANK["P6"])
@@ -725,7 +752,7 @@ def main() -> None:
         ]
         st.dataframe(pd.DataFrame(rows))
 
-    with tab_omweso:
+    elif active_tab == "Omweso Lab":
         st.subheader("Traditional Ugandan Omweso")
         game: OmwesoGame = st.session_state["omweso_game"]
         cols = st.columns(8)
