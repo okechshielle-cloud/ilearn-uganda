@@ -647,7 +647,57 @@ class OmwesoGame:
 
 
 # ==============================================================================
-# 5. MAIN STREAMLIT BLOCK
+# 5. LEADERBOARD & BADGES HELPERS
+# ==============================================================================
+
+BADGE_TIERS = [
+    ("Gold Badge (1st)", "🥇"),
+    ("Silver Badge (2nd)", "🥈"),
+    ("Bronze Badge (3rd)", "🥉"),
+]
+
+
+def build_leaderboard(records: List[Dict[str, Any]], limit: int = 25) -> pd.DataFrame:
+    """Aggregates pupil quiz attempt records into a ranked leaderboard up to `limit`."""
+    if not records:
+        return pd.DataFrame(
+            columns=["Rank", "Badge", "Pupil Name", "School", "District", "Class", "Correct", "Attempted", "Marks"]
+        )
+
+    df = pd.DataFrame(records)
+    grouped = (
+        df.groupby(["Pupil Name", "School", "District", "Class"], as_index=False)
+        .agg(
+            Correct=("Correct", "sum"),
+            Attempted=("Question", "count"),
+            Marks=("Marks", "sum"),
+        )
+        .sort_values(by=["Marks", "Correct", "Attempted"], ascending=[False, False, True])
+        .head(limit)
+        .reset_index(drop=True)
+    )
+
+    ranks: List[int] = []
+    badges: List[str] = []
+    for idx in range(len(grouped)):
+        rank = idx + 1
+        ranks.append(rank)
+        if rank == 1:
+            badges.append("🥇 Gold (1st)")
+        elif rank == 2:
+            badges.append("🥈 Silver (2nd)")
+        elif rank == 3:
+            badges.append("🥉 Bronze (3rd)")
+        else:
+            badges.append("—")
+
+    grouped.insert(0, "Rank", ranks)
+    grouped.insert(1, "Badge", badges)
+    return grouped
+
+
+# ==============================================================================
+# 6. MAIN STREAMLIT BLOCK
 # ==============================================================================
 
 TABS = ["Take Quiz", "NCDC Syllabus", "Dashboard", "Omweso Lab"]
@@ -674,6 +724,13 @@ def main() -> None:
             font-weight: 600;
             color: #4b5563;
             margin-bottom: 0.2rem;
+        }
+        .badge-card {
+            border: 1px solid #dfe4ec;
+            border-radius: 10px;
+            padding: 0.75rem 0.9rem;
+            background: #f9fafb;
+            margin-bottom: 0.5rem;
         }
         </style>
         """,
@@ -823,6 +880,42 @@ def main() -> None:
             c2.metric("Correct Answers", stats["correct"])
             c3.metric("Marks Earned (P6 Max)", f"{stats['marks']} / {p6_total_marks}")
 
+            leaderboard_df = build_leaderboard(st.session_state["attempt_records"], limit=25)
+
+            st.markdown("### Top Three Badges")
+            b_cols = st.columns(3)
+            for i, (badge_title, icon) in enumerate(BADGE_TIERS):
+                with b_cols[i]:
+                    if i < len(leaderboard_df):
+                        row = leaderboard_df.iloc[i]
+                        st.markdown(
+                            f"""
+                            <div class="badge-card">
+                                <div style="font-size:1.25rem;">{icon} <strong>{badge_title}</strong></div>
+                                <div style="font-size:1rem; margin-top:0.25rem;"><strong>{row['Pupil Name']}</strong></div>
+                                <div style="font-size:0.85rem; color:#4b5563;">{row['School']} ({row['District']}) • {row['Class']}</div>
+                                <div style="font-size:0.9rem; margin-top:0.35rem;"><strong>Marks: {row['Marks']}</strong> ({row['Correct']}/{row['Attempted']} correct)</div>
+                            </div>
+                            """,
+                            unsafe_allow_html=True,
+                        )
+                    else:
+                        st.markdown(
+                            f"""
+                            <div class="badge-card">
+                                <div style="font-size:1.25rem;">{icon} <strong>{badge_title}</strong></div>
+                                <div style="font-size:0.9rem; color:#6b7280; margin-top:0.35rem;">Awaiting pupil score</div>
+                            </div>
+                            """,
+                            unsafe_allow_html=True,
+                        )
+
+            st.markdown("### Top 25 Performers")
+            if not leaderboard_df.empty:
+                st.dataframe(leaderboard_df, use_container_width=True, hide_index=True)
+            else:
+                st.caption("Complete quiz questions to populate the Top 25 Performers leaderboard.")
+
             rows = [
                 {
                     "Class": cls,
@@ -832,6 +925,7 @@ def main() -> None:
                 }
                 for cls, items in NCDC_MATH_CURRICULUM.items()
             ]
+            st.markdown("### NCDC Syllabus Coverage")
             st.dataframe(pd.DataFrame(rows))
 
             if st.session_state["attempt_records"]:
