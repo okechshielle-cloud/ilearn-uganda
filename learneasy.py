@@ -27,23 +27,24 @@ def get_diagram_png(diagram_type: Optional[str]) -> Optional[bytes]:
     buf = io.BytesIO()
 
     if diagram_type == "venn":
-        fig, ax = plt.subplots(figsize=(5.8, 4.2))
+        fig, ax = plt.subplots(figsize=(5.8, 4.4))
         ax.set_xlim(0, 10)
-        ax.set_ylim(0, 7.5)
+        ax.set_ylim(0, 7.6)
         ax.set_aspect("equal")
         ax.axis("off")
 
         univ = patches.Rectangle((0.6, 0.5), 8.8, 6.2, linewidth=2, edgecolor="black", facecolor="white")
         ax.add_patch(univ)
-        ax.text(0.6, 6.85, "E", fontsize=14, fontweight="bold")
+        ax.text(0.6, 6.9, "E", fontsize=14, fontweight="bold")
 
         circle_a = patches.Circle((3.9, 3.6), 2.1, linewidth=2, edgecolor="black", facecolor="none")
         circle_b = patches.Circle((6.1, 3.6), 2.1, linewidth=2, edgecolor="black", facecolor="none")
         ax.add_patch(circle_a)
         ax.add_patch(circle_b)
 
-        ax.text(2.7, 5.1, "A", fontsize=13, fontweight="bold")
-        ax.text(7.1, 5.1, "B", fontsize=13, fontweight="bold")
+        # Capital letters A and B positioned on top of each circle
+        ax.text(3.9, 5.95, "A", fontsize=13, fontweight="bold", ha="center", va="bottom")
+        ax.text(6.1, 5.95, "B", fontsize=13, fontweight="bold", ha="center", va="bottom")
 
         ax.text(2.5, 4.0, "e", fontsize=13)
         ax.text(2.8, 2.5, "f", fontsize=13)
