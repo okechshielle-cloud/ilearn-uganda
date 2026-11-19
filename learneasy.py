@@ -2,6 +2,7 @@ import io
 from typing import Any, Dict, List, Optional
 
 import matplotlib
+
 matplotlib.use("Agg")
 import matplotlib.patches as patches
 import matplotlib.pyplot as plt
@@ -42,7 +43,7 @@ def get_diagram_png(diagram_type: str) -> Optional[bytes]:
         ax.text(8.5, 1.0, "g", fontsize=13)
 
         plt.tight_layout()
-        fig.savefig(buf, format="png", dpi=180, bbox_inches="tight")
+        fig.savefig(buf, format="png", dpi=160, bbox_inches="tight")
         plt.close(fig)
         return buf.getvalue()
 
@@ -56,7 +57,7 @@ def get_diagram_png(diagram_type: str) -> Optional[bytes]:
         table.set_fontsize(11)
         table.scale(1.1, 1.8)
         plt.tight_layout()
-        fig.savefig(buf, format="png", dpi=180, bbox_inches="tight")
+        fig.savefig(buf, format="png", dpi=160, bbox_inches="tight")
         plt.close(fig)
         return buf.getvalue()
 
@@ -85,7 +86,7 @@ def get_diagram_png(diagram_type: str) -> Optional[bytes]:
         ax.text(7.0, 5.25, "6 m", fontsize=11, ha="center")
 
         plt.tight_layout()
-        fig.savefig(buf, format="png", dpi=180, bbox_inches="tight")
+        fig.savefig(buf, format="png", dpi=160, bbox_inches="tight")
         plt.close(fig)
         return buf.getvalue()
 
@@ -272,7 +273,7 @@ def render_p6_quiz_tab() -> None:
         if q.get("diagram_type"):
             png = get_diagram_png(q["diagram_type"])
             if png:
-                st.image(png, caption=f"{q['topic']} Diagram", width=480)
+                st.image(png, caption=f"{q['topic']} Diagram")
 
         choice = st.radio("Choose your answer:", q["options"], key=f"p6_opt_{i}")
         if st.button("Check Answer", key=f"p6_chk_{i}"):
@@ -299,5 +300,4 @@ def render_p6_dashboard_card() -> None:
     st.caption(f"Attempted: {stats['attempted']}/{len(P6_QUESTIONS)} | Correct: {stats['correct']}")
     st.dataframe(
         pd.DataFrame([{"ID": q["id"], "Topic": q["topic"], "Marks": q["marks"]} for q in P6_QUESTIONS]),
-        use_container_width=True,
     )
