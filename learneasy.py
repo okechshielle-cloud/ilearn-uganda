@@ -663,106 +663,110 @@ def main() -> None:
     st.title("iLearn-Uganda: NCDC Primary Mathematics (P1 – P7)")
     st.divider()
 
-    if active_tab == "Take Quiz":
-        selected_class = st.selectbox(
-            "Select Class",
-            class_list,
-            key="selected_class",
-            help="Choose P1 through P7 to load that class's mathematics quiz.",
-        )
-        st.subheader(f"{selected_class} Mathematics Quiz")
+    # Align opened tab content three-quarters (3/4) to the right
+    _, tab_content_col = st.columns([1, 3])
 
-        questions = QUIZ_BANK.get(selected_class, [])
-        for idx, q in enumerate(questions):
-            st.markdown(f"**{q['question']}** *({q.get('marks', 1)} mark(s))*")
-
-            png = get_diagram_png(q.get("diagram_type"))
-            if png:
-                st.image(png, caption="Diagram")
-
-            pick = st.radio(
-                "Select answer:",
-                q["options"],
-                index=None,
-                key=f"q_{selected_class}_{idx}",
+    with tab_content_col:
+        if active_tab == "Take Quiz":
+            selected_class = st.selectbox(
+                "Select Class",
+                class_list,
+                key="selected_class",
+                help="Choose P1 through P7 to load that class's mathematics quiz.",
             )
-            if st.button("Check Answer", key=f"btn_{selected_class}_{idx}"):
-                if pick is None:
-                    st.warning("Please select an option before checking your answer.")
-                else:
-                    q_uid = f"{selected_class}:{q['id']}"
-                    ok = pick == q["ans"]
-                    if q_uid not in st.session_state["answered_ids"]:
-                        st.session_state["answered_ids"].add(q_uid)
-                        st.session_state["quiz_score"]["attempted"] += 1
-                        if ok:
-                            st.session_state["quiz_score"]["correct"] += 1
-                            st.session_state["quiz_score"]["marks"] += q.get("marks", 1)
+            st.subheader(f"{selected_class} Mathematics Quiz")
 
-                    if ok:
-                        st.success(f"Correct! {q['explanation']}")
+            questions = QUIZ_BANK.get(selected_class, [])
+            for idx, q in enumerate(questions):
+                st.markdown(f"**{q['question']}** *({q.get('marks', 1)} mark(s))*")
+
+                png = get_diagram_png(q.get("diagram_type"))
+                if png:
+                    st.image(png, caption="Diagram")
+
+                pick = st.radio(
+                    "Select answer:",
+                    q["options"],
+                    index=None,
+                    key=f"q_{selected_class}_{idx}",
+                )
+                if st.button("Check Answer", key=f"btn_{selected_class}_{idx}"):
+                    if pick is None:
+                        st.warning("Please select an option before checking your answer.")
                     else:
-                        st.error(f"Incorrect. Answer: **{q['ans']}** — {q['explanation']}")
-            st.divider()
+                        q_uid = f"{selected_class}:{q['id']}"
+                        ok = pick == q["ans"]
+                        if q_uid not in st.session_state["answered_ids"]:
+                            st.session_state["answered_ids"].add(q_uid)
+                            st.session_state["quiz_score"]["attempted"] += 1
+                            if ok:
+                                st.session_state["quiz_score"]["correct"] += 1
+                                st.session_state["quiz_score"]["marks"] += q.get("marks", 1)
 
-    elif active_tab == "NCDC Syllabus":
-        active_cls = st.session_state["selected_class"]
-        st.subheader(f"{active_cls} Syllabus Overview")
-        for topic_row in NCDC_MATH_CURRICULUM.get(active_cls, []):
-            with st.expander(f"{topic_row['topic']} ({topic_row['periods']} periods)", expanded=True):
-                st.caption(topic_row["curriculum_type"])
-                st.write(topic_row["learning_outcomes"])
-                st.markdown("**Sub-topics:** " + ", ".join(topic_row["sub_topics"]))
-                st.markdown("**Learning Aids:** " + ", ".join(topic_row["learning_aids"]))
-                st.markdown("**Life Skills & Values:** " + ", ".join(topic_row["life_skills_values"]))
+                        if ok:
+                            st.success(f"Correct! {q['explanation']}")
+                        else:
+                            st.error(f"Incorrect. Answer: **{q['ans']}** — {q['explanation']}")
+                st.divider()
 
-    elif active_tab == "Dashboard":
-        st.subheader("Progress & Coverage Dashboard")
-        stats = st.session_state["quiz_score"]
-        p6_total_marks = sum(item.get("marks", 1) for item in QUIZ_BANK["P6"])
-        c1, c2, c3 = st.columns(3)
-        c1.metric("Questions Attempted", stats["attempted"])
-        c2.metric("Correct Answers", stats["correct"])
-        c3.metric("Marks Earned (P6 Max)", f"{stats['marks']} / {p6_total_marks}")
+        elif active_tab == "NCDC Syllabus":
+            active_cls = st.session_state["selected_class"]
+            st.subheader(f"{active_cls} Syllabus Overview")
+            for topic_row in NCDC_MATH_CURRICULUM.get(active_cls, []):
+                with st.expander(f"{topic_row['topic']} ({topic_row['periods']} periods)", expanded=True):
+                    st.caption(topic_row["curriculum_type"])
+                    st.write(topic_row["learning_outcomes"])
+                    st.markdown("**Sub-topics:** " + ", ".join(topic_row["sub_topics"]))
+                    st.markdown("**Learning Aids:** " + ", ".join(topic_row["learning_aids"]))
+                    st.markdown("**Life Skills & Values:** " + ", ".join(topic_row["life_skills_values"]))
 
-        rows = [
-            {
-                "Class": cls,
-                "Model": items[0]["curriculum_type"],
-                "Periods": sum(x["periods"] for x in items),
-                "Quiz Questions": len(QUIZ_BANK.get(cls, [])),
-            }
-            for cls, items in NCDC_MATH_CURRICULUM.items()
-        ]
-        st.dataframe(pd.DataFrame(rows))
+        elif active_tab == "Dashboard":
+            st.subheader("Progress & Coverage Dashboard")
+            stats = st.session_state["quiz_score"]
+            p6_total_marks = sum(item.get("marks", 1) for item in QUIZ_BANK["P6"])
+            c1, c2, c3 = st.columns(3)
+            c1.metric("Questions Attempted", stats["attempted"])
+            c2.metric("Correct Answers", stats["correct"])
+            c3.metric("Marks Earned (P6 Max)", f"{stats['marks']} / {p6_total_marks}")
 
-    elif active_tab == "Omweso Lab":
-        st.subheader("Traditional Ugandan Omweso")
-        game: OmwesoGame = st.session_state["omweso_game"]
-        cols = st.columns(8)
-        for c in range(8):
-            cols[c].metric(f"Outer {c + 1}", game.board[0][c])
-        inner_cols = st.columns(8)
-        for c in range(8):
-            idx = 15 - c
-            inner_cols[c].metric(f"Inner {c + 1} [#{idx}]", game.board[0][idx])
+            rows = [
+                {
+                    "Class": cls,
+                    "Model": items[0]["curriculum_type"],
+                    "Periods": sum(x["periods"] for x in items),
+                    "Quiz Questions": len(QUIZ_BANK.get(cls, [])),
+                }
+                for cls, items in NCDC_MATH_CURRICULUM.items()
+            ]
+            st.dataframe(pd.DataFrame(rows))
 
-        valid_pits = [i for i in range(16) if game.board[0][i] >= 2]
-        if valid_pits:
-            pit_choice = st.selectbox(
-                "Pick pit to sow:",
-                valid_pits,
-                format_func=lambda x: f"Pit #{x} ({game.board[0][x]})",
-            )
-            rev = st.checkbox("Reverse sow (left-corner pits 0, 1, 14, 15)")
-            if st.button("Sow"):
-                game.sow(0, pit_choice, reverse=rev)
-                opp_pits = [i for i in range(16) if game.board[1][i] >= 2]
-                if opp_pits:
-                    game.sow(1, random.choice(opp_pits), reverse=False)
-        if st.button("Reset Board"):
-            st.session_state["omweso_game"] = OmwesoGame()
-        st.info(game.log[-1])
+        elif active_tab == "Omweso Lab":
+            st.subheader("Traditional Ugandan Omweso")
+            game: OmwesoGame = st.session_state["omweso_game"]
+            cols = st.columns(8)
+            for c in range(8):
+                cols[c].metric(f"Outer {c + 1}", game.board[0][c])
+            inner_cols = st.columns(8)
+            for c in range(8):
+                idx = 15 - c
+                inner_cols[c].metric(f"Inner {c + 1} [#{idx}]", game.board[0][idx])
+
+            valid_pits = [i for i in range(16) if game.board[0][i] >= 2]
+            if valid_pits:
+                pit_choice = st.selectbox(
+                    "Pick pit to sow:",
+                    valid_pits,
+                    format_func=lambda x: f"Pit #{x} ({game.board[0][x]})",
+                )
+                rev = st.checkbox("Reverse sow (left-corner pits 0, 1, 14, 15)")
+                if st.button("Sow"):
+                    game.sow(0, pit_choice, reverse=rev)
+                    opp_pits = [i for i in range(16) if game.board[1][i] >= 2]
+                    if opp_pits:
+                        game.sow(1, random.choice(opp_pits), reverse=False)
+            if st.button("Reset Board"):
+                st.session_state["omweso_game"] = OmwesoGame()
+            st.info(game.log[-1])
 
 
 if __name__ == "__main__":
