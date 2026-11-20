@@ -1379,28 +1379,28 @@ f'<div style="font-size:0.74rem; color:#374151; margin-top:0.3rem;">{margin_them
 unsafe_allow_html=True,
         )
 
-    with header_col:
-        st.markdown(
-            '<div class="ug-title-banner">'
-            '<div class="ug-flag-stripes" title="Uganda Flag Colors: Black, Yellow, Red">'
-            '<div class="ug-stripe-black"></div>'
-            '<div class="ug-stripe-yellow"></div>'
-            '<div class="ug-stripe-red"></div>'
-            "</div>"
-            "<div>"
-            '<h1 class="ug-main-heading">'
-            '<span class="ug-brand-black">iLearn</span>'
-            '<span class="ug-brand-yellow">-</span>'
-            '<span class="ug-brand-red">Uganda</span>'
-            ": NCDC Primary Mathematics (P1 – P7)"
-            "</h1>"
-            '<div style="font-size:0.88rem; color:#374151; margin-top:0.2rem;">'
-            "Growing bright minds from the roots up • Interactive Practice, Syllabus &amp; Omweso Lab"
-            "</div>"
-            "</div>"
-            "</div>",
-            unsafe_allow_html=True,
-        )
+with header_col:
+st.markdown(
+    '<div class="ug-title-banner">'
+    '<div class="ug-flag-stripes" title="Uganda Flag Colors: Black, Yellow, Red">'
+    '<div class="ug-stripe-black"></div>'
+    '<div class="ug-stripe-yellow"></div>'
+    '<div class="ug-stripe-red"></div>'
+    "</div>"
+    "<div>"
+    '<h1 class="ug-main-heading">'
+    '<span class="ug-brand-black">iLearn</span>'
+    '<span class="ug-brand-yellow">-</span>'
+    '<span class="ug-brand-red">Uganda</span>'
+    ": NCDC Primary Mathematics (P1 – P7)"
+    "</h1>"
+    '<div style="font-size:0.88rem; color:#374151; margin-top:0.2rem;">'
+    "Growing bright minds from the roots up • Interactive Practice, Syllabus &amp; Omweso Lab"
+    "</div>"
+    "</div>"
+    "</div>",
+    unsafe_allow_html=True,
+)
 
     st.divider()
 
