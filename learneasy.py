@@ -1371,7 +1371,7 @@ active_tab = st.selectbox(
     label_visibility="collapsed",
     key="active_tab",
 )
-        margin_theme = TAB_MARGIN_STYLES.get(active_tab, TAB_MARGIN_STYLES["Take Quiz"])
+margin_theme = TAB_MARGIN_STYLES.get(active_tab, TAB_MARGIN_STYLES["Take Quiz"])
         st.markdown(
             f'<div class="ug-margin-badge">● {active_tab}</div>'
             f'<div style="font-size:0.74rem; color:#374151; margin-top:0.3rem;">{margin_theme["note"]}</div>'
