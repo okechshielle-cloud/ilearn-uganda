@@ -1379,8 +1379,8 @@ f'<div style="font-size:0.74rem; color:#374151; margin-top:0.3rem;">{margin_them
 unsafe_allow_html=True,
         )
 
-with header_col:
-st.markdown(
+ with header_col:
+ st.markdown(
     '<div class="ug-title-banner">'
     '<div class="ug-flag-stripes" title="Uganda Flag Colors: Black, Yellow, Red">'
     '<div class="ug-stripe-black"></div>'
