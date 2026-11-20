@@ -1357,13 +1357,20 @@ def main() -> None:
             )
         st.caption("NCDC Primary Maths Hub (P1–P7)")
         st.markdown('<div class="top-left-tab-label">Tab Selector</div>', unsafe_allow_html=True)
-        active_tab = st.selectbox(
-            "Tab Selector",
-            TABS,
-            index=TABS.index(active_tab),
-            label_visibility="collapsed",
-            key="active_tab",
-        )
+# Get tab from button click, or keep current tab
+requested_tab = st.query_params.get("tab", None)
+if requested_tab in TABS:
+    default_tab = requested_tab
+else:
+    default_tab = st.session_state.get("active_tab", TABS[0])
+
+active_tab = st.selectbox(
+    "Tab Selector",
+    TABS,
+    index=TABS.index(default_tab),
+    label_visibility="collapsed",
+    key="active_tab",
+)
         margin_theme = TAB_MARGIN_STYLES.get(active_tab, TAB_MARGIN_STYLES["Take Quiz"])
         st.markdown(
             f'<div class="ug-margin-badge">● {active_tab}</div>'
@@ -1548,7 +1555,7 @@ def main() -> None:
                         }
 
             if open_dash_clicked:
-                st.session_state["active_tab"] = "Dashboard"
+                st.query_params["tab"] = "Dashboard"
                 st.rerun()
 
             summary = st.session_state.get("submitted_quiz_summary")
