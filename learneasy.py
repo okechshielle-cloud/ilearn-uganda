@@ -214,7 +214,7 @@ UGANDA_DISTRICTS: List[str] = sorted([
     "Buhweju", "Buliisa", "Bundibugyo", "Bunyangabu", "Bushenyi", "Hoima",
     "Ibanda", "Isingiro", "Kabale", "Kabarole", "Kagadi", "Kakumiro",
     "Kamwenge", "Kanungu", "Kasese", "Kazo", "Kibaale", "Kikuube",
-    "Kiruhura", "Kiryandongo", "Kisoro", "Kitagwenda", "Kyankwanzi", "Kyegegwa",
+    "Kiruhura", "Kiryandongo", "Kisoro", "Kitagwenda", "Kyegegwa",
     "Kyenjojo", "Masindi", "Mbarara", "Mitooma", "Ntoroko", "Ntungamo",
     "Rubirizi", "Rukiga", "Rukungiri", "Rwampara", "Sheema",
 ])
@@ -1320,6 +1320,7 @@ def main() -> None:
         ".ug-stripe-yellow { flex: 1; background-color: #FCDC04; }"
         ".ug-stripe-red { flex: 1; background-color: #D90000; }"
         ".ug-main-heading { font-size: 2rem; font-weight: 700; line-height: 1.2; margin: 0; }"
+        ".ug-subtitle { font-size: 0.88rem; color: #374151; margin-top: 0.2rem; }"
         ".ug-brand-black { color: #000000; }"
         ".ug-brand-yellow { color: #C9A800; }"
         ".ug-brand-red { color: #D90000; }"
@@ -1346,6 +1347,7 @@ def main() -> None:
 
     logo_kind, logo_val = get_logo_source()
     left_bar_col, header_col = st.columns([1.6, 5.4])
+
     with left_bar_col:
         st.markdown('<div class="ug-margin-rail">', unsafe_allow_html=True)
         if logo_kind == "file":
@@ -1357,49 +1359,49 @@ def main() -> None:
             )
         st.caption("NCDC Primary Maths Hub (P1–P7)")
         st.markdown('<div class="top-left-tab-label">Tab Selector</div>', unsafe_allow_html=True)
-# Get tab from button click, or keep current tab
-requested_tab = st.query_params.get("tab", None)
-if requested_tab in TABS:
-    default_tab = requested_tab
-else:
-    default_tab = st.session_state.get("active_tab", TABS[0])
 
-active_tab = st.selectbox(
-    "Tab Selector",
-    TABS,
-    index=TABS.index(default_tab),
-    label_visibility="collapsed",
-    key="active_tab",
-)
-margin_theme = TAB_MARGIN_STYLES.get(active_tab, TAB_MARGIN_STYLES["Take Quiz"])
-st.markdown(
-f'<div class="ug-margin-badge">● {active_tab}</div>'
-f'<div style="font-size:0.74rem; color:#374151; margin-top:0.3rem;">{margin_theme["note"]}</div>'
-"</div>",
-unsafe_allow_html=True,
+        requested_tab = st.query_params.get("tab", None)
+        if requested_tab in TABS:
+            default_tab = requested_tab
+        else:
+            default_tab = st.session_state.get("active_tab", TABS[0])
+
+        active_tab = st.selectbox(
+            "Tab Selector",
+            TABS,
+            index=TABS.index(default_tab),
+            label_visibility="collapsed",
+            key="active_tab",
+        )
+        margin_theme = TAB_MARGIN_STYLES.get(active_tab, TAB_MARGIN_STYLES["Take Quiz"])
+        st.markdown(
+            f'<div class="ug-margin-badge">● {active_tab}</div>'
+            f'<div style="font-size:0.74rem; color:#374151; margin-top:0.3rem;">{margin_theme["note"]}</div>'
+            "</div>",
+            unsafe_allow_html=True,
         )
 
- with header_col:
-    st.markdown(
-        """
-        <div class="ug-title-banner">
-            <div class="ug-flag-stripes" title="Uganda Flag Colors: Black, Yellow, Red">
-                <div class="ug-stripe-black"></div>
-                <div class="ug-stripe-yellow"></div>
-                <div class="ug-stripe-red"></div>
-            </div>
-            <div>
-                <h1 class="ug-main-heading">
-                    <span class="ug-brand-black">iLearn</span><span class="ug-brand-yellow">-</span><span class="ug-brand-red">Uganda</span>: NCDC Primary Mathematics (P1 – P7)
-                </h1>
-                <div class="ug-subtitle">
-                    Growing bright minds from the roots up • Interactive Practice, Syllabus &amp; Omweso Lab
+    with header_col:
+        st.markdown(
+            """
+            <div class="ug-title-banner">
+                <div class="ug-flag-stripes" title="Uganda Flag Colors: Black, Yellow, Red">
+                    <div class="ug-stripe-black"></div>
+                    <div class="ug-stripe-yellow"></div>
+                    <div class="ug-stripe-red"></div>
+                </div>
+                <div>
+                    <h1 class="ug-main-heading">
+                        <span class="ug-brand-black">iLearn</span><span class="ug-brand-yellow">-</span><span class="ug-brand-red">Uganda</span>: NCDC Primary Mathematics (P1 – P7)
+                    </h1>
+                    <div class="ug-subtitle">
+                        Growing bright minds from the roots up • Interactive Practice, Syllabus &amp; Omweso Lab
+                    </div>
                 </div>
             </div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+            """,
+            unsafe_allow_html=True,
+        )
 
     st.divider()
 
