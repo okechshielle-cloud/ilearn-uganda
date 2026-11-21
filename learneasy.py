@@ -15,11 +15,10 @@ import matplotlib.patches as patches
 import matplotlib.pyplot as plt
 import pandas as pd
 import streamlit as st
-import streamlit.components.v1 as components
 
 st.set_page_config(page_title="iLearn-Uganda | Primary Maths", layout="wide")
 
-TABS = ["Take Quiz", "NCDC Syllabus", "Dashboard", "Omweso Lab"]
+TABS = ["Take Quiz", "NCDC Syllabus", "Dashboard", "Checkers Lab"]
 
 SPREADSHEET_ID = "12Kv-84apVPF5BRDF84wiWJ5l3j8X9rAYHpu3A9KAhWo"
 QUIZ_LOG_SHEET_NAME = "Quiz_Marks_Log"
@@ -77,12 +76,12 @@ TAB_MARGIN_STYLES: Dict[str, Dict[str, str]] = {
         "pill_text": "#854d0e",
         "note": "Standings & Analytics Margin",
     },
-    "Omweso Lab": {
+    "Checkers Lab": {
         "accent": "rgba(185, 28, 28, 0.72)",
         "border_tint": "rgba(185, 28, 28, 0.22)",
         "pill_bg": "rgba(254, 226, 226, 0.80)",
         "pill_text": "#991b1b",
-        "note": "3D Strategy Board Margin",
+        "note": "Strategy Board Margin",
     },
 }
 
@@ -1139,327 +1138,142 @@ def record_single_answer(
 
 
 # ==============================================================================
-# 5. TRADITIONAL UGANDAN OMWESO ENGINE & 3D BOARD RENDERER
+# 5. CHECKERS ENGINE (8x8 BOARD)
 # ==============================================================================
 
 
-class OmwesoGame:
+class CheckersGame:
+    """Standard 8x8 Checkers engine:
+    1  = Player 1 piece (moves up: row decreasing)
+    2  = Player 1 king
+    -1 = Player 2 piece (moves down: row increasing)
+    -2 = Player 2 king
+    """
+
     def __init__(self) -> None:
-        self.board = [
-            [4] * 8 + [0] * 8,
-            [4] * 8 + [0] * 8,
-        ]
-        self.turn = 0
-        self.log = ["Board initialized with 32 seeds per player."]
+        self.board: List[List[int]] = [[0] * 8 for _ in range(8)]
+        for r in range(3):
+            for c in range(8):
+                if (r + c) % 2 == 1:
+                    self.board[r][c] = -1
+        for r in range(5, 8):
+            for c in range(8):
+                if (r + c) % 2 == 1:
+                    self.board[r][c] = 1
+        self.turn: int = 1  # 1 for Player 1, -1 for Player 2
+        self.must_jump_from: Optional[Tuple[int, int]] = None
+        self.log: List[str] = ["Checkers board ready (12 pieces per side). Player 1 moves first."]
 
-    def get_opposite_enemy_pits(self, inner_idx: int) -> Tuple[int, int]:
-        col_from_left = 15 - inner_idx
-        return 8 + col_from_left, 7 - col_from_left
+    def _is_own_piece(self, val: int, player: int) -> bool:
+        return (player == 1 and val > 0) or (player == -1 and val < 0)
 
-    def sow(self, player: int, pit_idx: int, reverse: bool = False) -> bool:
-        seeds = self.board[player][pit_idx]
-        if seeds < 2:
-            self.log.append("Choose a pit with at least 2 seeds.")
+    def _is_enemy_piece(self, val: int, player: int) -> bool:
+        return (player == 1 and val < 0) or (player == -1 and val > 0)
+
+    def _move_dirs(self, piece: int) -> List[Tuple[int, int]]:
+        if abs(piece) == 2:
+            return [(-1, -1), (-1, 1), (1, -1), (1, 1)]
+        if piece > 0:
+            return [(-1, -1), (-1, 1)]
+        return [(1, -1), (1, 1)]
+
+    def get_piece_moves(self, r: int, c: int) -> List[Tuple[int, int, Optional[Tuple[int, int]]]]:
+        """Returns list of (dest_r, dest_c, captured_coord_or_None)."""
+        if not (0 <= r < 8 and 0 <= c < 8):
+            return []
+        piece = self.board[r][c]
+        if piece == 0:
+            return []
+
+        player = 1 if piece > 0 else -1
+        jumps: List[Tuple[int, int, Optional[Tuple[int, int]]]] = []
+        steps: List[Tuple[int, int, Optional[Tuple[int, int]]]] = []
+
+        for dr, dc in self._move_dirs(piece):
+            mr, mc = r + dr, c + dc
+            jr, jc = r + 2 * dr, c + 2 * dc
+            if 0 <= jr < 8 and 0 <= jc < 8:
+                if self._is_enemy_piece(self.board[mr][mc], player) and self.board[jr][jc] == 0:
+                    jumps.append((jr, jc, (mr, mc)))
+            if 0 <= mr < 8 and 0 <= mc < 8 and self.board[mr][mc] == 0:
+                steps.append((mr, mc, None))
+
+        return jumps if jumps else steps
+
+    def get_all_player_moves(self, player: int) -> Dict[Tuple[int, int], List[Tuple[int, int, Optional[Tuple[int, int]]]]]:
+        """Returns { (r, c): [(dr, dc, cap_rc), ...] } for `player`, enforcing mandatory jumps."""
+        if self.must_jump_from is not None:
+            jr, jc = self.must_jump_from
+            p_moves = [m for m in self.get_piece_moves(jr, jc) if m[2] is not None]
+            return {(jr, jc): p_moves} if p_moves else {}
+
+        all_jumps: Dict[Tuple[int, int], List[Tuple[int, int, Optional[Tuple[int, int]]]]] = {}
+        all_steps: Dict[Tuple[int, int], List[Tuple[int, int, Optional[Tuple[int, int]]]]] = {}
+
+        for r in range(8):
+            for c in range(8):
+                if self._is_own_piece(self.board[r][c], player):
+                    moves = self.get_piece_moves(r, c)
+                    if not moves:
+                        continue
+                    jumps = [m for m in moves if m[2] is not None]
+                    if jumps:
+                        all_jumps[(r, c)] = jumps
+                    else:
+                        all_steps[(r, c)] = moves
+
+        return all_jumps if all_jumps else all_steps
+
+    def make_move(self, src: Tuple[int, int], dst: Tuple[int, int]) -> bool:
+        sr, sc = src
+        dr, dc = dst
+        legal_map = self.get_all_player_moves(self.turn)
+        piece_moves = legal_map.get(src, [])
+        chosen = next((m for m in piece_moves if (m[0], m[1]) == (dr, dc)), None)
+        if chosen is None:
+            self.log.append(f"Illegal move from ({sr}, {sc}) to ({dr}, {dc}).")
             return False
 
-        if reverse and pit_idx not in {0, 1, 6, 7, 8, 9, 14, 15}:
-            reverse = False
+        _, _, captured = chosen
+        piece = self.board[sr][sc]
+        player = 1 if piece > 0 else -1
+        self.board[sr][sc] = 0
+        self.board[dr][dc] = piece
 
-        self.board[player][pit_idx] = 0
-        curr = pit_idx
-        step = -1 if reverse else 1
-        opp = 1 - player
+        if captured is not None:
+            cr, cc = captured
+            self.board[cr][cc] = 0
 
-        while True:
-            while seeds > 0:
-                curr = (curr + step) % 16
-                self.board[player][curr] += 1
-                seeds -= 1
+        # King promotion
+        crowned = False
+        if player == 1 and dr == 0 and self.board[dr][dc] == 1:
+            self.board[dr][dc] = 2
+            crowned = True
+        elif player == -1 and dr == 7 and self.board[dr][dc] == -1:
+            self.board[dr][dc] = -2
+            crowned = True
 
-            if self.board[player][curr] > 1:
-                if 8 <= curr <= 15:
-                    opp_inner, opp_outer = self.get_opposite_enemy_pits(curr)
-                    if self.board[opp][opp_inner] > 0 and self.board[opp][opp_outer] > 0:
-                        captured = self.board[opp][opp_inner] + self.board[opp][opp_outer]
-                        self.board[opp][opp_inner] = 0
-                        self.board[opp][opp_outer] = 0
-                        seeds = captured
-                        self.log.append(f"Player {player + 1} captured {captured} seeds!")
-                        continue
-                seeds = self.board[player][curr]
-                self.board[player][curr] = 0
-            else:
-                break
+        # Check multi-jump continuation
+        if captured is not None and not crowned:
+            follow_jumps = [m for m in self.get_piece_moves(dr, dc) if m[2] is not None]
+            if follow_jumps:
+                self.must_jump_from = (dr, dc)
+                p_label = "Player 1" if player == 1 else "Player 2"
+                self.log.append(f"{p_label} jumped to ({dr}, {dc}) — continue jumping with ({dr}, {dc})!")
+                return True
 
-        self.turn = opp
+        self.must_jump_from = None
+        p_label = "Player 1" if player == 1 else "Player 2"
+        action_desc = f"captured {captured} and moved" if captured else "moved"
+        king_note = " (Crowned King!)" if crowned else ""
+        self.log.append(f"{p_label} {action_desc} from ({sr}, {sc}) to ({dr}, {dc}){king_note}.")
+        self.turn = -player
         return True
 
-
-def render_omweso_3d_board(game: OmwesoGame, selected_pit: Optional[int] = None, height: int = 500) -> None:
-    """Renders an interactive 3D wooden Omweso board with stacked seeds using Three.js."""
-    board_payload = json.dumps({
-        "p1": game.board[0],
-        "p2": game.board[1],
-        "selectedPit": selected_pit,
-        "lastLog": game.log[-1] if game.log else "",
-    })
-
-    html_code = f"""
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <meta charset="utf-8" />
-      <style>
-        body {{
-          margin: 0;
-          padding: 0;
-          background: transparent;
-          font-family: system-ui, -apple-system, sans-serif;
-          overflow: hidden;
-        }}
-        #omweso-3d-wrap {{
-          position: relative;
-          width: 100%;
-          height: {height}px;
-          border-radius: 16px;
-          overflow: hidden;
-          border: 1px solid rgba(6, 78, 44, 0.22);
-          background: linear-gradient(160deg, #1b2820 0%, #0d1611 100%);
-        }}
-        .hud-bar {{
-          position: absolute;
-          top: 10px;
-          left: 12px;
-          right: 12px;
-          display: flex;
-          flex-wrap: wrap;
-          justify-content: space-between;
-          align-items: center;
-          gap: 8px;
-          z-index: 5;
-          pointer-events: none;
-        }}
-        .hud-pill {{
-          pointer-events: auto;
-          background: rgba(15, 25, 19, 0.82);
-          color: #f8fafc;
-          border: 1px solid rgba(252, 220, 4, 0.35);
-          padding: 5px 10px;
-          border-radius: 999px;
-          font-size: 12px;
-          backdrop-filter: blur(6px);
-        }}
-        .cam-btn {{
-          pointer-events: auto;
-          cursor: pointer;
-          background: rgba(19, 166, 91, 0.9);
-          color: #ffffff;
-          border: none;
-          padding: 5px 10px;
-          border-radius: 8px;
-          font-size: 12px;
-          font-weight: 600;
-        }}
-        .cam-btn:hover {{ background: #0d7c47; }}
-        .legend-bar {{
-          position: absolute;
-          bottom: 10px;
-          left: 12px;
-          right: 12px;
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          color: #e2e8f0;
-          font-size: 12px;
-          background: rgba(15, 25, 19, 0.78);
-          padding: 6px 12px;
-          border-radius: 10px;
-          z-index: 5;
-        }}
-      </style>
-    </head>
-    <body>
-      <div id="omweso-3d-wrap">
-        <div class="hud-bar">
-          <div class="hud-pill" id="pit-readout">Drag to orbit • Scroll to zoom • Hover a pit to inspect</div>
-          <div style="display:flex; gap:6px;">
-            <button class="cam-btn" onclick="setView('p1')">Player 1 View</button>
-            <button class="cam-btn" onclick="setView('top')">Top-Down</button>
-            <button class="cam-btn" onclick="setView('overview')">3D Overview</button>
-          </div>
-        </div>
-        <div class="legend-bar">
-          <span><strong>Gold Seeds:</strong> Player 1 (You) • <strong>Crimson/Amber Seeds:</strong> Player 2</span>
-          <span id="status-text"></span>
-        </div>
-      </div>
-
-      <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
-      <script>
-        const DATA = {board_payload};
-        document.getElementById("status-text").textContent = DATA.lastLog || "";
-
-        const container = document.getElementById("omweso-3d-wrap");
-        const scene = new THREE.Scene();
-
-        const camera = new THREE.PerspectiveCamera(42, container.clientWidth / container.clientHeight, 0.1, 100);
-        const views = {{
-          overview: {{ pos: [0, 8.2, 9.2], target: [0, 0, 0] }},
-          p1: {{ pos: [0, 5.4, 8.8], target: [0, 0, 0.8] }},
-          top: {{ pos: [0, 12.2, 0.01], target: [0, 0, 0] }},
-        }};
-        let activeView = views.overview;
-        camera.position.set(...activeView.pos);
-        camera.lookAt(...activeView.target);
-
-        const renderer = new THREE.WebGLRenderer({{ antialias: true, alpha: true }});
-        renderer.setSize(container.clientWidth, container.clientHeight);
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-        renderer.shadowMap.enabled = true;
-        scene.add(new THREE.AmbientLight(0xffffff, 0.72));
-
-        const keyLight = new THREE.DirectionalLight(0xfff5d6, 1.15);
-        keyLight.position.set(6, 12, 8);
-        keyLight.castShadow = true;
-        scene.add(keyLight);
-
-        const rimLight = new THREE.DirectionalLight(0x7dd3fc, 0.45);
-        rimLight.position.set(-7, 6, -6);
-        scene.add(rimLight);
-
-        const boardGroup = new THREE.Group();
-        scene.add(boardGroup);
-
-        const woodMat = new THREE.MeshStandardMaterial({{ color: 0x5c3619, roughness: 0.55, metalness: 0.08 }});
-        const rimMat = new THREE.MeshStandardMaterial({{ color: 0x3b200c, roughness: 0.65 }});
-        const pitMat = new THREE.MeshStandardMaterial({{ color: 0x241206, roughness: 0.85 }});
-        const selMat = new THREE.MeshStandardMaterial({{ color: 0x13a65b, roughness: 0.4, emissive: 0x0b6e3f, emissiveIntensity: 0.45 }});
-
-        const baseMesh = new THREE.Mesh(new THREE.BoxGeometry(13.2, 0.75, 6.4), woodMat);
-        baseMesh.position.y = -0.375;
-        baseMesh.receiveShadow = true;
-        boardGroup.add(baseMesh);
-
-        const borderTrim = new THREE.Mesh(new THREE.BoxGeometry(13.4, 0.2, 6.6), rimMat);
-        borderTrim.position.y = -0.02;
-        boardGroup.add(borderTrim);
-
-        const p1SeedMat = new THREE.MeshStandardMaterial({{ color: 0xfcdc04, roughness: 0.35, metalness: 0.15 }});
-        const p2SeedMat = new THREE.MeshStandardMaterial({{ color: 0xe11d48, roughness: 0.35, metalness: 0.15 }});
-        const seedGeo = new THREE.SphereGeometry(0.16, 14, 14);
-        const pitGeo = new THREE.CylinderGeometry(0.46, 0.42, 0.24, 24);
-
-        const interactivePits = [];
-
-        function addRowPits(playerIdx, counts, rowZ, labelPrefix) {{
-          for (let col = 0; col < 8; col++) {{
-            const x = (col - 3.5) * 1.45;
-            const isSelected = playerIdx === 0 && DATA.selectedPit === col;
-            const pitMesh = new THREE.Mesh(pitGeo, isSelected ? selMat : pitMat);
-            pitMesh.position.set(x, 0.02, rowZ);
-            pitMesh.receiveShadow = true;
-            pitMesh.userData = {{
-              label: `${{labelPrefix}} Col ${{col + 1}} (idx ${{col}}) — ${{counts[col]}} seeds`
-            }};
-            boardGroup.add(pitMesh);
-            interactivePits.push(pitMesh);
-
-            const nSeeds = counts[col] || 0;
-            const visibleCount = Math.min(nSeeds, 28);
-            for (let s = 0; s < visibleCount; s++) {{
-              const layer = Math.floor(s / 7);
-              const angle = (s % 7) * ((Math.PI * 2) / 7) + layer * 0.45;
-              const radius = layer === 0 ? 0.14 : 0.22;
-              const sx = x + Math.cos(angle) * radius;
-              const sz = rowZ + Math.sin(angle) * radius;
-              const sy = 0.14 + layer * 0.19;
-              const seedMesh = new THREE.Mesh(seedGeo, playerIdx === 0 ? p1SeedMat : p2SeedMat);
-              seedMesh.position.set(sx, sy, sz);
-              seedMesh.castShadow = true;
-              boardGroup.add(seedMesh);
-            }}
-          }}
-        }}
-
-        // Rows from back (-Z, Player 2) to front (+Z, Player 1)
-        addRowPits(1, DATA.p2.slice(0, 8), -2.05, "P2 Outer");
-        addRowPits(1, DATA.p2.slice(8, 16).reverse(), -0.75, "P2 Inner");
-        addRowPits(0, DATA.p1.slice(8, 16).reverse(), 0.75, "P1 Inner");
-        addRowPits(0, DATA.p1.slice(0, 8), 2.05, "P1 Outer");
-
-        container.appendChild(renderer.domElement);
-
-        let isDragging = false;
-        let prevX = 0, prevY = 0;
-        let yaw = 0, pitch = 0.68, dist = 12.2;
-
-        function updateCameraFromOrbit() {{
-          const clampedPitch = Math.max(0.18, Math.min(1.48, pitch));
-          camera.position.x = dist * Math.sin(yaw) * Math.cos(clampedPitch);
-          camera.position.y = dist * Math.sin(clampedPitch);
-          camera.position.z = dist * Math.cos(yaw) * Math.cos(clampedPitch);
-          camera.lookAt(0, 0, 0);
-        }}
-
-        window.setView = function(mode) {{
-          if (mode === "p1") {{ yaw = 0; pitch = 0.56; dist = 10.6; }}
-          else if (mode === "top") {{ yaw = 0; pitch = 1.47; dist = 12.6; }}
-          else {{ yaw = 0.28; pitch = 0.68; dist = 12.2; }}
-          updateCameraFromOrbit();
-        }};
-
-        renderer.domElement.addEventListener("pointerdown", (e) => {{
-          isDragging = true;
-          prevX = e.clientX;
-          prevY = e.clientY;
-        }});
-        window.addEventListener("pointerup", () => {{ isDragging = false; }});
-
-        const raycaster = new THREE.Raycaster();
-        const pointer = new THREE.Vector2();
-        const readout = document.getElementById("pit-readout");
-
-        renderer.domElement.addEventListener("pointermove", (e) => {{
-          const rect = renderer.domElement.getBoundingClientRect();
-          pointer.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
-          pointer.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
-
-          if (isDragging) {{
-            const dx = e.clientX - prevX;
-            const dy = e.clientY - prevY;
-            prevX = e.clientX;
-            prevY = e.clientY;
-            yaw -= dx * 0.008;
-            pitch += dy * 0.008;
-            updateCameraFromOrbit();
-            return;
-          }}
-
-          raycaster.setFromCamera(pointer, camera);
-          const hits = raycaster.intersectObjects(interactivePits, false);
-          if (hits.length > 0 && hits[0].object.userData.label) {{
-            readout.textContent = hits[0].object.userData.label;
-          }}
-        }});
-
-        renderer.domElement.addEventListener("wheel", (e) => {{
-          e.preventDefault();
-          dist = Math.max(6.5, Math.min(18.5, dist + e.deltaY * 0.008));
-          updateCameraFromOrbit();
-        }}, {{ passive: false }});
-
-        updateCameraFromOrbit();
-
-        function animate() {{
-          requestAnimationFrame(animate);
-          renderer.render(scene, camera);
-        }}
-        animate();
-      </script>
-    </body>
-    </html>
-    """
-    components.html(html_code, height=height + 12)
+    def count_pieces(self) -> Tuple[int, int]:
+        p1_count = sum(1 for row in self.board for v in row if v > 0)
+        p2_count = sum(1 for row in self.board for v in row if v < 0)
+        return p1_count, p2_count
 
 
 # ==============================================================================
@@ -1537,7 +1351,7 @@ def init_state() -> None:
     st.session_state.setdefault("answered_ids", set())
     st.session_state.setdefault("selected_class", "P6")
     st.session_state.setdefault("active_tab", "Take Quiz")
-    st.session_state.setdefault("omweso_game", OmwesoGame())
+    st.session_state.setdefault("checkers_game", CheckersGame())
     st.session_state.setdefault("pupil_info", {"name": "", "school": "", "district": "Kampala"})
     st.session_state.setdefault("attempt_records", [])
     st.session_state.setdefault("last_checked_feedback", {})
@@ -1550,6 +1364,24 @@ def init_state() -> None:
         if persisted_records:
             _sync_state_from_records(persisted_records)
         st.session_state["sheet_hydrated"] = True
+
+
+def _render_checkers_board_grid(game: CheckersGame) -> None:
+    symbol_map = {
+        0: "·",
+        1: "🟢",
+        2: "👑🟢",
+        -1: "🔴",
+        -2: "👑🔴",
+    }
+    grid_rows: List[Dict[str, str]] = []
+    for r in range(8):
+        row_dict: Dict[str, str] = {"Row": str(r)}
+        for c in range(8):
+            val = game.board[r][c]
+            row_dict[f"C{c}"] = symbol_map.get(val, "·")
+        grid_rows.append(row_dict)
+    st.dataframe(pd.DataFrame(grid_rows), use_container_width=True, hide_index=True)
 
 
 def main() -> None:
@@ -1704,7 +1536,7 @@ def main() -> None:
                         <span class="ug-brand-black">iLearn</span><span class="ug-brand-yellow">-</span><span class="ug-brand-red">Uganda</span>: NCDC Primary Mathematics (P1 – P7)
                     </h1>
                     <div class="ug-subtitle">
-                        Growing bright minds from the roots up • Interactive Practice, Syllabus &amp; 3D Omweso Lab
+                        Growing bright minds from the roots up • Interactive Practice, Syllabus &amp; Checkers Lab
                     </div>
                 </div>
             </div>
@@ -2030,56 +1862,65 @@ def main() -> None:
                     mime="text/csv",
                 )
 
-        elif active_tab == "Omweso Lab":
-            st.subheader("Traditional Ugandan Omweso — 3D Board")
-            game: OmwesoGame = st.session_state["omweso_game"]
+        elif active_tab == "Checkers Lab":
+            st.subheader("Checkers Strategy Lab (8×8 Board)")
+            game: CheckersGame = st.session_state["checkers_game"]
+            p1_left, p2_left = game.count_pieces()
 
-            valid_pits = [i for i in range(16) if game.board[0][i] >= 2]
-            pit_choice: Optional[int] = st.session_state.get("omweso_pit_select") if valid_pits else None
+            m1, m2, m3 = st.columns(3)
+            m1.metric("Player 1 (🟢) Pieces", p1_left)
+            m2.metric("Player 2 (🔴) Pieces", p2_left)
+            m3.metric("Current Turn", "Player 1 (You)" if game.turn == 1 else "Player 2")
 
-            render_omweso_3d_board(game, selected_pit=pit_choice, height=480)
+            _render_checkers_board_grid(game)
+            st.caption("Legend: 🟢 Player 1 Piece • 👑🟢 Player 1 King • 🔴 Player 2 Piece • 👑🔴 Player 2 King")
 
-            st.caption("Opponent (Player 2) Board")
-            opp_outer = st.columns(8)
-            for c in range(8):
-                opp_outer[c].metric(f"P2 Out #{c}", game.board[1][c])
-            opp_inner = st.columns(8)
-            for c in range(8):
-                idx = 15 - c
-                opp_inner[c].metric(f"P2 In #{idx}", game.board[1][idx])
+            if p1_left == 0:
+                st.error("Player 2 wins! Click Reset Board to play again.")
+            elif p2_left == 0:
+                st.success("Player 1 wins! Click Reset Board to play again.")
 
-            st.divider()
-            st.caption("Your (Player 1) Board")
-            cols = st.columns(8)
-            for c in range(8):
-                cols[c].metric(f"Outer {c + 1} [#{c}]", game.board[0][c])
-            inner_cols = st.columns(8)
-            for c in range(8):
-                idx = 15 - c
-                inner_cols[c].metric(f"Inner {c + 1} [#{idx}]", game.board[0][idx])
-
-            if valid_pits:
-                pit_choice = st.selectbox(
-                    "Pick pit to sow:",
-                    valid_pits,
-                    format_func=lambda x: f"Pit #{x} ({game.board[0][x]} seeds)",
-                    key="omweso_pit_select",
+            legal_p1 = game.get_all_player_moves(1)
+            if legal_p1:
+                src_options = sorted(legal_p1.keys())
+                src_choice = st.selectbox(
+                    "Select your piece (Row, Col):",
+                    src_options,
+                    format_func=lambda rc: f"Row {rc[0]}, Col {rc[1]}",
+                    key="checkers_src_select",
                 )
-                rev = st.checkbox("Reverse sow (corner pits 0, 1, 6, 7, 8, 9, 14, 15)", key="omweso_rev_check")
-                if st.button("Sow", key="btn_omweso_sow"):
-                    moved = game.sow(0, pit_choice, reverse=rev)
-                    if moved:
-                        opp_pits = [i for i in range(16) if game.board[1][i] >= 2]
-                        if opp_pits:
-                            game.sow(1, random.choice(opp_pits), reverse=False)
-                    st.rerun()
+                dest_candidates = legal_p1.get(src_choice, [])
+                if dest_candidates:
+                    dst_choice = st.selectbox(
+                        "Select target square:",
+                        dest_candidates,
+                        format_func=lambda m: (
+                            f"Row {m[0]}, Col {m[1]} (Captures piece at {m[2]})"
+                            if m[2] is not None
+                            else f"Row {m[0]}, Col {m[1]}"
+                        ),
+                        key="checkers_dst_select",
+                    )
+                    if st.button("Move Piece", type="primary", key="btn_checkers_move"):
+                        moved = game.make_move(src_choice, (dst_choice[0], dst_choice[1]))
+                        if moved and game.turn == -1:
+                            opp_moves = game.get_all_player_moves(-1)
+                            if opp_moves:
+                                opp_src = random.choice(list(opp_moves.keys()))
+                                opp_dst = random.choice(opp_moves[opp_src])
+                                game.make_move(opp_src, (opp_dst[0], opp_dst[1]))
+                        st.rerun()
             else:
-                st.warning("No pit has 2 or more seeds left to sow! Click Reset Board to play again.")
+                st.warning("No legal moves available for Player 1. Click Reset Board to start a new game.")
 
-            if st.button("Reset Board", key="btn_omweso_reset"):
-                st.session_state["omweso_game"] = OmwesoGame()
+            if st.button("Reset Board", key="btn_checkers_reset"):
+                st.session_state["checkers_game"] = CheckersGame()
                 st.rerun()
+
             st.info(game.log[-1])
+            with st.expander("Recent Checkers Move Log", expanded=False):
+                for entry in reversed(game.log[-10:]):
+                    st.markdown(f"- {entry}")
 
         st.markdown("</div>", unsafe_allow_html=True)
 
