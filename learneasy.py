@@ -36,7 +36,6 @@ QUIZ_LOG_HEADERS = [
 
 LOGO_FILENAMES = ["ilearn_uganda_logo.png", "image_b5d6e7.png", "logo.png"]
 
-# Clean SVG fallback emblem in iLearn-Uganda's emerald & gold palette if no PNG file is found
 FALLBACK_LOGO_SVG = (
     '<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">'
     "<defs>"
@@ -53,7 +52,6 @@ FALLBACK_LOGO_SVG = (
     "</svg>"
 )
 
-# Balanced margin and workspace accent colors per selected tab
 TAB_MARGIN_STYLES: Dict[str, Dict[str, str]] = {
     "Take Quiz": {
         "accent": "rgba(11, 110, 63, 0.72)",
@@ -188,13 +186,11 @@ def get_diagram_png(diagram_type: Optional[str]) -> Optional[bytes]:
 # ==============================================================================
 
 UGANDA_DISTRICTS: List[str] = sorted([
-    # Central Region
     "Buikwe", "Bukomansimbi", "Butambala", "Buvuma", "Gomba", "Kalangala",
     "Kalungu", "Kampala", "Kasanda", "Kayunga", "Kiboga", "Kyankwanzi",
     "Kyotera", "Luweero", "Lwengo", "Lyantonde", "Masaka", "Mityana",
     "Mpigi", "Mubende", "Mukono", "Nakaseke", "Nakasongola", "Rakai",
     "Sembabule", "Wakiso",
-    # Eastern Region
     "Amuria", "Budaka", "Bududa", "Bugiri", "Bugweri", "Bukedea",
     "Bukwo", "Bulambuli", "Busia", "Butaleja", "Butebo", "Buyende",
     "Iganga", "Jinja", "Kaberamaido", "Kalaki", "Kaliro", "Kamuli",
@@ -202,7 +198,6 @@ UGANDA_DISTRICTS: List[str] = sorted([
     "Luuka", "Manafwa", "Mayuge", "Mbale", "Namayingo", "Namisindwa",
     "Namutumba", "Ngora", "Pallisa", "Serere", "Sironko", "Soroti",
     "Tororo",
-    # Northern Region
     "Abim", "Adjumani", "Agago", "Alebtong", "Amolatar", "Amudat",
     "Amuru", "Apac", "Arua", "Dokolo", "Gulu", "Kaabong",
     "Karenga", "Kitgum", "Koboko", "Kole", "Kotido", "Kwania",
@@ -210,7 +205,6 @@ UGANDA_DISTRICTS: List[str] = sorted([
     "Nabilatuk", "Nakapiripirit", "Napak", "Nebbi", "Nwoya", "Obongi",
     "Omoro", "Otuke", "Oyam", "Pader", "Pakwach", "Yumbe",
     "Zombo",
-    # Western Region
     "Buhweju", "Buliisa", "Bundibugyo", "Bunyangabu", "Bushenyi", "Hoima",
     "Ibanda", "Isingiro", "Kabale", "Kabarole", "Kagadi", "Kakumiro",
     "Kamwenge", "Kanungu", "Kasese", "Kazo", "Kibaale", "Kikuube",
@@ -753,15 +747,15 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
             "marks": 5,
             "question": (
                 "15– The mean mass of 5 boys is 30 kg. When their teacher joins them, the mean mass "
-                "changes to 24. Find the mass of the teacher."
+                "changes to 34 kg. Find the mass of the teacher."
             ),
-            "options": ["6 kg", "-6 kg", "144 kg", "150 kg"],
-            "ans": "-6 kg",
-            "explanation": "5 boys sum = 5 × 30 = 150 kg; 6 people sum = 6 × 24 = 144 kg; difference = 144 - 150 = -6 kg.",
+            "options": ["48 kg", "54 kg", "204 kg", "150 kg"],
+            "ans": "54 kg",
+            "explanation": "5 boys sum = 5 × 30 = 150 kg; 6 people sum = 6 × 34 = 204 kg; teacher's mass = 204 - 150 = 54 kg.",
             "step_by_step": [
                 "Line 1 — Calculate total mass of the 5 boys: 5 × 30 kg = 150 kg.",
-                "Line 2 — Calculate total mass of all 6 people (5 boys + 1 teacher): 6 × 24 kg = 144 kg.",
-                "Line 3 — Subtract total mass of the 5 boys from total mass of the 6 people: 144 kg - 150 kg = -6 kg.",
+                "Line 2 — Calculate total mass of all 6 people (5 boys + 1 teacher): 6 × 34 kg = 204 kg.",
+                "Line 3 — Subtract total mass of the 5 boys from total mass of the 6 people: 204 kg - 150 kg = 54 kg.",
             ],
             "diagram_type": None,
         },
@@ -878,6 +872,10 @@ def render_line_by_line_explanation(record: Dict[str, Any], correct_ans: Optiona
 # ==============================================================================
 
 
+def _make_attempt_key(pupil_name: str, school_name: str, cls_code: str, q_id: str) -> str:
+    return f"{pupil_name.strip().lower()}|{school_name.strip().lower()}|{cls_code.strip()}|{q_id.strip()}"
+
+
 def _get_secret_or_env(key: str, default: Any = None) -> Any:
     try:
         if key in st.secrets:
@@ -896,19 +894,25 @@ def _get_service_account_dict() -> Optional[Dict[str, Any]]:
     raw = _get_secret_or_env("GCP_SERVICE_ACCOUNT") or _get_secret_or_env("GOOGLE_SERVICE_ACCOUNT_JSON")
     if not raw:
         return None
-    if isinstance(raw, dict):
-        return dict(raw)
-    try:
-        return json.loads(str(raw))
-    except Exception:
-        return None
+    if hasattr(raw, "to_dict"):
+        sa = raw.to_dict()
+    elif isinstance(raw, dict):
+        sa = dict(raw)
+    else:
+        try:
+            sa = json.loads(str(raw))
+        except Exception:
+            return None
+    if isinstance(sa, dict) and isinstance(sa.get("private_key"), str):
+        sa["private_key"] = sa["private_key"].replace("\\n", "\n")
+    return sa
 
 
-@st.cache_resource(show_spinner=False)
-def _get_gspread_worksheet():
+def _connect_gspread_worksheet() -> Tuple[Any, str]:
+    """Connects to Google Sheets and returns (worksheet_or_None, diagnostic_status)."""
     sa_info = _get_service_account_dict()
     if not sa_info:
-        return None
+        return None, "No GCP_SERVICE_ACCOUNT found in secrets"
     try:
         import gspread  # type: ignore
         from google.oauth2.service_account import Credentials  # type: ignore
@@ -919,11 +923,14 @@ def _get_gspread_worksheet():
         sheet_id = str(_get_secret_or_env("GSHEET_SPREADSHEET_ID", SPREADSHEET_ID)).strip()
         spreadsheet = client.open_by_key(sheet_id)
         try:
-            return spreadsheet.worksheet(QUIZ_LOG_SHEET_NAME)
+            ws = spreadsheet.worksheet(QUIZ_LOG_SHEET_NAME)
         except Exception:
-            return spreadsheet.add_worksheet(title=QUIZ_LOG_SHEET_NAME, rows=500, cols=len(QUIZ_LOG_HEADERS))
-    except Exception:
-        return None
+            ws = spreadsheet.add_worksheet(title=QUIZ_LOG_SHEET_NAME, rows=1000, cols=len(QUIZ_LOG_HEADERS))
+            ws.append_row(QUIZ_LOG_HEADERS, value_input_option="USER_ENTERED")
+        return ws, "Connected"
+    except Exception as exc:
+        client_email = sa_info.get("client_email", "service-account")
+        return None, f"Google Sheet error ({type(exc).__name__}: {exc}) — verify {client_email} is Editor on the Sheet"
 
 
 def _parse_bool(val: Any) -> bool:
@@ -944,23 +951,31 @@ def _rows_to_records(rows: List[List[Any]]) -> List[Dict[str, Any]]:
         return []
     start_idx = 1 if rows[0] and str(rows[0][0]).strip().lower() == "timestamp" else 0
     records: List[Dict[str, Any]] = []
+    seen_keys = set()
     for r in rows[start_idx:]:
-        if not isinstance(r, list) or len(r) < 10 or not str(r[1] or "").strip():
+        if not isinstance(r, list) or len(r) < 10:
             continue
+        pupil_val = str(r[1] or "").strip()
+        school_val = str(r[2] or "").strip()
         cls_val = str(r[4] or "").strip()
-        if cls_val not in QUIZ_BANK:
+        if not pupil_val or cls_val not in QUIZ_BANK:
             continue
-        q_text = str(r[6] or "").strip()
         q_id = str(r[5] or "").strip()
+        q_text = str(r[6] or "").strip()
         q_uid = f"{cls_val}:{q_id}" if q_id else f"{cls_val}:{q_text}"
+        attempt_key = _make_attempt_key(pupil_val, school_val, cls_val, q_id or q_text)
+        if attempt_key in seen_keys:
+            continue
+        seen_keys.add(attempt_key)
         records.append({
             "Timestamp": str(r[0] or "").strip(),
-            "Pupil Name": str(r[1] or "").strip(),
-            "School": str(r[2] or "").strip(),
+            "Pupil Name": pupil_val,
+            "School": school_val,
             "District": str(r[3] or "").strip(),
             "Class": cls_val,
             "Question ID": q_id,
             "q_uid": q_uid,
+            "attempt_key": attempt_key,
             "Question": q_text,
             "Selected": str(r[7] or "").strip(),
             "Correct": _parse_bool(r[8]),
@@ -970,16 +985,17 @@ def _rows_to_records(rows: List[List[Any]]) -> List[Dict[str, Any]]:
     return records
 
 
-@st.cache_data(ttl=30, show_spinner=False)
+@st.cache_data(ttl=15, show_spinner=False)
 def load_records_from_google_sheet() -> Tuple[List[Dict[str, Any]], str]:
     """Reads Quiz_Marks_Log from Google Sheets so marks survive Streamlit app reboots."""
-    ws = _get_gspread_worksheet()
+    ws, conn_msg = _connect_gspread_worksheet()
     if ws is not None:
         try:
             values = ws.get_all_values()
-            return _rows_to_records(values), "Google Sheets (Live Sync Connected)"
+            recs = _rows_to_records(values)
+            return recs, f"Google Sheets Connected ({len(recs)} saved attempts loaded)"
         except Exception as exc:
-            return [], f"Google Sheets read fallback ({exc})"
+            return [], f"Google Sheets read error: {exc}"
 
     webhook_url = _get_webhook_url()
     if webhook_url:
@@ -988,11 +1004,12 @@ def load_records_from_google_sheet() -> Tuple[List[Dict[str, Any]], str]:
             with urlrequest.urlopen(req_url, timeout=8) as resp:
                 payload = json.loads(resp.read().decode("utf-8"))
                 rows = payload.get("rows", []) if isinstance(payload, dict) else []
-                return _rows_to_records(rows), "Google Sheets (Webhook Sync Connected)"
+                recs = _rows_to_records(rows)
+                return recs, f"Webhook Sync Connected ({len(recs)} saved attempts loaded)"
         except Exception as exc:
-            return [], f"Webhook read fallback ({exc})"
+            return [], f"Webhook read error: {exc}"
 
-    return [], "Session Memory Only (Add service account or webhook secret to sync Google Sheets)"
+    return [], f"Session Memory Only — {conn_msg}"
 
 
 def append_attempt_to_google_sheet(record: Dict[str, Any]) -> Tuple[bool, str]:
@@ -1011,7 +1028,7 @@ def append_attempt_to_google_sheet(record: Dict[str, Any]) -> Tuple[bool, str]:
         int(record["Max Marks"]),
     ]
 
-    ws = _get_gspread_worksheet()
+    ws, conn_msg = _connect_gspread_worksheet()
     if ws is not None:
         try:
             existing = ws.get_all_values()
@@ -1041,16 +1058,21 @@ def append_attempt_to_google_sheet(record: Dict[str, Any]) -> Tuple[bool, str]:
         except (urlerror.URLError, TimeoutError, Exception) as exc:
             return False, f"Webhook write failed: {exc}"
 
-    return False, "Saved in app session (configure Google Sheet credentials for reboot persistence)"
+    return False, f"Not synced to Google Sheet — {conn_msg}"
 
 
 def _sync_state_from_records(records: List[Dict[str, Any]]) -> None:
-    answered_ids = {r["q_uid"] for r in records if r.get("q_uid")}
+    answered_keys = {
+        r.get("attempt_key") or _make_attempt_key(
+            r.get("Pupil Name", ""), r.get("School", ""), r.get("Class", ""), r.get("Question ID", "") or r.get("Question", "")
+        )
+        for r in records
+    }
     total_attempted = len(records)
     total_correct = sum(1 for r in records if r.get("Correct"))
     total_marks = sum(int(r.get("Marks", 0)) for r in records)
     st.session_state["attempt_records"] = records
-    st.session_state["answered_ids"] = answered_ids
+    st.session_state["answered_ids"] = answered_keys
     st.session_state["quiz_score"] = {
         "attempted": total_attempted,
         "correct": total_correct,
@@ -1069,6 +1091,7 @@ def record_single_answer(
 ) -> Dict[str, Any]:
     q_id = str(q.get("id", f"{selected_class}_q{idx + 1}"))
     q_uid = f"{selected_class}:{q_id}"
+    attempt_key = _make_attempt_key(pupil_name, school_name, selected_class, q_id)
     ok = pick == q.get("ans")
     max_marks = int(q.get("marks", 1))
     earned = max_marks if ok else 0
@@ -1081,6 +1104,7 @@ def record_single_answer(
         "Class": selected_class,
         "Question ID": q_id,
         "q_uid": q_uid,
+        "attempt_key": attempt_key,
         "Question": q["question"],
         "Selected": pick,
         "Correct": ok,
@@ -1088,23 +1112,26 @@ def record_single_answer(
         "Max Marks": max_marks,
     }
 
-    is_new = q_uid not in st.session_state["answered_ids"]
+    is_new = attempt_key not in st.session_state["answered_ids"]
     if is_new:
-        st.session_state["answered_ids"].add(q_uid)
+        st.session_state["answered_ids"].add(attempt_key)
         st.session_state["quiz_score"]["attempted"] += 1
         if ok:
             st.session_state["quiz_score"]["correct"] += 1
             st.session_state["quiz_score"]["marks"] += earned
         st.session_state["attempt_records"].append(record)
 
-    synced, sync_msg = append_attempt_to_google_sheet(record)
-    st.session_state["sync_status"] = sync_msg
+        synced, sync_msg = append_attempt_to_google_sheet(record)
+        st.session_state["sync_status"] = sync_msg
+    else:
+        synced = False
+        sync_msg = "Attempt already recorded for this pupil and question."
 
     feedback_item = {
         "ok": ok,
         "ans": q.get("ans"),
         "record": record,
-        "sync_msg": sync_msg if synced else "",
+        "sync_msg": sync_msg,
     }
     st.session_state["last_checked_feedback"][q_uid] = feedback_item
     return feedback_item
@@ -1134,7 +1161,7 @@ class OmwesoGame:
             self.log.append("Choose a pit with at least 2 seeds.")
             return False
 
-        if reverse and pit_idx not in {0, 1, 14, 15}:
+        if reverse and pit_idx not in {0, 1, 6, 7, 8, 9, 14, 15}:
             reverse = False
 
         self.board[player][pit_idx] = 0
@@ -1185,16 +1212,13 @@ def build_leaderboard(
     district_filter: str = "All",
 ) -> pd.DataFrame:
     """Aggregates pupil quiz attempt records across P1–P7 into a ranked leaderboard up to `limit`."""
+    cols = ["Rank", "Badge", "Pupil Name", "School", "District", "Class", "Correct", "Attempted", "Marks"]
     if not records:
-        return pd.DataFrame(
-            columns=["Rank", "Badge", "Pupil Name", "School", "District", "Class", "Correct", "Attempted", "Marks"]
-        )
+        return pd.DataFrame(columns=cols)
 
     df = pd.DataFrame(records)
     if df.empty:
-        return pd.DataFrame(
-            columns=["Rank", "Badge", "Pupil Name", "School", "District", "Class", "Correct", "Attempted", "Marks"]
-        )
+        return pd.DataFrame(columns=cols)
 
     if class_filter != "All":
         df = df[df["Class"] == class_filter]
@@ -1202,9 +1226,7 @@ def build_leaderboard(
         df = df[df["District"] == district_filter]
 
     if df.empty:
-        return pd.DataFrame(
-            columns=["Rank", "Badge", "Pupil Name", "School", "District", "Class", "Correct", "Attempted", "Marks"]
-        )
+        return pd.DataFrame(columns=cols)
 
     grouped = (
         df.groupby(["Pupil Name", "School", "District", "Class"], as_index=False)
@@ -1373,6 +1395,9 @@ def main() -> None:
             label_visibility="collapsed",
             key="active_tab",
         )
+        if "tab" in st.query_params:
+            del st.query_params["tab"]
+
         margin_theme = TAB_MARGIN_STYLES.get(active_tab, TAB_MARGIN_STYLES["Take Quiz"])
         st.markdown(
             f'<div class="ug-margin-badge">● {active_tab}</div>'
@@ -1509,9 +1534,9 @@ def main() -> None:
             st.markdown("### Submit Quiz")
             sub_col1, sub_col2 = st.columns([1.4, 1.6])
             with sub_col1:
-                submit_clicked = st.button("Submit Quiz", type="primary", use_container_width=True, key="btn_submit_quiz")
+                submit_clicked = st.button("Submit Quiz", type="primary", width="stretch", key="btn_submit_quiz")
             with sub_col2:
-                open_dash_clicked = st.button("Open Dashboard & Leaderboard", use_container_width=True, key="btn_go_dashboard")
+                open_dash_clicked = st.button("Open Dashboard & Leaderboard", width="stretch", key="btn_go_dashboard")
 
             if submit_clicked:
                 if not clean_name or not clean_school or not district_name:
@@ -1665,7 +1690,7 @@ def main() -> None:
 
             st.markdown("### Top 25 Performers (P1 – P7)")
             if not leaderboard_df.empty:
-                st.dataframe(leaderboard_df, use_container_width=True, hide_index=True)
+                st.dataframe(leaderboard_df, width="stretch", hide_index=True)
                 lb_csv_bytes = leaderboard_df.to_csv(index=False).encode("utf-8")
                 st.download_button(
                     label="Download Top 25 Performers (CSV)",
@@ -1688,7 +1713,7 @@ def main() -> None:
                 for cls, items in NCDC_MATH_CURRICULUM.items()
             ]
             st.markdown("### NCDC Syllabus & Marks Coverage (P1 – P7)")
-            st.dataframe(pd.DataFrame(rows), use_container_width=True, hide_index=True)
+            st.dataframe(pd.DataFrame(rows), width="stretch", hide_index=True)
 
             if all_records:
                 st.markdown("### Line-by-Line Detailed Explanations for Attempted Questions")
@@ -1709,7 +1734,7 @@ def main() -> None:
 
                 st.markdown("### Recorded Quiz Attempts")
                 records_df = pd.DataFrame(all_records)
-                st.dataframe(records_df, use_container_width=True, hide_index=True)
+                st.dataframe(records_df, width="stretch", hide_index=True)
                 csv_bytes = records_df.to_csv(index=False).encode("utf-8")
                 st.download_button(
                     label="Download Quiz Results (CSV)",
@@ -1721,9 +1746,21 @@ def main() -> None:
         elif active_tab == "Omweso Lab":
             st.subheader("Traditional Ugandan Omweso")
             game: OmwesoGame = st.session_state["omweso_game"]
+
+            st.caption("Opponent (Player 2) Board")
+            opp_outer = st.columns(8)
+            for c in range(8):
+                opp_outer[c].metric(f"P2 Out #{c}", game.board[1][c])
+            opp_inner = st.columns(8)
+            for c in range(8):
+                idx = 15 - c
+                opp_inner[c].metric(f"P2 In #{idx}", game.board[1][idx])
+
+            st.divider()
+            st.caption("Your (Player 1) Board")
             cols = st.columns(8)
             for c in range(8):
-                cols[c].metric(f"Outer {c + 1}", game.board[0][c])
+                cols[c].metric(f"Outer {c + 1} [#{c}]", game.board[0][c])
             inner_cols = st.columns(8)
             for c in range(8):
                 idx = 15 - c
@@ -1734,17 +1771,22 @@ def main() -> None:
                 pit_choice = st.selectbox(
                     "Pick pit to sow:",
                     valid_pits,
-                    format_func=lambda x: f"Pit #{x} ({game.board[0][x]})",
+                    format_func=lambda x: f"Pit #{x} ({game.board[0][x]} seeds)",
                     key="omweso_pit_select",
                 )
-                rev = st.checkbox("Reverse sow (left-corner pits 0, 1, 14, 15)", key="omweso_rev_check")
+                rev = st.checkbox("Reverse sow (corner pits 0, 1, 6, 7, 8, 9, 14, 15)", key="omweso_rev_check")
                 if st.button("Sow", key="btn_omweso_sow"):
                     game.sow(0, pit_choice, reverse=rev)
                     opp_pits = [i for i in range(16) if game.board[1][i] >= 2]
                     if opp_pits:
                         game.sow(1, random.choice(opp_pits), reverse=False)
+                    st.rerun()
+            else:
+                st.warning("No pit has 2 or more seeds left to sow! Click Reset Board to play again.")
+
             if st.button("Reset Board", key="btn_omweso_reset"):
                 st.session_state["omweso_game"] = OmwesoGame()
+                st.rerun()
             st.info(game.log[-1])
 
 
