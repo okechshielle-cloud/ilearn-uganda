@@ -82,7 +82,7 @@ TAB_MARGIN_STYLES: Dict[str, Dict[str, str]] = {
         "border_tint": "rgba(185, 28, 28, 0.22)",
         "pill_bg": "rgba(254, 226, 226, 0.80)",
         "pill_text": "#991b1b",
-        "note": "3D Tap Board Margin",
+        "note": "Pool Checkers 3D AI Margin",
     },
 }
 
@@ -1139,16 +1139,26 @@ def record_single_answer(
 
 
 # ==============================================================================
-# 5. CHECKERS ENGINE (8x8 BOARD) & 3D TAP-TO-MOVE RENDERER
+# 5. POOL CHECKERS ENGINE (8x8 BOARD), AI DIFFICULTIES & 3D TAP-TO-MOVE UI
 # ==============================================================================
 
+CHECKERS_DIFFICULTIES: List[str] = ["Easy", "Medium", "Hard", "Champion"]
+DIAGONAL_DIRS: List[Tuple[int, int]] = [(-1, -1), (-1, 1), (1, -1), (1, 1)]
 
-class CheckersGame:
-    """Standard 8x8 Checkers engine:
-    1  = Player 1 piece (moves up: row decreasing)
-    2  = Player 1 king
-    -1 = Player 2 piece (moves down: row increasing)
-    -2 = Player 2 king
+
+class PoolCheckersGame:
+    """Pool Checkers engine on an 8x8 board:
+    1  = Player 1 man (moves diagonally forward: row decreasing)
+    2  = Player 1 flying king (slides & captures along any diagonal)
+    -1 = Computer man (moves diagonally forward: row increasing)
+    -2 = Computer flying king (slides & captures along any diagonal)
+
+    Rules:
+    - Mandatory capturing whenever any jump is available.
+    - Maximum-capture rule: when jumps exist, only moves achieving the highest
+      capture count (`max_capture_len`) are legal.
+    - Flying kings can slide any empty distance and land on any empty square
+      beyond a captured enemy piece along the same diagonal.
     """
 
     def __init__(self) -> None:
@@ -1161,9 +1171,19 @@ class CheckersGame:
             for c in range(8):
                 if (r + c) % 2 == 1:
                     self.board[r][c] = 1
-        self.turn: int = 1
+        self.turn: int = 1  # 1 = Player 1 (Human), -1 = Computer
         self.must_jump_from: Optional[Tuple[int, int]] = None
-        self.log: List[str] = ["Checkers board ready (12 pieces per side). Player 1 moves first."]
+        self.log: List[str] = [
+            "Pool Checkers ready (Flying Kings + Max-Capture rule active). Player 1 (🟢) moves first."
+        ]
+
+    def clone(self) -> "PoolCheckersGame":
+        cp = PoolCheckersGame()
+        cp.board = [row[:] for row in self.board]
+        cp.turn = self.turn
+        cp.must_jump_from = self.must_jump_from
+        cp.log = list(self.log)
+        return cp
 
     def _is_own_piece(self, val: int, player: int) -> bool:
         return (player == 1 and val > 0) or (player == -1 and val < 0)
@@ -1171,59 +1191,181 @@ class CheckersGame:
     def _is_enemy_piece(self, val: int, player: int) -> bool:
         return (player == 1 and val < 0) or (player == -1 and val > 0)
 
-    def _move_dirs(self, piece: int) -> List[Tuple[int, int]]:
-        if abs(piece) == 2:
-            return [(-1, -1), (-1, 1), (1, -1), (1, 1)]
-        if piece > 0:
-            return [(-1, -1), (-1, 1)]
-        return [(1, -1), (1, 1)]
-
-    def get_piece_moves(self, r: int, c: int) -> List[Tuple[int, int, Optional[Tuple[int, int]]]]:
-        """Returns list of (dest_r, dest_c, captured_coord_or_None)."""
-        if not (0 <= r < 8 and 0 <= c < 8):
-            return []
-        piece = self.board[r][c]
+    def _piece_jumps_from(
+        self,
+        board: List[List[int]],
+        r: int,
+        c: int,
+        player: int,
+    ) -> List[Tuple[int, int, Tuple[int, int]]]:
+        """Returns immediate single capture options `(dest_r, dest_c, (cap_r, cap_c))` from (r, c)."""
+        piece = board[r][c]
         if piece == 0:
             return []
+        is_king = abs(piece) == 2
+        jumps: List[Tuple[int, int, Tuple[int, int]]] = []
 
-        player = 1 if piece > 0 else -1
-        jumps: List[Tuple[int, int, Optional[Tuple[int, int]]]] = []
+        for dr, dc in DIAGONAL_DIRS:
+            if not is_king:
+                mr, mc = r + dr, c + dc
+                jr, jc = r + 2 * dr, c + 2 * dc
+                if 0 <= jr < 8 and 0 <= jc < 8:
+                    if self._is_enemy_piece(board[mr][mc], player) and board[jr][jc] == 0:
+                        jumps.append((jr, jc, (mr, mc)))
+            else:
+                step = 1
+                enemy_pos: Optional[Tuple[int, int]] = None
+                while True:
+                    nr, nc = r + step * dr, c + step * dc
+                    if not (0 <= nr < 8 and 0 <= nc < 8):
+                        break
+                    val = board[nr][nc]
+                    if enemy_pos is None:
+                        if val == 0:
+                            step += 1
+                            continue
+                        if self._is_enemy_piece(val, player):
+                            enemy_pos = (nr, nc)
+                            step += 1
+                            continue
+                        break
+                    else:
+                        if val == 0:
+                            jumps.append((nr, nc, enemy_pos))
+                            step += 1
+                            continue
+                        break
+        return jumps
+
+    def _max_capture_depth_from(
+        self,
+        board: List[List[int]],
+        r: int,
+        c: int,
+        player: int,
+        piece_val: int,
+    ) -> int:
+        """Computes maximum total captures achievable starting from (r, c) with `piece_val`."""
+        jumps = self._piece_jumps_from(board, r, c, player)
+        if not jumps:
+            return 0
+        best = 0
+        for jr, jc, (cr, cc) in jumps:
+            next_board = [row[:] for row in board]
+            next_board[r][c] = 0
+            next_board[cr][cc] = 0
+            promoted_val = piece_val
+            if player == 1 and jr == 0 and piece_val == 1:
+                promoted_val = 2
+            elif player == -1 and jr == 7 and piece_val == -1:
+                promoted_val = -2
+            next_board[jr][jc] = promoted_val
+            sub_captures = self._max_capture_depth_from(next_board, jr, jc, player, promoted_val)
+            best = max(best, 1 + sub_captures)
+        return best
+
+    def _piece_steps_from(
+        self,
+        board: List[List[int]],
+        r: int,
+        c: int,
+        player: int,
+    ) -> List[Tuple[int, int, Optional[Tuple[int, int]]]]:
+        """Returns non-capturing diagonal steps `(dest_r, dest_c, None)`."""
+        piece = board[r][c]
+        if piece == 0:
+            return []
+        is_king = abs(piece) == 2
         steps: List[Tuple[int, int, Optional[Tuple[int, int]]]] = []
 
-        for dr, dc in self._move_dirs(piece):
-            mr, mc = r + dr, c + dc
-            jr, jc = r + 2 * dr, c + 2 * dc
-            if 0 <= jr < 8 and 0 <= jc < 8:
-                if self._is_enemy_piece(self.board[mr][mc], player) and self.board[jr][jc] == 0:
-                    jumps.append((jr, jc, (mr, mc)))
-            if 0 <= mr < 8 and 0 <= mc < 8 and self.board[mr][mc] == 0:
-                steps.append((mr, mc, None))
+        if not is_king:
+            forward_dr = -1 if player == 1 else 1
+            for dc in (-1, 1):
+                nr, nc = r + forward_dr, c + dc
+                if 0 <= nr < 8 and 0 <= nc < 8 and board[nr][nc] == 0:
+                    steps.append((nr, nc, None))
+        else:
+            for dr, dc in DIAGONAL_DIRS:
+                step = 1
+                while True:
+                    nr, nc = r + step * dr, c + step * dc
+                    if not (0 <= nr < 8 and 0 <= nc < 8):
+                        break
+                    if board[nr][nc] == 0:
+                        steps.append((nr, nc, None))
+                        step += 1
+                    else:
+                        break
+        return steps
 
-        return jumps if jumps else steps
-
-    def get_all_player_moves(self, player: int) -> Dict[Tuple[int, int], List[Tuple[int, int, Optional[Tuple[int, int]]]]]:
-        """Returns { (r, c): [(dr, dc, cap_rc), ...] } for `player`, enforcing mandatory jumps."""
+    def get_all_player_moves(
+        self,
+        player: int,
+    ) -> Dict[Tuple[int, int], List[Tuple[int, int, Optional[Tuple[int, int]]]]]:
+        """Returns legal first-step moves `{ (r, c): [(dr, dc, cap_rc), ...] }` enforcing
+        mandatory captures and the Pool Checkers maximum-capture rule.
+        """
         if self.must_jump_from is not None:
             jr, jc = self.must_jump_from
-            p_moves = [m for m in self.get_piece_moves(jr, jc) if m[2] is not None]
-            return {(jr, jc): p_moves} if p_moves else {}
+            piece_val = self.board[jr][jc]
+            if piece_val == 0 or not self._is_own_piece(piece_val, player):
+                return {}
+            jumps = self._piece_jumps_from(self.board, jr, jc, player)
+            if not jumps:
+                return {}
+            scored_jumps: List[Tuple[int, Tuple[int, int, Optional[Tuple[int, int]]]]] = []
+            for d_r, d_c, cap_rc in jumps:
+                nb = [row[:] for row in self.board]
+                nb[jr][jc] = 0
+                nb[cap_rc[0]][cap_rc[1]] = 0
+                pv = piece_val
+                if player == 1 and d_r == 0 and pv == 1:
+                    pv = 2
+                elif player == -1 and d_r == 7 and pv == -1:
+                    pv = -2
+                nb[d_r][d_c] = pv
+                depth = 1 + self._max_capture_depth_from(nb, d_r, d_c, player, pv)
+                scored_jumps.append((depth, (d_r, d_c, cap_rc)))
+            max_d = max(item[0] for item in scored_jumps)
+            best_moves = [item[1] for item in scored_jumps if item[0] == max_d]
+            return {(jr, jc): best_moves} if best_moves else {}
 
-        all_jumps: Dict[Tuple[int, int], List[Tuple[int, int, Optional[Tuple[int, int]]]]] = {}
+        candidate_jumps: List[Tuple[int, Tuple[int, int], Tuple[int, int, Optional[Tuple[int, int]]]]] = []
         all_steps: Dict[Tuple[int, int], List[Tuple[int, int, Optional[Tuple[int, int]]]]] = {}
 
         for r in range(8):
             for c in range(8):
-                if self._is_own_piece(self.board[r][c], player):
-                    moves = self.get_piece_moves(r, c)
-                    if not moves:
-                        continue
-                    jumps = [m for m in moves if m[2] is not None]
-                    if jumps:
-                        all_jumps[(r, c)] = jumps
-                    else:
-                        all_steps[(r, c)] = moves
+                val = self.board[r][c]
+                if not self._is_own_piece(val, player):
+                    continue
+                jumps = self._piece_jumps_from(self.board, r, c, player)
+                if jumps:
+                    for d_r, d_c, cap_rc in jumps:
+                        nb = [row[:] for row in self.board]
+                        nb[r][c] = 0
+                        nb[cap_rc[0]][cap_rc[1]] = 0
+                        pv = val
+                        if player == 1 and d_r == 0 and pv == 1:
+                            pv = 2
+                        elif player == -1 and d_r == 7 and pv == -1:
+                            pv = -2
+                        nb[d_r][d_c] = pv
+                        total_caps = 1 + self._max_capture_depth_from(nb, d_r, d_c, player, pv)
+                        candidate_jumps.append((total_caps, (r, c), (d_r, d_c, cap_rc)))
+                else:
+                    steps = self._piece_steps_from(self.board, r, c, player)
+                    if steps:
+                        all_steps[(r, c)] = steps
 
-        return all_jumps if all_jumps else all_steps
+        if candidate_jumps:
+            max_caps = max(item[0] for item in candidate_jumps)
+            filtered_jumps: Dict[Tuple[int, int], List[Tuple[int, int, Optional[Tuple[int, int]]]]] = {}
+            for total_caps, src_rc, mv in candidate_jumps:
+                if total_caps == max_caps:
+                    filtered_jumps.setdefault(src_rc, []).append(mv)
+            return filtered_jumps
+
+        return all_steps
 
     def make_move(self, src: Tuple[int, int], dst: Tuple[int, int]) -> bool:
         sr, sc = src
@@ -1253,16 +1395,18 @@ class CheckersGame:
             self.board[dr][dc] = -2
             crowned = True
 
-        if captured is not None and not crowned:
-            follow_jumps = [m for m in self.get_piece_moves(dr, dc) if m[2] is not None]
+        p_label = "Player 1" if player == 1 else "Computer"
+        if captured is not None:
+            follow_jumps = self._piece_jumps_from(self.board, dr, dc, player)
             if follow_jumps:
                 self.must_jump_from = (dr, dc)
-                p_label = "Player 1" if player == 1 else "Player 2"
-                self.log.append(f"{p_label} jumped to ({dr}, {dc}) — continue jumping with ({dr}, {dc})!")
+                king_note = " (Crowned King!)" if crowned else ""
+                self.log.append(
+                    f"{p_label} captured {captured} to ({dr}, {dc}){king_note} — continue jumping!"
+                )
                 return True
 
         self.must_jump_from = None
-        p_label = "Player 1" if player == 1 else "Player 2"
         action_desc = f"captured {captured} and moved" if captured else "moved"
         king_note = " (Crowned King!)" if crowned else ""
         self.log.append(f"{p_label} {action_desc} from ({sr}, {sc}) to ({dr}, {dc}){king_note}.")
@@ -1275,8 +1419,218 @@ class CheckersGame:
         return p1_count, p2_count
 
 
-def render_checkers_3d_board(game: CheckersGame, height: int = 540) -> None:
-    """Renders an interactive 3D Checkers board with tap/click piece selection and destination squares."""
+def _evaluate_board_for_computer(game: PoolCheckersGame) -> float:
+    """Evaluates position from Computer (-1) perspective: positive favors Computer."""
+    score = 0.0
+    comp_men = 0
+    comp_kings = 0
+    p1_men = 0
+    p1_kings = 0
+
+    for r in range(8):
+        for c in range(8):
+            val = game.board[r][c]
+            if val == -1:
+                comp_men += 1
+                advance = r * 0.14
+                center_bonus = 0.25 if 2 <= c <= 5 and 2 <= r <= 5 else 0.0
+                back_row_bonus = 0.35 if r == 0 else 0.0
+                score += 1.0 + advance + center_bonus + back_row_bonus
+            elif val == -2:
+                comp_kings += 1
+                center_bonus = 0.35 if 2 <= c <= 5 and 2 <= r <= 5 else 0.0
+                score += 2.65 + center_bonus
+            elif val == 1:
+                p1_men += 1
+                advance = (7 - r) * 0.14
+                center_bonus = 0.25 if 2 <= c <= 5 and 2 <= r <= 5 else 0.0
+                back_row_bonus = 0.35 if r == 7 else 0.0
+                score -= (1.0 + advance + center_bonus + back_row_bonus)
+            elif val == 2:
+                p1_kings += 1
+                center_bonus = 0.35 if 2 <= c <= 5 and 2 <= r <= 5 else 0.0
+                score -= (2.65 + center_bonus)
+
+    if p1_men + p1_kings == 0:
+        return 100.0
+    if comp_men + comp_kings == 0:
+        return -100.0
+
+    # Mobility & capture threat bonus
+    comp_moves_map = game.get_all_player_moves(-1)
+    p1_moves_map = game.get_all_player_moves(1)
+    comp_move_count = sum(len(v) for v in comp_moves_map.values())
+    p1_move_count = sum(len(v) for v in p1_moves_map.values())
+    if p1_move_count == 0 and game.turn == 1:
+        return 100.0
+    if comp_move_count == 0 and game.turn == -1:
+        return -100.0
+
+    score += 0.08 * (comp_move_count - p1_move_count)
+    return score
+
+
+def _apply_full_turn_in_sim(
+    sim: PoolCheckersGame,
+    src: Tuple[int, int],
+    dst: Tuple[int, int],
+) -> PoolCheckersGame:
+    """Applies a move and completes any mandatory multi-jump chain for the active player."""
+    nxt = sim.clone()
+    active_player = nxt.turn
+    nxt.make_move(src, dst)
+    guard = 0
+    while nxt.turn == active_player and nxt.must_jump_from is not None and guard < 12:
+        guard += 1
+        chain_map = nxt.get_all_player_moves(active_player)
+        chain_src = nxt.must_jump_from
+        chain_opts = chain_map.get(chain_src, [])
+        if not chain_opts:
+            break
+        best_child = None
+        best_val = float("-inf") if active_player == -1 else float("inf")
+        for opt in chain_opts:
+            trial = nxt.clone()
+            trial.make_move(chain_src, (opt[0], opt[1]))
+            val = _evaluate_board_for_computer(trial)
+            if active_player == -1 and val > best_val:
+                best_val = val
+                best_child = trial
+            elif active_player == 1 and val < best_val:
+                best_val = val
+                best_child = trial
+        if best_child is not None:
+            nxt = best_child
+        else:
+            break
+    return nxt
+
+
+def _alphabeta(
+    sim: PoolCheckersGame,
+    depth: int,
+    alpha: float,
+    beta: float,
+    maximizing_comp: bool,
+) -> float:
+    player = -1 if maximizing_comp else 1
+    moves_map = sim.get_all_player_moves(player)
+    if depth == 0 or not moves_map:
+        return _evaluate_board_for_computer(sim)
+
+    all_pairs: List[Tuple[Tuple[int, int], Tuple[int, int], Optional[Tuple[int, int]]]] = []
+    for s_rc, m_list in moves_map.items():
+        for d_r, d_c, cap_rc in m_list:
+            all_pairs.append((s_rc, (d_r, d_c), cap_rc))
+
+    # Order captures first for better alpha-beta pruning
+    all_pairs.sort(key=lambda item: 1 if item[2] is not None else 0, reverse=True)
+
+    if maximizing_comp:
+        value = float("-inf")
+        for s_rc, d_rc, _ in all_pairs:
+            child = _apply_full_turn_in_sim(sim, s_rc, d_rc)
+            value = max(value, _alphabeta(child, depth - 1, alpha, beta, False))
+            alpha = max(alpha, value)
+            if alpha >= beta:
+                break
+        return value
+    else:
+        value = float("inf")
+        for s_rc, d_rc, _ in all_pairs:
+            child = _apply_full_turn_in_sim(sim, s_rc, d_rc)
+            value = min(value, _alphabeta(child, depth - 1, alpha, beta, True))
+            beta = min(beta, value)
+            if beta <= alpha:
+                break
+        return value
+
+
+def choose_computer_move(
+    game: PoolCheckersGame,
+    difficulty: str = "Medium",
+) -> Optional[Tuple[Tuple[int, int], Tuple[int, int]]]:
+    """Selects a legal move `(src, dst)` for Computer (-1) across Easy, Medium, Hard, Champion."""
+    moves_map = game.get_all_player_moves(-1)
+    if not moves_map:
+        return None
+
+    candidates: List[Tuple[Tuple[int, int], Tuple[int, int], Optional[Tuple[int, int]]]] = []
+    for s_rc, m_list in moves_map.items():
+        for d_r, d_c, cap_rc in m_list:
+            candidates.append((s_rc, (d_r, d_c), cap_rc))
+
+    if len(candidates) == 1:
+        return (candidates[0][0], candidates[0][1])
+
+    level = difficulty if difficulty in CHECKERS_DIFFICULTIES else "Medium"
+
+    if level == "Easy":
+        # Random legal move, with a slight bias against immediate loss when options abound
+        if len(candidates) > 2 and random.random() < 0.65:
+            scored_easy: List[Tuple[float, Tuple[Tuple[int, int], Tuple[int, int]]]] = []
+            for s_rc, d_rc, _ in candidates:
+                child = _apply_full_turn_in_sim(game, s_rc, d_rc)
+                scored_easy.append((_evaluate_board_for_computer(child) + random.uniform(-1.5, 1.5), (s_rc, d_rc)))
+            scored_easy.sort(key=lambda x: x[0], reverse=True)
+            return random.choice([item[1] for item in scored_easy[:2]])
+        picked = random.choice(candidates)
+        return (picked[0], picked[1])
+
+    if level == "Medium":
+        best_score = float("-inf")
+        best_pairs: List[Tuple[Tuple[int, int], Tuple[int, int]]] = []
+        for s_rc, d_rc, cap_rc in candidates:
+            child = _apply_full_turn_in_sim(game, s_rc, d_rc)
+            sc = _evaluate_board_for_computer(child) + (0.65 if cap_rc is not None else 0.0) + random.uniform(-0.15, 0.15)
+            if sc > best_score + 1e-6:
+                best_score = sc
+                best_pairs = [(s_rc, d_rc)]
+            elif abs(sc - best_score) <= 1e-6:
+                best_pairs.append((s_rc, d_rc))
+        return random.choice(best_pairs)
+
+    search_depth = 2 if level == "Hard" else 4
+    best_val = float("-inf")
+    best_moves: List[Tuple[Tuple[int, int], Tuple[int, int]]] = []
+
+    # Sort candidates with captures first
+    ordered = sorted(candidates, key=lambda item: 1 if item[2] is not None else 0, reverse=True)
+    for s_rc, d_rc, cap_rc in ordered:
+        child = _apply_full_turn_in_sim(game, s_rc, d_rc)
+        val = _alphabeta(child, search_depth - 1, float("-inf"), float("inf"), False)
+        if level == "Hard":
+            val += random.uniform(-0.08, 0.08)
+        else:
+            # Tiny tie-breaker favoring aggressive capture/advancement in Champion mode
+            val += (0.03 if cap_rc is not None else 0.0) + 0.01 * d_rc[0]
+
+        if val > best_val + 1e-6:
+            best_val = val
+            best_moves = [(s_rc, d_rc)]
+        elif abs(val - best_val) <= 1e-6:
+            best_moves.append((s_rc, d_rc))
+
+    return random.choice(best_moves) if best_moves else (candidates[0][0], candidates[0][1])
+
+
+def execute_computer_turns(game: PoolCheckersGame, difficulty: str) -> None:
+    """Runs Computer (-1) move(s), including any multi-jump continuation."""
+    guard = 0
+    while game.turn == -1 and guard < 12:
+        guard += 1
+        comp_move = choose_computer_move(game, difficulty=difficulty)
+        if comp_move is None:
+            break
+        game.make_move(comp_move[0], comp_move[1])
+
+
+def render_checkers_3d_board(
+    game: PoolCheckersGame,
+    difficulty: str = "Medium",
+    height: int = 540,
+) -> None:
+    """Renders an interactive 3D Pool Checkers board with tap/click piece selection and destination squares."""
     legal_p1 = game.get_all_player_moves(1) if game.turn == 1 else {}
     serialized_moves: Dict[str, List[List[Any]]] = {}
     for (sr, sc), moves in legal_p1.items():
@@ -1288,6 +1642,7 @@ def render_checkers_3d_board(game: CheckersGame, height: int = 540) -> None:
     payload = json.dumps({
         "board": game.board,
         "turn": game.turn,
+        "difficulty": difficulty,
         "mustJumpFrom": list(game.must_jump_from) if game.must_jump_from else None,
         "legalMoves": serialized_moves,
         "lastLog": game.log[-1] if game.log else "",
@@ -1331,7 +1686,7 @@ def render_checkers_3d_board(game: CheckersGame, height: int = 540) -> None:
         }}
         .ck-pill {{
           pointer-events: auto;
-          background: rgba(14, 24, 18, 0.86);
+          background: rgba(14, 24, 18, 0.88);
           color: #f8fafc;
           border: 1px solid rgba(252, 220, 4, 0.35);
           padding: 6px 11px;
@@ -1362,7 +1717,7 @@ def render_checkers_3d_board(game: CheckersGame, height: int = 540) -> None:
           gap: 10px;
           color: #e2e8f0;
           font-size: 12px;
-          background: rgba(14, 24, 18, 0.84);
+          background: rgba(14, 24, 18, 0.86);
           padding: 7px 12px;
           border-radius: 10px;
           z-index: 6;
@@ -1380,7 +1735,7 @@ def render_checkers_3d_board(game: CheckersGame, height: int = 540) -> None:
           </div>
         </div>
         <div class="ck-hud-bottom">
-          <span><strong>🟢</strong> Player 1 • <strong>🔴</strong> Player 2 • <strong>👑</strong> King • <strong>Highlighted Squares</strong> = Tap to Move</span>
+          <span><strong>🟢</strong> You • <strong>🔴</strong> Computer ({difficulty}) • <strong>👑</strong> Flying King • <strong>Highlighted</strong> = Tap to Move</span>
           <span id="ck-log"></span>
         </div>
       </div>
@@ -1416,9 +1771,9 @@ def render_checkers_3d_board(game: CheckersGame, height: int = 540) -> None:
         const frameMat = new THREE.MeshStandardMaterial({{ color: 0x3b2210, roughness: 0.6 }});
         const lightSqMat = new THREE.MeshStandardMaterial({{ color: 0xf3e5ab, roughness: 0.55 }});
         const darkSqMat = new THREE.MeshStandardMaterial({{ color: 0x294b38, roughness: 0.6 }});
-        const moveSqMat = new THREE.MeshStandardMaterial({{ color: 0x22c55e, emissive: 0x15803d, emissiveIntensity: 0.55, roughness: 0.35 }});
-        const jumpSqMat = new THREE.MeshStandardMaterial({{ color: 0xfacc15, emissive: 0xca8a04, emissiveIntensity: 0.65, roughness: 0.35 }});
-        const selPieceMat = new THREE.MeshStandardMaterial({{ color: 0x4ade80, emissive: 0x16a34a, emissiveIntensity: 0.6, roughness: 0.3 }});
+        const moveSqMat = new THREE.MeshStandardMaterial({{ color: 0x22c55e, emissive: 0x15803d, emissiveIntensity: 0.58, roughness: 0.35 }});
+        const jumpSqMat = new THREE.MeshStandardMaterial({{ color: 0xfacc15, emissive: 0xca8a04, emissiveIntensity: 0.68, roughness: 0.35 }});
+        const selPieceMat = new THREE.MeshStandardMaterial({{ color: 0x4ade80, emissive: 0x16a34a, emissiveIntensity: 0.62, roughness: 0.3 }});
 
         const p1Mat = new THREE.MeshStandardMaterial({{ color: 0x0b875b, roughness: 0.35, metalness: 0.12 }});
         const p2Mat = new THREE.MeshStandardMaterial({{ color: 0xdc2626, roughness: 0.35, metalness: 0.12 }});
@@ -1515,7 +1870,7 @@ def render_checkers_3d_board(game: CheckersGame, height: int = 540) -> None:
           }}
 
           if (STATE.turn !== 1) {{
-            promptEl.textContent = "Waiting for turn or game over — click Reset Board to replay";
+            promptEl.textContent = "Computer turn or game over — click Reset Board to replay";
           }} else if (selectedSrc) {{
             const nTargets = activeTargets.length;
             promptEl.textContent = `Selected (${{selectedSrc[0]}}, ${{selectedSrc[1]}}) • Tap one of ${{nTargets}} highlighted square(s) to move`;
@@ -1524,14 +1879,41 @@ def render_checkers_3d_board(game: CheckersGame, height: int = 540) -> None:
           }}
         }}
 
+        function navigateTopWithParams(src, dst) {{
+          const nonce = `${{Date.now()}}_${{Math.floor(Math.random() * 100000)}}`;
+          const targets = [window.top, window.parent, window];
+          for (const winObj of targets) {{
+            try {{
+              if (!winObj || !winObj.location) continue;
+              const url = new URL(winObj.location.href);
+              url.searchParams.set("tab", "Checkers Lab");
+              url.searchParams.set("ck_src", `${{src[0]}},${{src[1]}}`);
+              url.searchParams.set("ck_dst", `${{dst[0]}},${{dst[1]}}`);
+              url.searchParams.set("ck_nonce", nonce);
+              winObj.location.href = url.toString();
+              return;
+            }} catch (_) {{}}
+          }}
+        }}
+
         function submitMoveToStreamlit(src, dst) {{
-          promptEl.textContent = `Moving from (${{src[0]}}, ${{src[1]}}) to (${{dst[0]}}, ${{dst[1]}})...`;
-          const url = new URL(window.parent.location.href);
-          url.searchParams.set("tab", "Checkers Lab");
-          url.searchParams.set("ck_src", `${{src[0]}},${{src[1]}}`);
-          url.searchParams.set("ck_dst", `${{dst[0]}},${{dst[1]}}`);
-          url.searchParams.set("ck_nonce", String(Date.now()));
-          window.parent.location.assign(url.toString());
+          const [sr, sc] = src;
+          const [dr, dc] = dst;
+          const activeTargets = getTargetsForSelected();
+          const matched = activeTargets.find((m) => m[0] === dr && m[1] === dc);
+          const cap = matched ? matched[2] : null;
+
+          // Optimistic visual update before server rerun
+          const movingVal = STATE.board[sr][sc];
+          STATE.board[sr][sc] = 0;
+          STATE.board[dr][dc] = (dr === 0 && movingVal === 1) ? 2 : movingVal;
+          if (cap && Array.isArray(cap) && cap.length === 2) {{
+            STATE.board[cap[0]][cap[1]] = 0;
+          }}
+          selectedSrc = null;
+          rebuildBoardVisuals();
+          promptEl.textContent = `Moving (${{sr}}, ${{sc}}) → (${{dr}}, ${{dc}}) & computing reply...`;
+          navigateTopWithParams(src, dst);
         }}
 
         container.appendChild(renderer.domElement);
@@ -1703,7 +2085,8 @@ def init_state() -> None:
     st.session_state.setdefault("answered_ids", set())
     st.session_state.setdefault("selected_class", "P6")
     st.session_state.setdefault("active_tab", "Take Quiz")
-    st.session_state.setdefault("checkers_game", CheckersGame())
+    st.session_state.setdefault("checkers_game", PoolCheckersGame())
+    st.session_state.setdefault("checkers_difficulty", "Medium")
     st.session_state.setdefault("pupil_info", {"name": "", "school": "", "district": "Kampala"})
     st.session_state.setdefault("attempt_records", [])
     st.session_state.setdefault("last_checked_feedback", {})
@@ -1729,23 +2112,25 @@ def main() -> None:
     ck_src_raw = st.query_params.get("ck_src", None)
     ck_dst_raw = st.query_params.get("ck_dst", None)
     if ck_src_raw and ck_dst_raw:
+        move_applied = False
         try:
             src_tuple = tuple(int(x) for x in str(ck_src_raw).split(","))
             dst_tuple = tuple(int(x) for x in str(ck_dst_raw).split(","))
             if len(src_tuple) == 2 and len(dst_tuple) == 2:
-                game: CheckersGame = st.session_state["checkers_game"]
+                game: PoolCheckersGame = st.session_state["checkers_game"]
+                difficulty = st.session_state.get("checkers_difficulty", "Medium")
                 moved = game.make_move((src_tuple[0], src_tuple[1]), (dst_tuple[0], dst_tuple[1]))
-                if moved and game.turn == -1:
-                    opp_moves = game.get_all_player_moves(-1)
-                    if opp_moves:
-                        opp_src = random.choice(list(opp_moves.keys()))
-                        opp_dst = random.choice(opp_moves[opp_src])
-                        game.make_move(opp_src, (opp_dst[0], opp_dst[1]))
+                if moved:
+                    move_applied = True
+                    if game.turn == -1:
+                        execute_computer_turns(game, difficulty=difficulty)
         except Exception:
             pass
         for param_key in ("ck_src", "ck_dst", "ck_nonce"):
             if param_key in st.query_params:
                 del st.query_params[param_key]
+        if move_applied:
+            st.rerun()
 
     active_tab = st.session_state.get("active_tab", "Take Quiz")
     if active_tab not in TABS:
@@ -1891,7 +2276,7 @@ def main() -> None:
                         <span class="ug-brand-black">iLearn</span><span class="ug-brand-yellow">-</span><span class="ug-brand-red">Uganda</span>: NCDC Primary Mathematics (P1 – P7)
                     </h1>
                     <div class="ug-subtitle">
-                        Growing bright minds from the roots up • Interactive Practice, Syllabus &amp; 3D Checkers Lab
+                        Growing bright minds from the roots up • Interactive Practice, Syllabus &amp; Pool Checkers 3D AI Lab
                     </div>
                 </div>
             </div>
@@ -2218,23 +2603,42 @@ def main() -> None:
                 )
 
         elif active_tab == "Checkers Lab":
-            st.subheader("3D Checkers Strategy Lab (8×8 Tap-to-Move Board)")
-            game: CheckersGame = st.session_state["checkers_game"]
+            st.subheader("Pool Checkers 3D AI Lab (8×8 Tap-to-Move Board)")
+            game: PoolCheckersGame = st.session_state["checkers_game"]
+
+            ctrl_col1, ctrl_col2 = st.columns([2.2, 1.0])
+            with ctrl_col1:
+                current_diff = st.session_state.get("checkers_difficulty", "Medium")
+                diff_idx = CHECKERS_DIFFICULTIES.index(current_diff) if current_diff in CHECKERS_DIFFICULTIES else 1
+                selected_difficulty = st.selectbox(
+                    "Computer Difficulty Level",
+                    CHECKERS_DIFFICULTIES,
+                    index=diff_idx,
+                    key="checkers_difficulty",
+                    help="Easy: casual moves • Medium: capture & safety aware • Hard: 2-ply lookahead • Champion: deep alpha-beta search",
+                )
+            with ctrl_col2:
+                st.markdown("<div style='height: 1.72rem;'></div>", unsafe_allow_html=True)
+                if st.button("Reset Board", use_container_width=True, key="btn_checkers_reset"):
+                    st.session_state["checkers_game"] = PoolCheckersGame()
+                    st.rerun()
+
             p1_left, p2_left = game.count_pieces()
-
             m1, m2, m3 = st.columns(3)
-            m1.metric("Player 1 (🟢) Pieces", p1_left)
-            m2.metric("Player 2 (🔴) Pieces", p2_left)
-            m3.metric("Current Turn", "Player 1 (You)" if game.turn == 1 else "Player 2")
+            m1.metric("You (🟢) Pieces", p1_left)
+            m2.metric(f"Computer ({selected_difficulty}) 🔴", p2_left)
+            m3.metric("Current Turn", "Your Turn (🟢)" if game.turn == 1 else "Computer (🔴)")
 
-            render_checkers_3d_board(game, height=540)
-
-            if p1_left == 0:
-                st.error("Player 2 wins! Click Reset Board to play again.")
-            elif p2_left == 0:
-                st.success("Player 1 wins! Click Reset Board to play again.")
+            render_checkers_3d_board(game, difficulty=selected_difficulty, height=540)
 
             legal_p1 = game.get_all_player_moves(1)
+            legal_comp = game.get_all_player_moves(-1)
+
+            if p1_left == 0 or (game.turn == 1 and not legal_p1):
+                st.error(f"Computer ({selected_difficulty}) wins! Click Reset Board to play again.")
+            elif p2_left == 0 or (game.turn == -1 and not legal_comp):
+                st.success(f"You win against {selected_difficulty} Computer! Click Reset Board to play again.")
+
             if legal_p1:
                 with st.expander("Quick Move Controls (Optional Selector)", expanded=False):
                     src_options = sorted(legal_p1.keys())
@@ -2259,22 +2663,12 @@ def main() -> None:
                         if st.button("Move Piece", type="primary", key="btn_checkers_move"):
                             moved = game.make_move(src_choice, (dst_choice[0], dst_choice[1]))
                             if moved and game.turn == -1:
-                                opp_moves = game.get_all_player_moves(-1)
-                                if opp_moves:
-                                    opp_src = random.choice(list(opp_moves.keys()))
-                                    opp_dst = random.choice(opp_moves[opp_src])
-                                    game.make_move(opp_src, (opp_dst[0], opp_dst[1]))
+                                execute_computer_turns(game, difficulty=selected_difficulty)
                             st.rerun()
-            else:
-                st.warning("No legal moves available for Player 1. Click Reset Board to start a new game.")
-
-            if st.button("Reset Board", key="btn_checkers_reset"):
-                st.session_state["checkers_game"] = CheckersGame()
-                st.rerun()
 
             st.info(game.log[-1])
-            with st.expander("Recent Checkers Move Log", expanded=False):
-                for entry in reversed(game.log[-10:]):
+            with st.expander("Recent Pool Checkers Move Log", expanded=False):
+                for entry in reversed(game.log[-12:]):
                     st.markdown(f"- {entry}")
 
         st.markdown("</div>", unsafe_allow_html=True)
