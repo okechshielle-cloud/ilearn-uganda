@@ -2647,7 +2647,7 @@ def main() -> None:
                     st.session_state["checkers_game"] = PoolCheckersGame()
                     st.rerun()
 
-            if game.turn == -1 and game.must_jump_from is None and game.get_all_player_moves(-1):
+            if game.turn == -1 and game.get_all_player_moves(-1):
                 execute_computer_turns(game, difficulty=selected_difficulty)
 
             p1_left, p2_left = game.count_pieces()
