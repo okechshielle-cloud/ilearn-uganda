@@ -4,6 +4,7 @@ import io
 import json
 import os
 import random
+import tempfile
 from typing import Any, Dict, List, Optional, Tuple
 from urllib import error as urlerror
 from urllib import request as urlrequest
@@ -1139,7 +1140,7 @@ def record_single_answer(
 
 
 # ==============================================================================
-# 5. POOL CHECKERS ENGINE (8x8 BOARD), 7-TIER AI & 3D TAP-TO-MOVE UI
+# 5. POOL CHECKERS ENGINE (8x8 BOARD), 7-TIER AI & BIDIRECTIONAL 3D COMPONENT
 # ==============================================================================
 
 CHECKERS_DIFFICULTIES: List[str] = [
@@ -1644,393 +1645,342 @@ def execute_computer_turns(game: PoolCheckersGame, difficulty: str) -> None:
         game.make_move(comp_move[0], comp_move[1])
 
 
-def render_checkers_3d_board(
-    game: PoolCheckersGame,
-    difficulty: str = "Medium",
-    height: int = 540,
-) -> None:
-    """Renders an interactive 3D Pool Checkers board with reliable tap/click piece & square movement."""
-    legal_p1 = game.get_all_player_moves(1) if game.turn == 1 else {}
-    serialized_moves: Dict[str, List[List[Any]]] = {}
-    for (sr, sc), moves in legal_p1.items():
-        serialized_moves[f"{sr},{sc}"] = [
-            [dr, dc, list(cap) if cap is not None else None]
-            for (dr, dc, cap) in moves
-        ]
+@st.cache_resource
+def _get_checkers_component():
+    """Creates a bidirectional Streamlit custom component using postMessage (`streamlit:setComponentValue`)."""
+    comp_dir = os.path.join(tempfile.gettempdir(), "ilearn_pool_checkers_3d_v1")
+    os.makedirs(comp_dir, exist_ok=True)
+    index_path = os.path.join(comp_dir, "index.html")
 
-    payload = json.dumps({
-        "board": game.board,
-        "turn": game.turn,
-        "difficulty": difficulty,
-        "mustJumpFrom": list(game.must_jump_from) if game.must_jump_from else None,
-        "legalMoves": serialized_moves,
-        "lastLog": game.log[-1] if game.log else "",
-    })
-
-    html_code = f"""
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <meta charset="utf-8" />
-      <style>
-        body {{
-          margin: 0;
-          padding: 0;
-          background: transparent;
-          font-family: system-ui, -apple-system, sans-serif;
-          overflow: hidden;
-          touch-action: none;
-        }}
-        #ck-3d-wrap {{
-          position: relative;
-          width: 100%;
-          height: {height}px;
-          border-radius: 16px;
-          overflow: hidden;
-          border: 1px solid rgba(6, 78, 44, 0.24);
-          background: linear-gradient(155deg, #16231c 0%, #0b130f 100%);
-        }}
-        .ck-hud-top {{
-          position: absolute;
-          top: 10px;
-          left: 12px;
-          right: 12px;
-          display: flex;
-          flex-wrap: wrap;
-          justify-content: space-between;
-          align-items: center;
-          gap: 8px;
-          z-index: 6;
-          pointer-events: none;
-        }}
-        .ck-pill {{
-          pointer-events: auto;
-          background: rgba(14, 24, 18, 0.88);
-          color: #f8fafc;
-          border: 1px solid rgba(252, 220, 4, 0.35);
-          padding: 6px 11px;
-          border-radius: 999px;
-          font-size: 12px;
-          backdrop-filter: blur(6px);
-        }}
-        .ck-btn {{
-          pointer-events: auto;
-          cursor: pointer;
-          background: #13a65b;
-          color: #ffffff;
-          border: none;
-          padding: 6px 10px;
-          border-radius: 8px;
-          font-size: 12px;
-          font-weight: 600;
-        }}
-        .ck-btn:hover {{ background: #0b6e3f; }}
-        .ck-hud-bottom {{
-          position: absolute;
-          bottom: 10px;
-          left: 12px;
-          right: 12px;
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          gap: 10px;
-          color: #e2e8f0;
-          font-size: 12px;
-          background: rgba(14, 24, 18, 0.86);
-          padding: 7px 12px;
-          border-radius: 10px;
-          z-index: 6;
-        }}
-      </style>
-    </head>
-    <body>
-      <div id="ck-3d-wrap">
-        <div class="ck-hud-top">
-          <div class="ck-pill" id="ck-prompt">Tap a green piece (🟢) to see valid moves • Drag to orbit</div>
-          <div style="display:flex; gap:6px;">
-            <button class="ck-btn" onclick="setCam('p1')">Pupil Angle</button>
-            <button class="ck-btn" onclick="setCam('top')">Top-Down</button>
-            <button class="ck-btn" onclick="setCam('overview')">3D Overview</button>
-          </div>
-        </div>
-        <div class="ck-hud-bottom">
-          <span><strong>🟢</strong> Pupil • <strong>🔴</strong> Computer ({difficulty}) • <strong>👑</strong> Flying King • <strong>Highlighted</strong> = Tap to Move</span>
-          <span id="ck-log"></span>
-        </div>
+    html_template = """<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: transparent;
+      font-family: system-ui, -apple-system, sans-serif;
+      overflow: hidden;
+      touch-action: none;
+    }
+    #ck-3d-wrap {
+      position: relative;
+      width: 100%;
+      height: 540px;
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid rgba(6, 78, 44, 0.24);
+      background: linear-gradient(155deg, #16231c 0%, #0b130f 100%);
+    }
+    .ck-hud-top {
+      position: absolute;
+      top: 10px;
+      left: 12px;
+      right: 12px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      z-index: 6;
+      pointer-events: none;
+    }
+    .ck-pill {
+      pointer-events: auto;
+      background: rgba(14, 24, 18, 0.88);
+      color: #f8fafc;
+      border: 1px solid rgba(252, 220, 4, 0.35);
+      padding: 6px 11px;
+      border-radius: 999px;
+      font-size: 12px;
+    }
+    .ck-btn {
+      pointer-events: auto;
+      cursor: pointer;
+      background: #13a65b;
+      color: #ffffff;
+      border: none;
+      padding: 6px 10px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .ck-btn:hover { background: #0b6e3f; }
+    .ck-hud-bottom {
+      position: absolute;
+      bottom: 10px;
+      left: 12px;
+      right: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      color: #e2e8f0;
+      font-size: 12px;
+      background: rgba(14, 24, 18, 0.86);
+      padding: 7px 12px;
+      border-radius: 10px;
+      z-index: 6;
+    }
+  </style>
+</head>
+<body>
+  <div id="ck-3d-wrap">
+    <div class="ck-hud-top">
+      <div class="ck-pill" id="ck-prompt">Tap a green piece to see valid moves</div>
+      <div style="display:flex; gap:6px;">
+        <button class="ck-btn" onclick="setCam('p1')">Pupil Angle</button>
+        <button class="ck-btn" onclick="setCam('top')">Top-Down</button>
+        <button class="ck-btn" onclick="setCam('overview')">3D Overview</button>
       </div>
+    </div>
+    <div class="ck-hud-bottom">
+      <span><strong>Green</strong> Pupil &bull; <strong>Red</strong> Computer (<span id="ck-diff"></span>) &bull; <strong>Gold Ring</strong> King</span>
+      <span id="ck-log"></span>
+    </div>
+  </div>
 
-      <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
-      <script>
-        const STATE = {payload};
-        const promptEl = document.getElementById("ck-prompt");
-        document.getElementById("ck-log").textContent = STATE.lastLog || "";
+  <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
+  <script>
+    function sendToStreamlit(type, data) {
+      window.parent.postMessage(
+        Object.assign({ isStreamlitMessage: true, type: type }, data),
+        "*"
+      );
+    }
+    function setComponentValue(val) {
+      sendToStreamlit("streamlit:setComponentValue", { value: val });
+    }
+    function setFrameHeight(h) {
+      sendToStreamlit("streamlit:setFrameHeight", { height: h });
+    }
 
-        const container = document.getElementById("ck-3d-wrap");
-        const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(42, container.clientWidth / container.clientHeight, 0.1, 100);
+    let STATE = null;
+    let selectedSrc = null;
 
-        const renderer = new THREE.WebGLRenderer({{ antialias: true, alpha: true }});
-        renderer.setSize(container.clientWidth, container.clientHeight);
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-        renderer.shadowMap.enabled = true;
-        scene.add(new THREE.AmbientLight(0xffffff, 0.72));
+    const promptEl = document.getElementById("ck-prompt");
+    const logEl = document.getElementById("ck-log");
+    const diffEl = document.getElementById("ck-diff");
+    const container = document.getElementById("ck-3d-wrap");
 
-        const dirLight = new THREE.DirectionalLight(0xfff7dc, 1.15);
-        dirLight.position.set(7, 13, 9);
-        dirLight.castShadow = true;
-        scene.add(dirLight);
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(42, container.clientWidth / 540, 0.1, 100);
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setSize(container.clientWidth, 540);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.shadowMap.enabled = true;
+    container.appendChild(renderer.domElement);
 
-        const fillLight = new THREE.DirectionalLight(0x93c5fd, 0.4);
-        fillLight.position.set(-8, 6, -7);
-        scene.add(fillLight);
+    scene.add(new THREE.AmbientLight(0xffffff, 0.72));
+    const dirLight = new THREE.DirectionalLight(0xfff7dc, 1.15);
+    dirLight.position.set(7, 13, 9);
+    scene.add(dirLight);
 
-        const boardGroup = new THREE.Group();
-        scene.add(boardGroup);
+    const boardGroup = new THREE.Group();
+    scene.add(boardGroup);
 
-        const frameMat = new THREE.MeshStandardMaterial({{ color: 0x3b2210, roughness: 0.6 }});
-        const lightSqMat = new THREE.MeshStandardMaterial({{ color: 0xf3e5ab, roughness: 0.55 }});
-        const darkSqMat = new THREE.MeshStandardMaterial({{ color: 0x294b38, roughness: 0.6 }});
-        const moveSqMat = new THREE.MeshStandardMaterial({{ color: 0x22c55e, emissive: 0x15803d, emissiveIntensity: 0.58, roughness: 0.35 }});
-        const jumpSqMat = new THREE.MeshStandardMaterial({{ color: 0xfacc15, emissive: 0xca8a04, emissiveIntensity: 0.68, roughness: 0.35 }});
-        const selPieceMat = new THREE.MeshStandardMaterial({{ color: 0x4ade80, emissive: 0x16a34a, emissiveIntensity: 0.62, roughness: 0.3 }});
+    const frameMat = new THREE.MeshStandardMaterial({ color: 0x3b2210, roughness: 0.6 });
+    const lightSqMat = new THREE.MeshStandardMaterial({ color: 0xf3e5ab, roughness: 0.55 });
+    const darkSqMat = new THREE.MeshStandardMaterial({ color: 0x294b38, roughness: 0.6 });
+    const moveSqMat = new THREE.MeshStandardMaterial({ color: 0x22c55e, emissive: 0x15803d, emissiveIntensity: 0.58 });
+    const jumpSqMat = new THREE.MeshStandardMaterial({ color: 0xfacc15, emissive: 0xca8a04, emissiveIntensity: 0.68 });
+    const selPieceMat = new THREE.MeshStandardMaterial({ color: 0x4ade80, emissive: 0x16a34a, emissiveIntensity: 0.62 });
+    const p1Mat = new THREE.MeshStandardMaterial({ color: 0x0b875b, roughness: 0.35 });
+    const p2Mat = new THREE.MeshStandardMaterial({ color: 0xdc2626, roughness: 0.35 });
+    const crownMat = new THREE.MeshStandardMaterial({ color: 0xfcdc04, roughness: 0.25 });
 
-        const p1Mat = new THREE.MeshStandardMaterial({{ color: 0x0b875b, roughness: 0.35, metalness: 0.12 }});
-        const p2Mat = new THREE.MeshStandardMaterial({{ color: 0xdc2626, roughness: 0.35, metalness: 0.12 }});
-        const crownMat = new THREE.MeshStandardMaterial({{ color: 0xfcdc04, roughness: 0.25, metalness: 0.45 }});
+    const boardBase = new THREE.Mesh(new THREE.BoxGeometry(9.2, 0.5, 9.2), frameMat);
+    boardBase.position.y = -0.25;
+    boardGroup.add(boardBase);
 
-        const boardBase = new THREE.Mesh(new THREE.BoxGeometry(9.2, 0.5, 9.2), frameMat);
-        boardBase.position.y = -0.25;
-        boardBase.receiveShadow = true;
-        boardGroup.add(boardBase);
+    const sqGeo = new THREE.BoxGeometry(1.0, 0.14, 1.0);
+    const discGeo = new THREE.CylinderGeometry(0.38, 0.4, 0.22, 28);
+    const crownGeo = new THREE.TorusGeometry(0.19, 0.055, 12, 24);
 
-        const sqGeo = new THREE.BoxGeometry(1.0, 0.14, 1.0);
-        const discGeo = new THREE.CylinderGeometry(0.38, 0.4, 0.22, 28);
-        const crownGeo = new THREE.TorusGeometry(0.19, 0.055, 12, 24);
+    const dynamicMeshes = [];
+    const tapTargets = [];
 
-        const squareMeshes = [];
-        const pieceMeshes = [];
-        const tapTargets = [];
+    function coordToWorld(r, c) {
+      return { x: (c - 3.5) * 1.02, z: (r - 3.5) * 1.02 };
+    }
 
-        let selectedSrc = null;
-        if (STATE.mustJumpFrom && STATE.legalMoves[STATE.mustJumpFrom.join(",")]) {{
-          selectedSrc = STATE.mustJumpFrom;
-        }} else {{
-          const keys = Object.keys(STATE.legalMoves);
-          if (keys.length === 1) {{
-            selectedSrc = keys[0].split(",").map(Number);
-          }}
-        }}
+    function getTargetsForSelected() {
+      if (!STATE || !selectedSrc) return [];
+      return STATE.legalMoves[selectedSrc.join(",")] || [];
+    }
 
-        function coordToWorld(r, c) {{
-          return {{ x: (c - 3.5) * 1.02, z: (r - 3.5) * 1.02 }};
-        }}
+    function rebuildBoardVisuals() {
+      if (!STATE) return;
+      for (const m of dynamicMeshes) boardGroup.remove(m);
+      dynamicMeshes.length = 0;
+      tapTargets.length = 0;
 
-        function getTargetsForSelected() {{
-          if (!selectedSrc) return [];
-          return STATE.legalMoves[selectedSrc.join(",")] || [];
-        }}
+      const activeTargets = getTargetsForSelected();
+      const targetMap = new Map();
+      for (const [dr, dc, cap] of activeTargets) {
+        targetMap.set(`${dr},${dc}`, cap);
+      }
 
-        function rebuildBoardVisuals() {{
-          for (const m of squareMeshes) boardGroup.remove(m);
-          for (const m of pieceMeshes) boardGroup.remove(m);
-          squareMeshes.length = 0;
-          pieceMeshes.length = 0;
-          tapTargets.length = 0;
+      for (let r = 0; r < 8; r++) {
+        for (let c = 0; c < 8; c++) {
+          const { x, z } = coordToWorld(r, c);
+          const isDark = (r + c) % 2 === 1;
+          const key = `${r},${c}`;
+          let mat = isDark ? darkSqMat : lightSqMat;
+          if (targetMap.has(key)) {
+            mat = targetMap.get(key) ? jumpSqMat : moveSqMat;
+          }
 
-          const activeTargets = getTargetsForSelected();
-          const targetMap = new Map();
-          for (const [dr, dc, cap] of activeTargets) {{
-            targetMap.set(`${{dr}},${{dc}}`, cap);
-          }}
+          const sq = new THREE.Mesh(sqGeo, mat);
+          sq.position.set(x, 0.05, z);
+          sq.userData = { kind: "square", r, c, isTarget: targetMap.has(key) };
+          boardGroup.add(sq);
+          dynamicMeshes.push(sq);
+          if (targetMap.has(key)) tapTargets.push(sq);
 
-          for (let r = 0; r < 8; r++) {{
-            for (let c = 0; c < 8; c++) {{
-              const {{ x, z }} = coordToWorld(r, c);
-              const isDark = (r + c) % 2 === 1;
-              const key = `${{r}},${{c}}`;
-              let mat = isDark ? darkSqMat : lightSqMat;
+          const val = STATE.board[r][c];
+          if (val !== 0) {
+            const isP1 = val > 0;
+            const isKing = Math.abs(val) === 2;
+            const isSelected = selectedSrc && selectedSrc[0] === r && selectedSrc[1] === c;
+            const canSelect = STATE.turn === 1 && isP1 && Boolean(STATE.legalMoves[key]);
 
-              if (targetMap.has(key)) {{
-                mat = targetMap.get(key) ? jumpSqMat : moveSqMat;
-              }}
+            const disc = new THREE.Mesh(discGeo, isSelected ? selPieceMat : (isP1 ? p1Mat : p2Mat));
+            disc.position.set(x, isSelected ? 0.34 : 0.23, z);
+            disc.userData = { kind: "piece", r, c, canSelect };
+            boardGroup.add(disc);
+            dynamicMeshes.push(disc);
+            if (canSelect) tapTargets.push(disc);
 
-              const sq = new THREE.Mesh(sqGeo, mat);
-              sq.position.set(x, 0.05, z);
-              sq.receiveShadow = true;
-              sq.userData = {{ kind: "square", r, c, isTarget: targetMap.has(key) }};
-              boardGroup.add(sq);
-              squareMeshes.push(sq);
-              if (targetMap.has(key)) tapTargets.push(sq);
+            if (isKing) {
+              const crown = new THREE.Mesh(crownGeo, crownMat);
+              crown.rotation.x = Math.PI / 2;
+              crown.position.set(x, disc.position.y + 0.13, z);
+              boardGroup.add(crown);
+              dynamicMeshes.push(crown);
+            }
+          }
+        }
+      }
 
-              const val = STATE.board[r][c];
-              if (val !== 0) {{
-                const isP1 = val > 0;
-                const isKing = Math.abs(val) === 2;
-                const isSelected = selectedSrc && selectedSrc[0] === r && selectedSrc[1] === c;
-                const canSelect = STATE.turn === 1 && isP1 && Boolean(STATE.legalMoves[key]);
+      if (STATE.turn !== 1) {
+        promptEl.textContent = "Computer is moving...";
+      } else if (selectedSrc) {
+        promptEl.textContent = `Selected (${selectedSrc[0]}, ${selectedSrc[1]}) • Tap a highlighted square`;
+      } else {
+        promptEl.textContent = "Tap a green piece to select • Tap highlighted square to move";
+      }
+    }
 
-                const disc = new THREE.Mesh(discGeo, isSelected ? selPieceMat : (isP1 ? p1Mat : p2Mat));
-                disc.position.set(x, isSelected ? 0.34 : 0.23, z);
-                disc.castShadow = true;
-                disc.userData = {{ kind: "piece", r, c, isP1, canSelect }};
-                boardGroup.add(disc);
-                pieceMeshes.push(disc);
-                if (canSelect) tapTargets.push(disc);
+    let isPointerDown = false, wasDragged = false;
+    let downX = 0, downY = 0, lastX = 0, lastY = 0;
+    let yaw = 0, pitch = 0.72, dist = 12.6;
 
-                if (isKing) {{
-                  const crown = new THREE.Mesh(crownGeo, crownMat);
-                  crown.rotation.x = Math.PI / 2;
-                  crown.position.set(x, disc.position.y + 0.13, z);
-                  boardGroup.add(crown);
-                  pieceMeshes.push(crown);
-                }}
-              }}
-            }}
-          }}
+    function updateCamera() {
+      const clampedPitch = Math.max(0.2, Math.min(1.48, pitch));
+      camera.position.x = dist * Math.sin(yaw) * Math.cos(clampedPitch);
+      camera.position.y = dist * Math.sin(clampedPitch);
+      camera.position.z = dist * Math.cos(yaw) * Math.cos(clampedPitch);
+      camera.lookAt(0, 0, 0);
+    }
 
-          if (STATE.turn !== 1) {{
-            promptEl.textContent = "Computer turn or game over — click Reset Board to replay";
-          }} else if (selectedSrc) {{
-            const nTargets = activeTargets.length;
-            promptEl.textContent = `Selected (${{selectedSrc[0]}}, ${{selectedSrc[1]}}) • Tap one of ${{nTargets}} highlighted square(s) to move`;
-          }} else {{
-            promptEl.textContent = "Tap a green piece (🟢) to select • Tap a highlighted square to move";
-          }}
-        }}
+    window.setCam = function(mode) {
+      if (mode === "p1") { yaw = 0; pitch = 0.62; dist = 11.4; }
+      else if (mode === "top") { yaw = 0; pitch = 1.47; dist = 13.0; }
+      else { yaw = 0.25; pitch = 0.72; dist = 12.6; }
+      updateCamera();
+    };
 
-        function triggerStreamlitMove(src, dst) {{
-          const srcStr = `${{src[0]}},${{src[1]}}`;
-          const dstStr = `${{dst[0]}},${{dst[1]}}`;
-          const nonce = `${{Date.now()}}_${{Math.floor(Math.random() * 100000)}}`;
+    const raycaster = new THREE.Raycaster();
+    const pointer = new THREE.Vector2();
 
-          for (const winObj of [window.top, window.parent, window]) {{
-            try {{
-              if (!winObj || !winObj.location) continue;
-              const url = new URL(winObj.location.href);
-              url.searchParams.set("tab", "Checkers Lab");
-              url.searchParams.set("ck_src", srcStr);
-              url.searchParams.set("ck_dst", dstStr);
-              url.searchParams.set("ck_nonce", nonce);
-              if (winObj.history && typeof winObj.history.replaceState === "function") {{
-                winObj.history.replaceState({{}}, "", url.toString());
-              }}
-              winObj.location.assign(url.toString());
-              return;
-            }} catch (_) {{}}
-          }}
-        }}
+    function pickHit(clientX, clientY) {
+      const rect = renderer.domElement.getBoundingClientRect();
+      pointer.x = ((clientX - rect.left) / rect.width) * 2 - 1;
+      pointer.y = -((clientY - rect.top) / rect.height) * 2 + 1;
+      raycaster.setFromCamera(pointer, camera);
+      const hits = raycaster.intersectObjects(tapTargets, false);
+      return hits.length > 0 ? hits[0].object.userData : null;
+    }
 
-        function submitMoveToStreamlit(src, dst) {{
-          const [sr, sc] = src;
-          const [dr, dc] = dst;
-          const activeTargets = getTargetsForSelected();
-          const matched = activeTargets.find((m) => m[0] === dr && m[1] === dc);
-          const cap = matched ? matched[2] : null;
+    renderer.domElement.addEventListener("pointerdown", (e) => {
+      isPointerDown = true;
+      wasDragged = false;
+      downX = lastX = e.clientX;
+      downY = lastY = e.clientY;
+    });
 
-          const movingVal = STATE.board[sr][sc];
-          STATE.board[sr][sc] = 0;
-          STATE.board[dr][dc] = (dr === 0 && movingVal === 1) ? 2 : movingVal;
-          if (cap && Array.isArray(cap) && cap.length === 2) {{
-            STATE.board[cap[0]][cap[1]] = 0;
-          }}
-          selectedSrc = null;
-          rebuildBoardVisuals();
-          promptEl.textContent = `Moved (${{sr}}, ${{sc}}) → (${{dr}}, ${{dc}}) • Computer moving automatically...`;
-          triggerStreamlitMove(src, dst);
-        }}
-
-        container.appendChild(renderer.domElement);
-
-        let isPointerDown = false;
-        let wasDragged = false;
-        let downX = 0, downY = 0, lastX = 0, lastY = 0;
-        let yaw = 0, pitch = 0.72, dist = 12.6;
-
-        function updateCamera() {{
-          const clampedPitch = Math.max(0.2, Math.min(1.48, pitch));
-          camera.position.x = dist * Math.sin(yaw) * Math.cos(clampedPitch);
-          camera.position.y = dist * Math.sin(clampedPitch);
-          camera.position.z = dist * Math.cos(yaw) * Math.cos(clampedPitch);
-          camera.lookAt(0, 0, 0);
-        }}
-
-        window.setCam = function(mode) {{
-          if (mode === "p1") {{ yaw = 0; pitch = 0.62; dist = 11.4; }}
-          else if (mode === "top") {{ yaw = 0; pitch = 1.47; dist = 13.0; }}
-          else {{ yaw = 0.25; pitch = 0.72; dist = 12.6; }}
-          updateCamera();
-        }};
-
-        const raycaster = new THREE.Raycaster();
-        const pointer = new THREE.Vector2();
-
-        function pickHit(clientX, clientY) {{
-          const rect = renderer.domElement.getBoundingClientRect();
-          pointer.x = ((clientX - rect.left) / rect.width) * 2 - 1;
-          pointer.y = -((clientY - rect.top) / rect.height) * 2 + 1;
-          raycaster.setFromCamera(pointer, camera);
-          const hits = raycaster.intersectObjects(tapTargets, false);
-          return hits.length > 0 ? hits[0].object.userData : null;
-        }}
-
-        renderer.domElement.addEventListener("pointerdown", (e) => {{
-          isPointerDown = true;
-          wasDragged = false;
-          downX = lastX = e.clientX;
-          downY = lastY = e.clientY;
-        }});
-
-        window.addEventListener("pointermove", (e) => {{
-          if (!isPointerDown) return;
-          const dx = e.clientX - lastX;
-          const dy = e.clientY - lastY;
-          if (Math.hypot(e.clientX - downX, e.clientY - downY) > 6) {{
-            wasDragged = true;
-          }}
-          lastX = e.clientX;
-          lastY = e.clientY;
-          if (wasDragged) {{
-            yaw -= dx * 0.008;
-            pitch += dy * 0.008;
-            updateCamera();
-          }}
-        }});
-
-        window.addEventListener("pointerup", (e) => {{
-          if (!isPointerDown) return;
-          isPointerDown = false;
-          if (wasDragged) return;
-
-          const hit = pickHit(e.clientX, e.clientY);
-          if (!hit) return;
-
-          if (hit.kind === "piece" && hit.canSelect) {{
-            selectedSrc = [hit.r, hit.c];
-            rebuildBoardVisuals();
-          }} else if (hit.kind === "square" && hit.isTarget && selectedSrc) {{
-            submitMoveToStreamlit(selectedSrc, [hit.r, hit.c]);
-          }}
-        }});
-
-        renderer.domElement.addEventListener("wheel", (e) => {{
-          e.preventDefault();
-          dist = Math.max(7.2, Math.min(18.5, dist + e.deltaY * 0.008));
-          updateCamera();
-        }}, {{ passive: false }});
-
+    window.addEventListener("pointermove", (e) => {
+      if (!isPointerDown) return;
+      const dx = e.clientX - lastX;
+      const dy = e.clientY - lastY;
+      if (Math.hypot(e.clientX - downX, e.clientY - downY) > 6) wasDragged = true;
+      lastX = e.clientX;
+      lastY = e.clientY;
+      if (wasDragged) {
+        yaw -= dx * 0.008;
+        pitch += dy * 0.008;
         updateCamera();
-        rebuildBoardVisuals();
+      }
+    });
 
-        function animate() {{
-          requestAnimationFrame(animate);
-          renderer.render(scene, camera);
-        }}
-        animate();
-      </script>
-    </body>
-    </html>
-    """
-    components.html(html_code, height=height + 12)
+    window.addEventListener("pointerup", (e) => {
+      if (!isPointerDown) return;
+      isPointerDown = false;
+      if (wasDragged) return;
+
+      const hit = pickHit(e.clientX, e.clientY);
+      if (!hit) return;
+
+      if (hit.kind === "piece" && hit.canSelect) {
+        selectedSrc = [hit.r, hit.c];
+        rebuildBoardVisuals();
+      } else if (hit.kind === "square" && hit.isTarget && selectedSrc) {
+        const movePayload = {
+          src: [selectedSrc[0], selectedSrc[1]],
+          dst: [hit.r, hit.c],
+          nonce: `${Date.now()}_${Math.random()}`
+        };
+        selectedSrc = null;
+        promptEl.textContent = "Sending move & waiting for Computer reply...";
+        setComponentValue(movePayload);
+      }
+    });
+
+    window.addEventListener("message", (event) => {
+      if (!event.data || event.data.type !== "streamlit:render") return;
+      STATE = event.data.args.state;
+      diffEl.textContent = STATE.difficulty || "";
+      logEl.textContent = STATE.lastLog || "";
+      if (STATE.mustJumpFrom && STATE.legalMoves[STATE.mustJumpFrom.join(",")]) {
+        selectedSrc = STATE.mustJumpFrom;
+      } else {
+        const keys = Object.keys(STATE.legalMoves);
+        selectedSrc = keys.length === 1 ? keys[0].split(",").map(Number) : null;
+      }
+      rebuildBoardVisuals();
+      setFrameHeight(552);
+    });
+
+    updateCamera();
+    sendToStreamlit("streamlit:componentReady", { apiVersion: 1 });
+    setFrameHeight(552);
+
+    function animate() {
+      requestAnimationFrame(animate);
+      renderer.render(scene, camera);
+    }
+    animate();
+  </script>
+</body>
+</html>
+"""
+    with open(index_path, "w", encoding="utf-8") as f:
+        f.write(html_template)
+
+    return components.declare_component("ilearn_pool_checkers_3d", path=comp_dir)
 
 
 # ==============================================================================
@@ -2110,6 +2060,7 @@ def init_state() -> None:
     st.session_state.setdefault("active_tab", "Take Quiz")
     st.session_state.setdefault("checkers_game", PoolCheckersGame())
     st.session_state.setdefault("checkers_difficulty", "Medium")
+    st.session_state.setdefault("last_ck_nonce", None)
     st.session_state.setdefault("pupil_info", {"name": "", "school": "", "district": "Kampala"})
     st.session_state.setdefault("attempt_records", [])
     st.session_state.setdefault("last_checked_feedback", {})
@@ -2126,30 +2077,6 @@ def init_state() -> None:
 
 def main() -> None:
     init_state()
-
-    ck_src_raw = st.query_params.get("ck_src", None)
-    ck_dst_raw = st.query_params.get("ck_dst", None)
-    if ck_src_raw and ck_dst_raw:
-        move_applied = False
-        try:
-            src_tuple = tuple(int(x) for x in str(ck_src_raw).split(","))
-            dst_tuple = tuple(int(x) for x in str(ck_dst_raw).split(","))
-            if len(src_tuple) == 2 and len(dst_tuple) == 2:
-                game: PoolCheckersGame = st.session_state["checkers_game"]
-                difficulty = st.session_state.get("checkers_difficulty", "Medium")
-                moved = game.make_move((src_tuple[0], src_tuple[1]), (dst_tuple[0], dst_tuple[1]))
-                if moved:
-                    move_applied = True
-                    st.session_state["active_tab"] = "Checkers Lab"
-                    if game.turn == -1:
-                        execute_computer_turns(game, difficulty=difficulty)
-        except Exception:
-            pass
-        for param_key in ("ck_src", "ck_dst", "ck_nonce", "tab"):
-            if param_key in st.query_params:
-                del st.query_params[param_key]
-        if move_applied:
-            st.rerun()
 
     requested_tab = st.query_params.get("tab", None)
     if requested_tab in TABS:
@@ -2645,6 +2572,7 @@ def main() -> None:
                 st.markdown("<div style='height: 1.72rem;'></div>", unsafe_allow_html=True)
                 if st.button("Reset Board", use_container_width=True, key="btn_checkers_reset"):
                     st.session_state["checkers_game"] = PoolCheckersGame()
+                    st.session_state["last_ck_nonce"] = None
                     st.rerun()
 
             if game.turn == -1 and game.get_all_player_moves(-1):
@@ -2656,7 +2584,37 @@ def main() -> None:
             m2.metric(f"Computer ({selected_difficulty}) 🔴", p2_left)
             m3.metric("Current Turn", "Pupil Turn (🟢)" if game.turn == 1 else "Computer (🔴)")
 
-            render_checkers_3d_board(game, difficulty=selected_difficulty, height=540)
+            legal_p1_for_ui = game.get_all_player_moves(1) if game.turn == 1 else {}
+            serialized_moves = {
+                f"{sr},{sc}": [
+                    [dr, dc, list(cap) if cap is not None else None]
+                    for (dr, dc, cap) in moves
+                ]
+                for (sr, sc), moves in legal_p1_for_ui.items()
+            }
+            board_state_payload = {
+                "board": game.board,
+                "turn": game.turn,
+                "difficulty": selected_difficulty,
+                "mustJumpFrom": list(game.must_jump_from) if game.must_jump_from else None,
+                "legalMoves": serialized_moves,
+                "lastLog": game.log[-1] if game.log else "",
+            }
+
+            checkers_3d_widget = _get_checkers_component()
+            move_event = checkers_3d_widget(state=board_state_payload, key="pool_checkers_3d_widget")
+
+            if isinstance(move_event, dict) and move_event.get("nonce") != st.session_state.get("last_ck_nonce"):
+                st.session_state["last_ck_nonce"] = move_event.get("nonce")
+                src_raw = move_event.get("src")
+                dst_raw = move_event.get("dst")
+                if isinstance(src_raw, (list, tuple)) and len(src_raw) == 2 and isinstance(dst_raw, (list, tuple)) and len(dst_raw) == 2:
+                    src = (int(src_raw[0]), int(src_raw[1]))
+                    dst = (int(dst_raw[0]), int(dst_raw[1]))
+                    if game.make_move(src, dst):
+                        if game.turn == -1:
+                            execute_computer_turns(game, difficulty=selected_difficulty)
+                        st.rerun()
 
             legal_p1 = game.get_all_player_moves(1)
             legal_comp = game.get_all_player_moves(-1)
