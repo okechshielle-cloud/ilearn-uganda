@@ -172,14 +172,10 @@ def get_diagram_png(diagram_type: Optional[str]) -> Optional[bytes]:
         plot_q = patches.Rectangle((4, 5), 6, 3, linewidth=2, edgecolor="black", facecolor="white")
         ax.add_patch(plot_q)
         ax.text(7.0, 6.3, "Q", fontsize=14, fontweight="bold", ha="center")
-        ax.text(7.0, 5.25, "6 m", fontsize=11, ha="center")
 
         fig.savefig(buf, format="png", dpi=150, bbox_inches="tight")
         plt.close(fig)
         return buf.getvalue()
-
-    return None
-
 
 # ==============================================================================
 # 2. NCDC PRIMARY MATHEMATICS CURRICULUM (P1 - P7) & UGANDA DISTRICTS
