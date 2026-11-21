@@ -625,4 +625,865 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
             "topic": "Time & Duration",
             "marks": 2,
             "question": "9– A mathematics lesson started at 8:40 a.m. and lasted 45 minutes. At what time did it end?",
-            "options": ["9:15 a.m.", "9:35 a.m.", "9:25 a.m.", "
+            "options": ["9:15 a.m.", "9:35 a.m.", "9:25 a.m.", "8:85 a.m."],
+            "ans": "9:25 a.m.",
+            "explanation": "8:40 + 20 minutes = 9:00 a.m., plus 25 minutes = 9:25 a.m.",
+            "step_by_step": [
+                "Line 1 — Start time is 8:40 a.m. and duration is 45 minutes.",
+                "Line 2 — Add 20 minutes to reach the next full hour: 8:40 a.m. + 20 min = 9:00 a.m.",
+                "Line 3 — Subtract 20 from 45 to find remaining minutes: 45 - 20 = 25 minutes.",
+                "Line 4 — Add the remaining 25 minutes to 9:00 a.m. to get 9:25 a.m.",
+            ],
+            "diagram_type": None,
+        },
+        {
+            "id": "p6_q10_angles",
+            "topic": "Lines, Angles & Geometric Figures",
+            "marks": 2,
+            "question": "10– Two angles on a straight line are 65° and x. Find the value of x.",
+            "options": ["25°", "125°", "295°", "115°"],
+            "ans": "115°",
+            "explanation": "Angles on a straight line add up to 180°: x = 180° - 65° = 115°.",
+            "step_by_step": [
+                "Line 1 — Recall that adjacent angles on a straight line sum to 180°.",
+                "Line 2 — Set up the equation: 65° + x = 180°.",
+                "Line 3 — Subtract 65° from 180°: x = 180° - 65° = 115°.",
+            ],
+            "diagram_type": None,
+        },
+        {
+            "id": "p6_q11_algebra_simplify",
+            "topic": "Algebra & Equations",
+            "marks": 4,
+            "question": "11– Simplify: 4k + 3m + 2k - m.",
+            "options": ["6k + 2m", "6k + 4m", "2k + 2m", "8km"],
+            "ans": "6k + 2m",
+            "explanation": "Collect like terms: (4k + 2k) + (3m - m) = 6k + 2m.",
+            "step_by_step": [
+                "Line 1 — Group like terms with variable k: 4k + 2k.",
+                "Line 2 — Group like terms with variable m: 3m - m.",
+                "Line 3 — Simplify k terms: 4k + 2k = 6k.",
+                "Line 4 — Simplify m terms: 3m - 1m = 2m, giving 6k + 2m.",
+            ],
+            "diagram_type": None,
+        },
+        {
+            "id": "p6_q12i_perimeter",
+            "topic": "Measurement & Geometry",
+            "marks": 2,
+            "question": (
+                "12– The diagram below shows how Mr. Okello used his land. He used plot P to keep goats, "
+                "plot Q to keep pigs and R to keep cattle. (i) Work out the total distance round the plot he used to keep pigs."
+            ),
+            "options": ["14 m", "18 m", "20 m", "9 m"],
+            "ans": "18 m",
+            "explanation": "Plot Q width = 10 m - 4 m = 6 m and height = 3 m, so perimeter = 2 × (6 + 3) = 18 m.",
+            "step_by_step": [
+                "Line 1 — Find the horizontal length (width) of plot Q: total top span is 10 m and plot P takes 4 m, so 10 m - 4 m = 6 m.",
+                "Line 2 — Find the vertical height of plot Q, which matches plot P at 3 m.",
+                "Line 3 — Calculate perimeter of rectangular plot Q: 2 × (Length + Width) = 2 × (6 m + 3 m) = 2 × 9 m = 18 m.",
+            ],
+            "diagram_type": "okello_land",
+        },
+        {
+            "id": "p6_q12ii_area",
+            "topic": "Measurement & Geometry",
+            "marks": 4,
+            "question": (
+                "12– (ii) Find the size of the land area he has altogether which keeps all his goats, "
+                "pigs and cattle in square metres."
+            ),
+            "options": ["50 sq m", "36 sq m", "80 sq m", "68 sq m"],
+            "ans": "80 sq m",
+            "explanation": "Total width = 10 m and total height = 3 m + 5 m = 8 m, giving 10 m × 8 m = 80 sq m.",
+            "step_by_step": [
+                "Line 1 — Find total horizontal width across the whole land: 10 m.",
+                "Line 2 — Find total vertical height: upper section (P/Q) is 3 m + lower section (R) is 5 m = 8 m.",
+                "Line 3 — Multiply total width by total height: 10 m × 8 m = 80 sq m.",
+            ],
+            "diagram_type": None,
+        },
+        {
+            "id": "p6_q13_algebra",
+            "topic": "Algebra & Equations",
+            "marks": 5,
+            "question": (
+                "13– A boy said that they served with some cups of tea such that if a half of their "
+                "total joins them, their sum could be 45. How many boys were they?"
+            ),
+            "options": ["22.5", "90", "15", "30"],
+            "ans": "30",
+            "explanation": "x + 0.5x = 45 -> 1.5x = 45 -> x = 30 boys.",
+            "step_by_step": [
+                "Line 1 — Let the number of boys be x.",
+                "Line 2 — Write the equation from the statement: x + (1/2)x = 45.",
+                "Line 3 — Combine like terms: (3/2)x = 45.",
+                "Line 4 — Multiply both sides by 2: 3x = 90.",
+                "Line 5 — Divide by 3: x = 90 ÷ 3 = 30 boys.",
+            ],
+            "diagram_type": None,
+        },
+        {
+            "id": "p6_q14_remainders",
+            "topic": "Number Patterns & Remainders",
+            "marks": 5,
+            "question": (
+                "14– Sarah dug two lines of 7 pits and 6 pits respectively. She had some bean seeds in her "
+                "hands whereby if she distributes them in the 7 pits equally, 5 seeds remain and if she "
+                "distributes them in the one of 6 pits, 2 seeds remain. How many seeds was she having?"
+            ),
+            "options": ["26", "12", "19", "47"],
+            "ans": "26",
+            "explanation": "26 ÷ 7 = 3 remainder 5, and 26 ÷ 6 = 4 remainder 2.",
+            "step_by_step": [
+                "Line 1 — List numbers leaving remainder 5 when divided by 7: 5, 12, 19, 26, 33...",
+                "Line 2 — List numbers leaving remainder 2 when divided by 6: 2, 8, 14, 20, 26, 32...",
+                "Line 3 — Find the common number in both sequences: 26.",
+                "Line 4 — Verify: 26 ÷ 7 = 3 rem 5, and 26 ÷ 6 = 4 rem 2.",
+            ],
+            "diagram_type": None,
+        },
+        {
+            "id": "p6_q15_mean",
+            "topic": "Statistics & Mean",
+            "marks": 5,
+            "question": (
+                "15– The mean mass of 5 boys is 30 kg. When their teacher joins them, the mean mass "
+                "changes to 34 kg. Find the mass of the teacher."
+            ),
+            "options": ["48 kg", "54 kg", "204 kg", "150 kg"],
+            "ans": "54 kg",
+            "explanation": "5 boys sum = 5 × 30 = 150 kg; 6 people sum = 6 × 34 = 204 kg; teacher's mass = 204 - 150 = 54 kg.",
+            "step_by_step": [
+                "Line 1 — Calculate total mass of the 5 boys: 5 × 30 kg = 150 kg.",
+                "Line 2 — Calculate total mass of all 6 people (5 boys + 1 teacher): 6 × 34 kg = 204 kg.",
+                "Line 3 — Subtract total mass of the 5 boys from total mass of the 6 people: 204 kg - 150 kg = 54 kg.",
+            ],
+            "diagram_type": None,
+        },
+        {
+            "id": "p6_q16a_factors",
+            "topic": "Factors & Multiples",
+            "marks": 2,
+            "question": "16– (a) List all the factors of 12.",
+            "options": ["12, 24, 36, 48", "2, 3, 4, 6", "1, 2, 3, 4, 6, 12", "1, 3, 4, 12"],
+            "ans": "1, 2, 3, 4, 6, 12",
+            "explanation": "The factors of 12 are 1, 2, 3, 4, 6, and 12.",
+            "step_by_step": [
+                "Line 1 — Find pairs of whole numbers that multiply to 12: 1 × 12, 2 × 6, and 3 × 4.",
+                "Line 2 — Arrange all distinct factors in ascending order: 1, 2, 3, 4, 6, 12.",
+            ],
+            "diagram_type": None,
+        },
+        {
+            "id": "p6_q16b_lcm",
+            "topic": "Factors & Multiples (LCM)",
+            "marks": 3,
+            "question": (
+                "16– (b) What is the least number of sweets that can be shared by either "
+                "6 or 8 boys equally without a remainder?"
+            ),
+            "options": ["48", "12", "2", "24"],
+            "ans": "24",
+            "explanation": "The least number divisible by both 6 and 8 is LCM(6, 8) = 24.",
+            "step_by_step": [
+                "Line 1 — 'Least number shared equally by either 6 or 8 without remainder' means LCM(6, 8).",
+                "Line 2 — Multiples of 6: 6, 12, 18, 24...; Multiples of 8: 8, 16, 24...",
+                "Line 3 — The smallest common multiple is 24 sweets.",
+            ],
+            "diagram_type": None,
+        },
+    ],
+    "P7": [
+        {
+            "id": "p7_1",
+            "topic": "Speed, Distance & Time",
+            "marks": 2,
+            "question": "1– A car travels 180 km in 3 hours. Find its average speed.",
+            "options": ["50 km/h", "90 km/h", "540 km/h", "60 km/h"],
+            "ans": "60 km/h",
+            "explanation": "Speed = Distance ÷ Time = 180 km ÷ 3 hr = 60 km/h.",
+            "step_by_step": [
+                "Line 1 — Identify Distance = 180 km and Time = 3 hours.",
+                "Line 2 — Apply the formula: Average Speed = Distance ÷ Time.",
+                "Line 3 — Divide: 180 ÷ 3 = 60 km/h.",
+            ],
+            "diagram_type": None,
+        },
+        {
+            "id": "p7_2",
+            "topic": "Algebra",
+            "marks": 2,
+            "question": "2– Solve for x: 2x + 6 = 18.",
+            "options": ["12", "6", "9", "3"],
+            "ans": "6",
+            "explanation": "2x = 18 - 6 = 12 -> x = 6.",
+            "step_by_step": [
+                "Line 1 — Start with the equation: 2x + 6 = 18.",
+                "Line 2 — Subtract 6 from both sides: 2x = 18 - 6 = 12.",
+                "Line 3 — Divide both sides by 2: x = 12 ÷ 2 = 6.",
+            ],
+            "diagram_type": None,
+        },
+    ],
+}
+
+
+def build_question_lookup() -> Dict[str, Dict[str, Any]]:
+    lookup: Dict[str, Dict[str, Any]] = {}
+    for cls_code, q_list in QUIZ_BANK.items():
+        for q_item in q_list:
+            q_id = str(q_item.get("id", ""))
+            lookup[f"{cls_code}:{q_id}"] = {**q_item, "class": cls_code}
+            lookup[q_item["question"]] = {**q_item, "class": cls_code}
+    return lookup
+
+
+QUESTION_LOOKUP = build_question_lookup()
+
+
+def get_detailed_lines_for_record(record: Dict[str, Any]) -> List[str]:
+    q_uid = str(record.get("q_uid", "") or "")
+    q_id = str(record.get("Question ID", "") or "")
+    cls_code = str(record.get("Class", "") or "")
+    q_text = str(record.get("Question", "") or "")
+
+    matched = (
+        QUESTION_LOOKUP.get(q_uid)
+        or QUESTION_LOOKUP.get(f"{cls_code}:{q_id}")
+        or QUESTION_LOOKUP.get(q_text)
+    )
+    if matched and matched.get("step_by_step"):
+        return list(matched["step_by_step"])
+    if matched and matched.get("explanation"):
+        return [f"Line 1 — {matched['explanation']}"]
+    return [f"Line 1 — Evaluated answer '{record.get('Selected', '')}' for {q_text}."]
+
+
+def render_line_by_line_explanation(record: Dict[str, Any], correct_ans: Optional[str] = None) -> None:
+    lines = get_detailed_lines_for_record(record)
+    st.markdown("**Line-by-Line Detailed Explanation:**")
+    for line in lines:
+        st.markdown(f"- {line}")
+    if correct_ans is not None:
+        st.markdown(f"- **Correct Answer:** `{correct_ans}` | **Marks Earned:** `{record.get('Marks', 0)}/{record.get('Max Marks', 1)}`")
+
+
+# ==============================================================================
+# 4. GOOGLE SHEETS PERSISTENCE LAYER (ALL CLASSES P1–P7)
+# ==============================================================================
+
+
+def _make_attempt_key(pupil_name: str, school_name: str, cls_code: str, q_id: str) -> str:
+    return f"{pupil_name.strip().lower()}|{school_name.strip().lower()}|{cls_code.strip()}|{q_id.strip()}"
+
+
+def _get_secret_or_env(key: str, default: Any = None) -> Any:
+    try:
+        if key in st.secrets:
+            return st.secrets[key]
+    except Exception:
+        pass
+    return os.environ.get(key, default)
+
+
+def _get_webhook_url() -> Optional[str]:
+    url = _get_secret_or_env("GSHEET_WEBHOOK_URL") or _get_secret_or_env("GOOGLE_SHEETS_WEBHOOK_URL")
+    return str(url).strip() if url else None
+
+
+def _get_service_account_dict() -> Optional[Dict[str, Any]]:
+    raw = _get_secret_or_env("GCP_SERVICE_ACCOUNT") or _get_secret_or_env("GOOGLE_SERVICE_ACCOUNT_JSON")
+    if not raw:
+        return None
+    if hasattr(raw, "to_dict"):
+        sa = raw.to_dict()
+    elif isinstance(raw, dict):
+        sa = dict(raw)
+    else:
+        try:
+            sa = json.loads(str(raw))
+        except Exception:
+            return None
+    if isinstance(sa, dict) and isinstance(sa.get("private_key"), str):
+        sa["private_key"] = sa["private_key"].replace("\\n", "\n")
+    return sa
+
+
+def _connect_gspread_worksheet() -> Tuple[Any, str]:
+    """Connects to Google Sheets and returns (worksheet_or_None, diagnostic_status)."""
+    sa_info = _get_service_account_dict()
+    if not sa_info:
+        return None, "No GCP_SERVICE_ACCOUNT found in secrets"
+    try:
+        import gspread  # type: ignore
+        from google.oauth2.service_account import Credentials  # type: ignore
+
+        scopes = ["https://www.googleapis.com/auth/spreadsheets"]
+        creds = Credentials.from_service_account_info(sa_info, scopes=scopes)
+        client = gspread.authorize(creds)
+        sheet_id = str(_get_secret_or_env("GSHEET_SPREADSHEET_ID", SPREADSHEET_ID)).strip()
+        spreadsheet = client.open_by_key(sheet_id)
+        try:
+            ws = spreadsheet.worksheet(QUIZ_LOG_SHEET_NAME)
+        except Exception:
+            ws = spreadsheet.add_worksheet(title=QUIZ_LOG_SHEET_NAME, rows=1000, cols=len(QUIZ_LOG_HEADERS))
+            ws.append_row(QUIZ_LOG_HEADERS, value_input_option="USER_ENTERED")
+        return ws, "Connected"
+    except Exception as exc:
+        client_email = sa_info.get("client_email", "service-account")
+        return None, f"Google Sheet error ({type(exc).__name__}: {exc}) — verify {client_email} is Editor on the Sheet"
+
+
+def _parse_bool(val: Any) -> bool:
+    if isinstance(val, bool):
+        return val
+    return str(val).strip().upper() in {"TRUE", "1", "YES", "Y"}
+
+
+def _parse_int(val: Any, fallback: int = 0) -> int:
+    try:
+        return int(float(str(val).strip()))
+    except Exception:
+        return fallback
+
+
+def _rows_to_records(rows: List[List[Any]]) -> List[Dict[str, Any]]:
+    if not rows:
+        return []
+    start_idx = 1 if rows[0] and str(rows[0][0]).strip().lower() == "timestamp" else 0
+    records: List[Dict[str, Any]] = []
+    seen_keys = set()
+    for r in rows[start_idx:]:
+        if not isinstance(r, list) or len(r) < 10:
+            continue
+        pupil_val = str(r[1] or "").strip()
+        school_val = str(r[2] or "").strip()
+        cls_val = str(r[4] or "").strip()
+        if not pupil_val or cls_val not in QUIZ_BANK:
+            continue
+        q_id = str(r[5] or "").strip()
+        q_text = str(r[6] or "").strip()
+        q_uid = f"{cls_val}:{q_id}" if q_id else f"{cls_val}:{q_text}"
+        attempt_key = _make_attempt_key(pupil_val, school_val, cls_val, q_id or q_text)
+        if attempt_key in seen_keys:
+            continue
+        seen_keys.add(attempt_key)
+        records.append({
+            "Timestamp": str(r[0] or "").strip(),
+            "Pupil Name": pupil_val,
+            "School": school_val,
+            "District": str(r[3] or "").strip(),
+            "Class": cls_val,
+            "Question ID": q_id,
+            "q_uid": q_uid,
+            "attempt_key": attempt_key,
+            "Question": q_text,
+            "Selected": str(r[7] or "").strip(),
+            "Correct": _parse_bool(r[8]),
+            "Marks": _parse_int(r[9], 0),
+            "Max Marks": _parse_int(r[10] if len(r) > 10 else 1, 1),
+        })
+    return records
+
+
+@st.cache_data(ttl=15, show_spinner=False)
+def load_records_from_google_sheet() -> Tuple[List[Dict[str, Any]], str]:
+    """Reads Quiz_Marks_Log from Google Sheets so marks survive Streamlit app reboots."""
+    ws, conn_msg = _connect_gspread_worksheet()
+    if ws is not None:
+        try:
+            values = ws.get_all_values()
+            recs = _rows_to_records(values)
+            return recs, f"Google Sheets Connected ({len(recs)} saved attempts loaded)"
+        except Exception as exc:
+            return [], f"Google Sheets read error: {exc}"
+
+    webhook_url = _get_webhook_url()
+    if webhook_url:
+        try:
+            req_url = f"{webhook_url}{'&' if '?' in webhook_url else '?'}sheet={QUIZ_LOG_SHEET_NAME}"
+            with urlrequest.urlopen(req_url, timeout=8) as resp:
+                payload = json.loads(resp.read().decode("utf-8"))
+                rows = payload.get("rows", []) if isinstance(payload, dict) else []
+                recs = _rows_to_records(rows)
+                return recs, f"Webhook Sync Connected ({len(recs)} saved attempts loaded)"
+        except Exception as exc:
+            return [], f"Webhook read error: {exc}"
+
+    return [], f"Session Memory Only — {conn_msg}"
+
+
+def append_attempt_to_google_sheet(record: Dict[str, Any]) -> Tuple[bool, str]:
+    """Appends a single pupil quiz attempt row across any class (P1–P7) to Quiz_Marks_Log."""
+    row_values = [
+        record["Timestamp"],
+        record["Pupil Name"],
+        record["School"],
+        record["District"],
+        record["Class"],
+        record["Question ID"],
+        record["Question"],
+        record["Selected"],
+        "TRUE" if record["Correct"] else "FALSE",
+        int(record["Marks"]),
+        int(record["Max Marks"]),
+    ]
+
+    ws, conn_msg = _connect_gspread_worksheet()
+    if ws is not None:
+        try:
+            existing = ws.get_all_values()
+            if not existing:
+                ws.append_row(QUIZ_LOG_HEADERS, value_input_option="USER_ENTERED")
+            ws.append_row(row_values, value_input_option="USER_ENTERED")
+            load_records_from_google_sheet.clear()
+            return True, "Saved to Google Sheet (Quiz_Marks_Log)"
+        except Exception as exc:
+            return False, f"Could not write to Google Sheet: {exc}"
+
+    webhook_url = _get_webhook_url()
+    if webhook_url:
+        try:
+            payload = json.dumps({"sheet": QUIZ_LOG_SHEET_NAME, "row": row_values}).encode("utf-8")
+            req = urlrequest.Request(
+                webhook_url,
+                data=payload,
+                headers={"Content-Type": "application/json"},
+                method="POST",
+            )
+            with urlrequest.urlopen(req, timeout=8) as resp:
+                if 200 <= resp.status < 300:
+                    load_records_from_google_sheet.clear()
+                    return True, "Saved to Google Sheet via webhook"
+                return False, f"Webhook returned HTTP {resp.status}"
+        except (urlerror.URLError, TimeoutError, Exception) as exc:
+            return False, f"Webhook write failed: {exc}"
+
+    return False, f"Not synced to Google Sheet — {conn_msg}"
+
+
+def _sync_state_from_records(records: List[Dict[str, Any]]) -> None:
+    answered_keys = {
+        r.get("attempt_key") or _make_attempt_key(
+            r.get("Pupil Name", ""), r.get("School", ""), r.get("Class", ""), r.get("Question ID", "") or r.get("Question", "")
+        )
+        for r in records
+    }
+    total_attempted = len(records)
+    total_correct = sum(1 for r in records if r.get("Correct"))
+    total_marks = sum(int(r.get("Marks", 0)) for r in records)
+    st.session_state["attempt_records"] = records
+    st.session_state["answered_ids"] = answered_keys
+    st.session_state["quiz_score"] = {
+        "attempted": total_attempted,
+        "correct": total_correct,
+        "marks": total_marks,
+    }
+
+
+def record_single_answer(
+    q: Dict[str, Any],
+    idx: int,
+    selected_class: str,
+    pick: Any,
+    pupil_name: str,
+    school_name: str,
+    district_name: str,
+) -> Dict[str, Any]:
+    q_id = str(q.get("id", f"{selected_class}_q{idx + 1}"))
+    q_uid = f"{selected_class}:{q_id}"
+    attempt_key = _make_attempt_key(pupil_name, school_name, selected_class, q_id)
+    ok = pick == q.get("ans")
+    max_marks = int(q.get("marks", 1))
+    earned = max_marks if ok else 0
+
+    record = {
+        "Timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "Pupil Name": (pupil_name or "").strip(),
+        "School": (school_name or "").strip(),
+        "District": district_name,
+        "Class": selected_class,
+        "Question ID": q_id,
+        "q_uid": q_uid,
+        "attempt_key": attempt_key,
+        "Question": q["question"],
+        "Selected": pick,
+        "Correct": ok,
+        "Marks": earned,
+        "Max Marks": max_marks,
+    }
+
+    is_new = attempt_key not in st.session_state["answered_ids"]
+    if is_new:
+        st.session_state["answered_ids"].add(attempt_key)
+        st.session_state["quiz_score"]["attempted"] += 1
+        if ok:
+            st.session_state["quiz_score"]["correct"] += 1
+            st.session_state["quiz_score"]["marks"] += earned
+        st.session_state["attempt_records"].append(record)
+
+        _, sync_msg = append_attempt_to_google_sheet(record)
+        st.session_state["sync_status"] = sync_msg
+    else:
+        sync_msg = "Attempt already recorded for this pupil and question."
+
+    feedback_item = {
+        "ok": ok,
+        "ans": q.get("ans"),
+        "record": record,
+        "sync_msg": sync_msg,
+    }
+    st.session_state["last_checked_feedback"][q_uid] = feedback_item
+    return feedback_item
+
+
+# ==============================================================================
+# 5. POOL CHECKERS ENGINE (8x8 BOARD), 7-TIER AI & 3D TAP-TO-MOVE UI
+# ==============================================================================
+
+CHECKERS_DIFFICULTIES: List[str] = [
+    "Easy",
+    "Medium",
+    "Hard",
+    "Expert",
+    "Candidate Master",
+    "Master",
+    "Champion",
+]
+DIAGONAL_DIRS: List[Tuple[int, int]] = [(-1, -1), (-1, 1), (1, -1), (1, 1)]
+
+
+class PoolCheckersGame:
+    """Pool Checkers engine on an 8x8 board:
+    1  = Player 1 man (moves diagonally forward: row decreasing)
+    2  = Player 1 flying king (slides & captures along any diagonal)
+    -1 = Computer man (moves diagonally forward: row increasing)
+    -2 = Computer flying king (slides & captures along any diagonal)
+
+    Rules:
+    - Mandatory capturing whenever any jump is available.
+    - Maximum-capture rule: when jumps exist, only moves achieving the highest
+      capture count (`max_capture_len`) are legal.
+    - Flying kings can slide any empty distance and land on any empty square
+      beyond a captured enemy piece along the same diagonal.
+    """
+
+    def __init__(self) -> None:
+        self.board: List[List[int]] = [[0] * 8 for _ in range(8)]
+        for r in range(3):
+            for c in range(8):
+                if (r + c) % 2 == 1:
+                    self.board[r][c] = -1
+        for r in range(5, 8):
+            for c in range(8):
+                if (r + c) % 2 == 1:
+                    self.board[r][c] = 1
+        self.turn: int = 1  # 1 = Player 1 (Pupil), -1 = Computer
+        self.must_jump_from: Optional[Tuple[int, int]] = None
+        self.log: List[str] = [
+            "Pool Checkers ready (Flying Kings + Max-Capture rule active). Pupil (🟢) moves first; Computer replies automatically."
+        ]
+
+    def clone(self) -> "PoolCheckersGame":
+        cp = PoolCheckersGame()
+        cp.board = [row[:] for row in self.board]
+        cp.turn = self.turn
+        cp.must_jump_from = self.must_jump_from
+        cp.log = list(self.log)
+        return cp
+
+    def _is_own_piece(self, val: int, player: int) -> bool:
+        return (player == 1 and val > 0) or (player == -1 and val < 0)
+
+    def _is_enemy_piece(self, val: int, player: int) -> bool:
+        return (player == 1 and val < 0) or (player == -1 and val > 0)
+
+    def _piece_jumps_from(
+        self,
+        board: List[List[int]],
+        r: int,
+        c: int,
+        player: int,
+    ) -> List[Tuple[int, int, Tuple[int, int]]]:
+        """Returns immediate single capture options `(dest_r, dest_c, (cap_r, cap_c))` from (r, c)."""
+        piece = board[r][c]
+        if piece == 0:
+            return []
+        is_king = abs(piece) == 2
+        jumps: List[Tuple[int, int, Tuple[int, int]]] = []
+
+        for dr, dc in DIAGONAL_DIRS:
+            if not is_king:
+                mr, mc = r + dr, c + dc
+                jr, jc = r + 2 * dr, c + 2 * dc
+                if 0 <= jr < 8 and 0 <= jc < 8:
+                    if self._is_enemy_piece(board[mr][mc], player) and board[jr][jc] == 0:
+                        jumps.append((jr, jc, (mr, mc)))
+            else:
+                step = 1
+                enemy_pos: Optional[Tuple[int, int]] = None
+                while True:
+                    nr, nc = r + step * dr, c + step * dc
+                    if not (0 <= nr < 8 and 0 <= nc < 8):
+                        break
+                    val = board[nr][nc]
+                    if enemy_pos is None:
+                        if val == 0:
+                            step += 1
+                            continue
+                        if self._is_enemy_piece(val, player):
+                            enemy_pos = (nr, nc)
+                            step += 1
+                            continue
+                        break
+                    else:
+                        if val == 0:
+                            jumps.append((nr, nc, enemy_pos))
+                            step += 1
+                            continue
+                        break
+        return jumps
+
+    def _max_capture_depth_from(
+        self,
+        board: List[List[int]],
+        r: int,
+        c: int,
+        player: int,
+        piece_val: int,
+    ) -> int:
+        """Computes maximum total captures achievable starting from (r, c) with `piece_val`."""
+        jumps = self._piece_jumps_from(board, r, c, player)
+        if not jumps:
+            return 0
+        best = 0
+        for jr, jc, (cr, cc) in jumps:
+            next_board = [row[:] for row in board]
+            next_board[r][c] = 0
+            next_board[cr][cc] = 0
+            promoted_val = piece_val
+            if player == 1 and jr == 0 and piece_val == 1:
+                promoted_val = 2
+            elif player == -1 and jr == 7 and piece_val == -1:
+                promoted_val = -2
+            next_board[jr][jc] = promoted_val
+            sub_captures = self._max_capture_depth_from(next_board, jr, jc, player, promoted_val)
+            best = max(best, 1 + sub_captures)
+        return best
+
+    def _piece_steps_from(
+        self,
+        board: List[List[int]],
+        r: int,
+        c: int,
+        player: int,
+    ) -> List[Tuple[int, int, Optional[Tuple[int, int]]]]:
+        """Returns non-capturing diagonal steps `(dest_r, dest_c, None)`."""
+        piece = board[r][c]
+        if piece == 0:
+            return []
+        is_king = abs(piece) == 2
+        steps: List[Tuple[int, int, Optional[Tuple[int, int]]]] = []
+
+        if not is_king:
+            forward_dr = -1 if player == 1 else 1
+            for dc in (-1, 1):
+                nr, nc = r + forward_dr, c + dc
+                if 0 <= nr < 8 and 0 <= nc < 8 and board[nr][nc] == 0:
+                    steps.append((nr, nc, None))
+        else:
+            for dr, dc in DIAGONAL_DIRS:
+                step = 1
+                while True:
+                    nr, nc = r + step * dr, c + step * dc
+                    if not (0 <= nr < 8 and 0 <= nc < 8):
+                        break
+                    if board[nr][nc] == 0:
+                        steps.append((nr, nc, None))
+                        step += 1
+                    else:
+                        break
+        return steps
+
+    def get_all_player_moves(
+        self,
+        player: int,
+    ) -> Dict[Tuple[int, int], List[Tuple[int, int, Optional[Tuple[int, int]]]]]:
+        """Returns legal first-step moves `{ (r, c): [(dr, dc, cap_rc), ...] }` enforcing
+        mandatory captures and the Pool Checkers maximum-capture rule.
+        """
+        if self.must_jump_from is not None:
+            jr, jc = self.must_jump_from
+            piece_val = self.board[jr][jc]
+            if piece_val == 0 or not self._is_own_piece(piece_val, player):
+                return {}
+            jumps = self._piece_jumps_from(self.board, jr, jc, player)
+            if not jumps:
+                return {}
+            scored_jumps: List[Tuple[int, Tuple[int, int, Optional[Tuple[int, int]]]]] = []
+            for d_r, d_c, cap_rc in jumps:
+                nb = [row[:] for row in self.board]
+                nb[jr][jc] = 0
+                nb[cap_rc[0]][cap_rc[1]] = 0
+                pv = piece_val
+                if player == 1 and d_r == 0 and pv == 1:
+                    pv = 2
+                elif player == -1 and d_r == 7 and pv == -1:
+                    pv = -2
+                nb[d_r][d_c] = pv
+                depth = 1 + self._max_capture_depth_from(nb, d_r, d_c, player, pv)
+                scored_jumps.append((depth, (d_r, d_c, cap_rc)))
+            max_d = max(item[0] for item in scored_jumps)
+            best_moves = [item[1] for item in scored_jumps if item[0] == max_d]
+            return {(jr, jc): best_moves} if best_moves else {}
+
+        candidate_jumps: List[Tuple[int, Tuple[int, int], Tuple[int, int, Optional[Tuple[int, int]]]]] = []
+        all_steps: Dict[Tuple[int, int], List[Tuple[int, int, Optional[Tuple[int, int]]]]] = {}
+
+        for r in range(8):
+            for c in range(8):
+                val = self.board[r][c]
+                if not self._is_own_piece(val, player):
+                    continue
+                jumps = self._piece_jumps_from(self.board, r, c, player)
+                if jumps:
+                    for d_r, d_c, cap_rc in jumps:
+                        nb = [row[:] for row in self.board]
+                        nb[r][c] = 0
+                        nb[cap_rc[0]][cap_rc[1]] = 0
+                        pv = val
+                        if player == 1 and d_r == 0 and pv == 1:
+                            pv = 2
+                        elif player == -1 and d_r == 7 and pv == -1:
+                            pv = -2
+                        nb[d_r][d_c] = pv
+                        total_caps = 1 + self._max_capture_depth_from(nb, d_r, d_c, player, pv)
+                        candidate_jumps.append((total_caps, (r, c), (d_r, d_c, cap_rc)))
+                else:
+                    steps = self._piece_steps_from(self.board, r, c, player)
+                    if steps:
+                        all_steps[(r, c)] = steps
+
+        if candidate_jumps:
+            max_caps = max(item[0] for item in candidate_jumps)
+            filtered_jumps: Dict[Tuple[int, int], List[Tuple[int, int, Optional[Tuple[int, int]]]]] = {}
+            for total_caps, src_rc, mv in candidate_jumps:
+                if total_caps == max_caps:
+                    filtered_jumps.setdefault(src_rc, []).append(mv)
+            return filtered_jumps
+
+        return all_steps
+
+    def make_move(self, src: Tuple[int, int], dst: Tuple[int, int]) -> bool:
+        sr, sc = src
+        dr, dc = dst
+        legal_map = self.get_all_player_moves(self.turn)
+        piece_moves = legal_map.get(src, [])
+        chosen = next((m for m in piece_moves if (m[0], m[1]) == (dr, dc)), None)
+        if chosen is None:
+            self.log.append(f"Illegal move from ({sr}, {sc}) to ({dr}, {dc}).")
+            return False
+
+        _, _, captured = chosen
+        piece = self.board[sr][sc]
+        player = 1 if piece > 0 else -1
+        self.board[sr][sc] = 0
+        self.board[dr][dc] = piece
+
+        if captured is not None:
+            cr, cc = captured
+            self.board[cr][cc] = 0
+
+        crowned = False
+        if player == 1 and dr == 0 and self.board[dr][dc] == 1:
+            self.board[dr][dc] = 2
+            crowned = True
+        elif player == -1 and dr == 7 and self.board[dr][dc] == -1:
+            self.board[dr][dc] = -2
+            crowned = True
+
+        p_label = "Pupil" if player == 1 else "Computer"
+        if captured is not None:
+            follow_jumps = self._piece_jumps_from(self.board, dr, dc, player)
+            if follow_jumps:
+                self.must_jump_from = (dr, dc)
+                king_note = " (Crowned King!)" if crowned else ""
+                self.log.append(
+                    f"{p_label} captured {captured} to ({dr}, {dc}){king_note} — continue jumping!"
+                )
+                return True
+
+        self.must_jump_from = None
+        action_desc = f"captured {captured} and moved" if captured else "moved"
+        king_note = " (Crowned King!)" if crowned else ""
+        self.log.append(f"{p_label} {action_desc} from ({sr}, {sc}) to ({dr}, {dc}){king_note}.")
+        self.turn = -player
+        return True
+
+    def count_pieces(self) -> Tuple[int, int]:
+        p1_count = sum(1 for row in self.board for v in row if v > 0)
+        p2_count = sum(1 for row in self.board for v in row if v < 0)
+        return p1_count, p2_count
+
+
+def _evaluate_board_for_computer(game: PoolCheckersGame) -> float:
+    """Evaluates position from Computer (-1) perspective: positive favors Computer."""
+    score = 0.0
+    comp_men = 0
+    comp_kings = 0
+    p1_men = 0
+    p1_kings = 0
+
+    for r in range(8):
+        for c in range(8):
+            val = game.board[r][c]
+            if val == -1:
+                comp_men += 1
+                advance = r * 0.14
+                center_bonus = 0.25 if 2 <= c <= 5 and 2 <= r <= 5 else 0.0
+                back_row_bonus = 0.35 if r == 0 else 0.0
+                score += 1.0 + advance + center_bonus + back_row_bonus
+            elif val == -2:
+                comp_kings += 1
+                center_bonus = 0.35 if 2 <= c <= 5 and 2 <= r <= 5 else 0.0
+                score += 2.75 + center_bonus
+            elif val == 1:
+                p1_men += 1
+                advance = (7 - r) * 0.14
+                center_bonus = 0.25 if 2 <= c <= 5 and 2 <= r <= 5 else 0.0
+                back_row_bonus = 0.35 if r == 7 else 0.0
+                score -= (1.0 + advance + center_bonus + back_row_bonus)
+            elif val == 2:
+                p1_kings += 1
+                center_bonus = 0.35 if 2 <= c <= 5 and 2 <= r <= 5 else 0.0
+                score -= (2.75 + center_bonus)
+
+    if p1_men + p1_kings == 0:
+        return 100.0
+    if comp_men + comp_kings == 0:
+        return -100.0
+
+    comp_moves_map = game.get_all_player_moves(-1)
+    p1_moves_map = game.get_all_player_moves(1)
+    comp_move_count = sum(len(v) for v in comp_moves_map.values())
+    p1_move_count = sum(len(v) for v in p1_moves_map.values())
+    if p1_move_count == 0 and game.turn == 1:
+        return 100.0
+    if comp_move_count == 0 and game.turn == -1:
+        return -100.0
+
+    score += 0.08 * (comp_move_count - p1_move_count)
+    return score
+
+
+def _apply_full_turn_in_sim(
+    sim: PoolCheckersGame,
+    src: Tuple[int, int],
+    dst: Tuple[int, int],
+) -> PoolCheckersGame:
+    """Applies a move and completes any mandatory multi-jump chain for the active player."""
+    nxt = sim.clone()
+    active_player = nxt.turn
+    nxt.make_move(src, dst)
+    guard =
