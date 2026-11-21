@@ -1486,4 +1486,1220 @@ def _apply_full_turn_in_sim(
     nxt = sim.clone()
     active_player = nxt.turn
     nxt.make_move(src, dst)
-    guard =
+    guard = 0
+    while nxt.turn == active_player and nxt.must_jump_from is not None and guard < 12:
+        guard += 1
+        chain_map = nxt.get_all_player_moves(active_player)
+        chain_src = nxt.must_jump_from
+        chain_opts = chain_map.get(chain_src, [])
+        if not chain_opts:
+            break
+        best_child = None
+        best_val = float("-inf") if active_player == -1 else float("inf")
+        for opt in chain_opts:
+            trial = nxt.clone()
+            trial.make_move(chain_src, (opt[0], opt[1]))
+            val = _evaluate_board_for_computer(trial)
+            if active_player == -1 and val > best_val:
+                best_val = val
+                best_child = trial
+            elif active_player == 1 and val < best_val:
+                best_val = val
+                best_child = trial
+        if best_child is not None:
+            nxt = best_child
+        else:
+            break
+    return nxt
+
+
+def _alphabeta(
+    sim: PoolCheckersGame,
+    depth: int,
+    alpha: float,
+    beta: float,
+    maximizing_comp: bool,
+) -> float:
+    player = -1 if maximizing_comp else 1
+    moves_map = sim.get_all_player_moves(player)
+    if depth == 0 or not moves_map:
+        return _evaluate_board_for_computer(sim)
+
+    all_pairs: List[Tuple[Tuple[int, int], Tuple[int, int], Optional[Tuple[int, int]]]] = []
+    for s_rc, m_list in moves_map.items():
+        for d_r, d_c, cap_rc in m_list:
+            all_pairs.append((s_rc, (d_r, d_c), cap_rc))
+
+    all_pairs.sort(key=lambda item: 1 if item[2] is not None else 0, reverse=True)
+
+    if maximizing_comp:
+        value = float("-inf")
+        for s_rc, d_rc, _ in all_pairs:
+            child = _apply_full_turn_in_sim(sim, s_rc, d_rc)
+            value = max(value, _alphabeta(child, depth - 1, alpha, beta, False))
+            alpha = max(alpha, value)
+            if alpha >= beta:
+                break
+        return value
+    else:
+        value = float("inf")
+        for s_rc, d_rc, _ in all_pairs:
+            child = _apply_full_turn_in_sim(sim, s_rc, d_rc)
+            value = min(value, _alphabeta(child, depth - 1, alpha, beta, True))
+            beta = min(beta, value)
+            if beta <= alpha:
+                break
+        return value
+
+
+def choose_computer_move(
+    game: PoolCheckersGame,
+    difficulty: str = "Medium",
+) -> Optional[Tuple[Tuple[int, int], Tuple[int, int]]]:
+    """Selects a legal move `(src, dst)` for Computer (-1) across all 7 difficulty tiers:
+    Easy, Medium, Hard, Expert, Candidate Master, Master, Champion.
+    """
+    moves_map = game.get_all_player_moves(-1)
+    if not moves_map:
+        return None
+
+    candidates: List[Tuple[Tuple[int, int], Tuple[int, int], Optional[Tuple[int, int]]]] = []
+    for s_rc, m_list in moves_map.items():
+        for d_r, d_c, cap_rc in m_list:
+            candidates.append((s_rc, (d_r, d_c), cap_rc))
+
+    if len(candidates) == 1:
+        return (candidates[0][0], candidates[0][1])
+
+    level = difficulty if difficulty in CHECKERS_DIFFICULTIES else "Medium"
+
+    if level == "Easy":
+        if len(candidates) > 2 and random.random() < 0.65:
+            scored_easy: List[Tuple[float, Tuple[Tuple[int, int], Tuple[int, int]]]] = []
+            for s_rc, d_rc, _ in candidates:
+                child = _apply_full_turn_in_sim(game, s_rc, d_rc)
+                scored_easy.append(
+                    (_evaluate_board_for_computer(child) + random.uniform(-1.5, 1.5), (s_rc, d_rc))
+                )
+            scored_easy.sort(key=lambda x: x[0], reverse=True)
+            return random.choice([item[1] for item in scored_easy[:2]])
+        picked = random.choice(candidates)
+        return (picked[0], picked[1])
+
+    if level == "Medium":
+        best_score = float("-inf")
+        best_pairs: List[Tuple[Tuple[int, int], Tuple[int, int]]] = []
+        for s_rc, d_rc, cap_rc in candidates:
+            child = _apply_full_turn_in_sim(game, s_rc, d_rc)
+            sc = (
+                _evaluate_board_for_computer(child)
+                + (0.65 if cap_rc is not None else 0.0)
+                + random.uniform(-0.15, 0.15)
+            )
+            if sc > best_score + 1e-6:
+                best_score = sc
+                best_pairs = [(s_rc, d_rc)]
+            elif abs(sc - best_score) <= 1e-6:
+                best_pairs.append((s_rc, d_rc))
+        return random.choice(best_pairs)
+
+    depth_by_level: Dict[str, int] = {
+        "Hard": 2,
+        "Expert": 3,
+        "Candidate Master": 4,
+        "Master": 5,
+        "Champion": 6,
+    }
+    search_depth = depth_by_level.get(level, 2)
+    best_val = float("-inf")
+    best_moves: List[Tuple[Tuple[int, int], Tuple[int, int]]] = []
+
+    ordered = sorted(candidates, key=lambda item: 1 if item[2] is not None else 0, reverse=True)
+    for s_rc, d_rc, cap_rc in ordered:
+        child = _apply_full_turn_in_sim(game, s_rc, d_rc)
+        val = _alphabeta(child, search_depth - 1, float("-inf"), float("inf"), False)
+        if level in {"Hard", "Expert"}:
+            jitter = 0.08 if level == "Hard" else 0.03
+            val += random.uniform(-jitter, jitter)
+        else:
+            val += (0.04 if cap_rc is not None else 0.0) + 0.015 * d_rc[0]
+
+        if val > best_val + 1e-6:
+            best_val = val
+            best_moves = [(s_rc, d_rc)]
+        elif abs(val - best_val) <= 1e-6:
+            best_moves.append((s_rc, d_rc))
+
+    return random.choice(best_moves) if best_moves else (candidates[0][0], candidates[0][1])
+
+
+def execute_computer_turns(game: PoolCheckersGame, difficulty: str) -> None:
+    """Runs Computer (-1) move(s) automatically after the pupil's move, including multi-jumps."""
+    guard = 0
+    while game.turn == -1 and guard < 12:
+        guard += 1
+        comp_move = choose_computer_move(game, difficulty=difficulty)
+        if comp_move is None:
+            break
+        game.make_move(comp_move[0], comp_move[1])
+
+
+def render_checkers_3d_board(
+    game: PoolCheckersGame,
+    difficulty: str = "Medium",
+    height: int = 540,
+) -> None:
+    """Renders an interactive 3D Pool Checkers board with reliable tap/click piece & square movement."""
+    legal_p1 = game.get_all_player_moves(1) if game.turn == 1 else {}
+    serialized_moves: Dict[str, List[List[Any]]] = {}
+    for (sr, sc), moves in legal_p1.items():
+        serialized_moves[f"{sr},{sc}"] = [
+            [dr, dc, list(cap) if cap is not None else None]
+            for (dr, dc, cap) in moves
+        ]
+
+    payload = json.dumps({
+        "board": game.board,
+        "turn": game.turn,
+        "difficulty": difficulty,
+        "mustJumpFrom": list(game.must_jump_from) if game.must_jump_from else None,
+        "legalMoves": serialized_moves,
+        "lastLog": game.log[-1] if game.log else "",
+    })
+
+    html_code = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8" />
+      <style>
+        body {{
+          margin: 0;
+          padding: 0;
+          background: transparent;
+          font-family: system-ui, -apple-system, sans-serif;
+          overflow: hidden;
+          touch-action: none;
+        }}
+        #ck-3d-wrap {{
+          position: relative;
+          width: 100%;
+          height: {height}px;
+          border-radius: 16px;
+          overflow: hidden;
+          border: 1px solid rgba(6, 78, 44, 0.24);
+          background: linear-gradient(155deg, #16231c 0%, #0b130f 100%);
+        }}
+        .ck-hud-top {{
+          position: absolute;
+          top: 10px;
+          left: 12px;
+          right: 12px;
+          display: flex;
+          flex-wrap: wrap;
+          justify-content: space-between;
+          align-items: center;
+          gap: 8px;
+          z-index: 6;
+          pointer-events: none;
+        }}
+        .ck-pill {{
+          pointer-events: auto;
+          background: rgba(14, 24, 18, 0.88);
+          color: #f8fafc;
+          border: 1px solid rgba(252, 220, 4, 0.35);
+          padding: 6px 11px;
+          border-radius: 999px;
+          font-size: 12px;
+          backdrop-filter: blur(6px);
+        }}
+        .ck-btn {{
+          pointer-events: auto;
+          cursor: pointer;
+          background: #13a65b;
+          color: #ffffff;
+          border: none;
+          padding: 6px 10px;
+          border-radius: 8px;
+          font-size: 12px;
+          font-weight: 600;
+        }}
+        .ck-btn:hover {{ background: #0b6e3f; }}
+        .ck-hud-bottom {{
+          position: absolute;
+          bottom: 10px;
+          left: 12px;
+          right: 12px;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          gap: 10px;
+          color: #e2e8f0;
+          font-size: 12px;
+          background: rgba(14, 24, 18, 0.86);
+          padding: 7px 12px;
+          border-radius: 10px;
+          z-index: 6;
+        }}
+      </style>
+    </head>
+    <body>
+      <div id="ck-3d-wrap">
+        <div class="ck-hud-top">
+          <div class="ck-pill" id="ck-prompt">Tap a green piece (🟢) to see valid moves • Drag to orbit</div>
+          <div style="display:flex; gap:6px;">
+            <button class="ck-btn" onclick="setCam('p1')">Pupil Angle</button>
+            <button class="ck-btn" onclick="setCam('top')">Top-Down</button>
+            <button class="ck-btn" onclick="setCam('overview')">3D Overview</button>
+          </div>
+        </div>
+        <div class="ck-hud-bottom">
+          <span><strong>🟢</strong> Pupil • <strong>🔴</strong> Computer ({difficulty}) • <strong>👑</strong> Flying King • <strong>Highlighted</strong> = Tap to Move</span>
+          <span id="ck-log"></span>
+        </div>
+      </div>
+
+      <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
+      <script>
+        const STATE = {payload};
+        const promptEl = document.getElementById("ck-prompt");
+        document.getElementById("ck-log").textContent = STATE.lastLog || "";
+
+        const container = document.getElementById("ck-3d-wrap");
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(42, container.clientWidth / container.clientHeight, 0.1, 100);
+
+        const renderer = new THREE.WebGLRenderer({{ antialias: true, alpha: true }});
+        renderer.setSize(container.clientWidth, container.clientHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.shadowMap.enabled = true;
+        scene.add(new THREE.AmbientLight(0xffffff, 0.72));
+
+        const dirLight = new THREE.DirectionalLight(0xfff7dc, 1.15);
+        dirLight.position.set(7, 13, 9);
+        dirLight.castShadow = true;
+        scene.add(dirLight);
+
+        const fillLight = new THREE.DirectionalLight(0x93c5fd, 0.4);
+        fillLight.position.set(-8, 6, -7);
+        scene.add(fillLight);
+
+        const boardGroup = new THREE.Group();
+        scene.add(boardGroup);
+
+        const frameMat = new THREE.MeshStandardMaterial({{ color: 0x3b2210, roughness: 0.6 }});
+        const lightSqMat = new THREE.MeshStandardMaterial({{ color: 0xf3e5ab, roughness: 0.55 }});
+        const darkSqMat = new THREE.MeshStandardMaterial({{ color: 0x294b38, roughness: 0.6 }});
+        const moveSqMat = new THREE.MeshStandardMaterial({{ color: 0x22c55e, emissive: 0x15803d, emissiveIntensity: 0.58, roughness: 0.35 }});
+        const jumpSqMat = new THREE.MeshStandardMaterial({{ color: 0xfacc15, emissive: 0xca8a04, emissiveIntensity: 0.68, roughness: 0.35 }});
+        const selPieceMat = new THREE.MeshStandardMaterial({{ color: 0x4ade80, emissive: 0x16a34a, emissiveIntensity: 0.62, roughness: 0.3 }});
+
+        const p1Mat = new THREE.MeshStandardMaterial({{ color: 0x0b875b, roughness: 0.35, metalness: 0.12 }});
+        const p2Mat = new THREE.MeshStandardMaterial({{ color: 0xdc2626, roughness: 0.35, metalness: 0.12 }});
+        const crownMat = new THREE.MeshStandardMaterial({{ color: 0xfcdc04, roughness: 0.25, metalness: 0.45 }});
+
+        const boardBase = new THREE.Mesh(new THREE.BoxGeometry(9.2, 0.5, 9.2), frameMat);
+        boardBase.position.y = -0.25;
+        boardBase.receiveShadow = true;
+        boardGroup.add(boardBase);
+
+        const sqGeo = new THREE.BoxGeometry(1.0, 0.14, 1.0);
+        const discGeo = new THREE.CylinderGeometry(0.38, 0.4, 0.22, 28);
+        const crownGeo = new THREE.TorusGeometry(0.19, 0.055, 12, 24);
+
+        const squareMeshes = [];
+        const pieceMeshes = [];
+        const tapTargets = [];
+
+        let selectedSrc = null;
+        if (STATE.mustJumpFrom && STATE.legalMoves[STATE.mustJumpFrom.join(",")]) {{
+          selectedSrc = STATE.mustJumpFrom;
+        }} else {{
+          const keys = Object.keys(STATE.legalMoves);
+          if (keys.length === 1) {{
+            selectedSrc = keys[0].split(",").map(Number);
+          }}
+        }}
+
+        function coordToWorld(r, c) {{
+          return {{ x: (c - 3.5) * 1.02, z: (r - 3.5) * 1.02 }};
+        }}
+
+        function getTargetsForSelected() {{
+          if (!selectedSrc) return [];
+          return STATE.legalMoves[selectedSrc.join(",")] || [];
+        }}
+
+        function rebuildBoardVisuals() {{
+          for (const m of squareMeshes) boardGroup.remove(m);
+          for (const m of pieceMeshes) boardGroup.remove(m);
+          squareMeshes.length = 0;
+          pieceMeshes.length = 0;
+          tapTargets.length = 0;
+
+          const activeTargets = getTargetsForSelected();
+          const targetMap = new Map();
+          for (const [dr, dc, cap] of activeTargets) {{
+            targetMap.set(`${{dr}},${{dc}}`, cap);
+          }}
+
+          for (let r = 0; r < 8; r++) {{
+            for (let c = 0; c < 8; c++) {{
+              const {{ x, z }} = coordToWorld(r, c);
+              const isDark = (r + c) % 2 === 1;
+              const key = `${{r}},${{c}}`;
+              let mat = isDark ? darkSqMat : lightSqMat;
+
+              if (targetMap.has(key)) {{
+                mat = targetMap.get(key) ? jumpSqMat : moveSqMat;
+              }}
+
+              const sq = new THREE.Mesh(sqGeo, mat);
+              sq.position.set(x, 0.05, z);
+              sq.receiveShadow = true;
+              sq.userData = {{ kind: "square", r, c, isTarget: targetMap.has(key) }};
+              boardGroup.add(sq);
+              squareMeshes.push(sq);
+              if (targetMap.has(key)) tapTargets.push(sq);
+
+              const val = STATE.board[r][c];
+              if (val !== 0) {{
+                const isP1 = val > 0;
+                const isKing = Math.abs(val) === 2;
+                const isSelected = selectedSrc && selectedSrc[0] === r && selectedSrc[1] === c;
+                const canSelect = STATE.turn === 1 && isP1 && Boolean(STATE.legalMoves[key]);
+
+                const disc = new THREE.Mesh(discGeo, isSelected ? selPieceMat : (isP1 ? p1Mat : p2Mat));
+                disc.position.set(x, isSelected ? 0.34 : 0.23, z);
+                disc.castShadow = true;
+                disc.userData = {{ kind: "piece", r, c, isP1, canSelect }};
+                boardGroup.add(disc);
+                pieceMeshes.push(disc);
+                if (canSelect) tapTargets.push(disc);
+
+                if (isKing) {{
+                  const crown = new THREE.Mesh(crownGeo, crownMat);
+                  crown.rotation.x = Math.PI / 2;
+                  crown.position.set(x, disc.position.y + 0.13, z);
+                  boardGroup.add(crown);
+                  pieceMeshes.push(crown);
+                }}
+              }}
+            }}
+          }}
+
+          if (STATE.turn !== 1) {{
+            promptEl.textContent = "Computer turn or game over — click Reset Board to replay";
+          }} else if (selectedSrc) {{
+            const nTargets = activeTargets.length;
+            promptEl.textContent = `Selected (${{selectedSrc[0]}}, ${{selectedSrc[1]}}) • Tap one of ${{nTargets}} highlighted square(s) to move`;
+          }} else {{
+            promptEl.textContent = "Tap a green piece (🟢) to select • Tap a highlighted square to move";
+          }}
+        }}
+
+        function triggerStreamlitMove(src, dst) {{
+          const srcStr = `${{src[0]}},${{src[1]}}`;
+          const dstStr = `${{dst[0]}},${{dst[1]}}`;
+          const nonce = `${{Date.now()}}_${{Math.floor(Math.random() * 100000)}}`;
+
+          for (const winObj of [window.top, window.parent, window]) {{
+            try {{
+              if (!winObj || !winObj.location) continue;
+              const url = new URL(winObj.location.href);
+              url.searchParams.set("tab", "Checkers Lab");
+              url.searchParams.set("ck_src", srcStr);
+              url.searchParams.set("ck_dst", dstStr);
+              url.searchParams.set("ck_nonce", nonce);
+              if (winObj.history && typeof winObj.history.replaceState === "function") {{
+                winObj.history.replaceState({{}}, "", url.toString());
+              }}
+              winObj.location.assign(url.toString());
+              return;
+            }} catch (_) {{}}
+          }}
+        }}
+
+        function submitMoveToStreamlit(src, dst) {{
+          const [sr, sc] = src;
+          const [dr, dc] = dst;
+          const activeTargets = getTargetsForSelected();
+          const matched = activeTargets.find((m) => m[0] === dr && m[1] === dc);
+          const cap = matched ? matched[2] : null;
+
+          const movingVal = STATE.board[sr][sc];
+          STATE.board[sr][sc] = 0;
+          STATE.board[dr][dc] = (dr === 0 && movingVal === 1) ? 2 : movingVal;
+          if (cap && Array.isArray(cap) && cap.length === 2) {{
+            STATE.board[cap[0]][cap[1]] = 0;
+          }}
+          selectedSrc = null;
+          rebuildBoardVisuals();
+          promptEl.textContent = `Moved (${{sr}}, ${{sc}}) → (${{dr}}, ${{dc}}) • Computer moving automatically...`;
+          triggerStreamlitMove(src, dst);
+        }}
+
+        container.appendChild(renderer.domElement);
+
+        let isPointerDown = false;
+        let wasDragged = false;
+        let downX = 0, downY = 0, lastX = 0, lastY = 0;
+        let yaw = 0, pitch = 0.72, dist = 12.6;
+
+        function updateCamera() {{
+          const clampedPitch = Math.max(0.2, Math.min(1.48, pitch));
+          camera.position.x = dist * Math.sin(yaw) * Math.cos(clampedPitch);
+          camera.position.y = dist * Math.sin(clampedPitch);
+          camera.position.z = dist * Math.cos(yaw) * Math.cos(clampedPitch);
+          camera.lookAt(0, 0, 0);
+        }}
+
+        window.setCam = function(mode) {{
+          if (mode === "p1") {{ yaw = 0; pitch = 0.62; dist = 11.4; }}
+          else if (mode === "top") {{ yaw = 0; pitch = 1.47; dist = 13.0; }}
+          else {{ yaw = 0.25; pitch = 0.72; dist = 12.6; }}
+          updateCamera();
+        }};
+
+        const raycaster = new THREE.Raycaster();
+        const pointer = new THREE.Vector2();
+
+        function pickHit(clientX, clientY) {{
+          const rect = renderer.domElement.getBoundingClientRect();
+          pointer.x = ((clientX - rect.left) / rect.width) * 2 - 1;
+          pointer.y = -((clientY - rect.top) / rect.height) * 2 + 1;
+          raycaster.setFromCamera(pointer, camera);
+          const hits = raycaster.intersectObjects(tapTargets, false);
+          return hits.length > 0 ? hits[0].object.userData : null;
+        }}
+
+        renderer.domElement.addEventListener("pointerdown", (e) => {{
+          isPointerDown = true;
+          wasDragged = false;
+          downX = lastX = e.clientX;
+          downY = lastY = e.clientY;
+        }});
+
+        window.addEventListener("pointermove", (e) => {{
+          if (!isPointerDown) return;
+          const dx = e.clientX - lastX;
+          const dy = e.clientY - lastY;
+          if (Math.hypot(e.clientX - downX, e.clientY - downY) > 6) {{
+            wasDragged = true;
+          }}
+          lastX = e.clientX;
+          lastY = e.clientY;
+          if (wasDragged) {{
+            yaw -= dx * 0.008;
+            pitch += dy * 0.008;
+            updateCamera();
+          }}
+        }});
+
+        window.addEventListener("pointerup", (e) => {{
+          if (!isPointerDown) return;
+          isPointerDown = false;
+          if (wasDragged) return;
+
+          const hit = pickHit(e.clientX, e.clientY);
+          if (!hit) return;
+
+          if (hit.kind === "piece" && hit.canSelect) {{
+            selectedSrc = [hit.r, hit.c];
+            rebuildBoardVisuals();
+          }} else if (hit.kind === "square" && hit.isTarget && selectedSrc) {{
+            submitMoveToStreamlit(selectedSrc, [hit.r, hit.c]);
+          }}
+        }});
+
+        renderer.domElement.addEventListener("wheel", (e) => {{
+          e.preventDefault();
+          dist = Math.max(7.2, Math.min(18.5, dist + e.deltaY * 0.008));
+          updateCamera();
+        }}, {{ passive: false }});
+
+        updateCamera();
+        rebuildBoardVisuals();
+
+        function animate() {{
+          requestAnimationFrame(animate);
+          renderer.render(scene, camera);
+        }}
+        animate();
+      </script>
+    </body>
+    </html>
+    """
+    components.html(html_code, height=height + 12)
+
+
+# ==============================================================================
+# 6. LEADERBOARD & BADGES HELPERS
+# ==============================================================================
+
+BADGE_TIERS = [
+    ("Gold Badge (1st)", "🥇"),
+    ("Silver Badge (2nd)", "🥈"),
+    ("Bronze Badge (3rd)", "🥉"),
+]
+
+
+def build_leaderboard(
+    records: List[Dict[str, Any]],
+    limit: int = 25,
+    class_filter: str = "All",
+    district_filter: str = "All",
+) -> pd.DataFrame:
+    """Aggregates pupil quiz attempt records across P1–P7 into a ranked leaderboard up to `limit`."""
+    cols = ["Rank", "Badge", "Pupil Name", "School", "District", "Class", "Correct", "Attempted", "Marks"]
+    if not records:
+        return pd.DataFrame(columns=cols)
+
+    df = pd.DataFrame(records)
+    if df.empty:
+        return pd.DataFrame(columns=cols)
+
+    if class_filter != "All":
+        df = df[df["Class"] == class_filter]
+    if district_filter != "All":
+        df = df[df["District"] == district_filter]
+
+    if df.empty:
+        return pd.DataFrame(columns=cols)
+
+    grouped = (
+        df.groupby(["Pupil Name", "School", "District", "Class"], as_index=False)
+        .agg(
+            Correct=("Correct", "sum"),
+            Attempted=("Question", "count"),
+            Marks=("Marks", "sum"),
+        )
+        .sort_values(by=["Marks", "Correct", "Attempted"], ascending=[False, False, True])
+        .head(limit)
+        .reset_index(drop=True)
+    )
+
+    ranks: List[int] = []
+    badges: List[str] = []
+    for idx in range(len(grouped)):
+        rank = idx + 1
+        ranks.append(rank)
+        if rank == 1:
+            badges.append("🥇 Gold (1st)")
+        elif rank == 2:
+            badges.append("🥈 Silver (2nd)")
+        elif rank == 3:
+            badges.append("🥉 Bronze (3rd)")
+        else:
+            badges.append("—")
+
+    grouped.insert(0, "Rank", ranks)
+    grouped.insert(1, "Badge", badges)
+    return grouped
+
+
+# ==============================================================================
+# 7. MAIN STREAMLIT BLOCK
+# ==============================================================================
+
+
+def init_state() -> None:
+    st.session_state.setdefault("quiz_score", {"attempted": 0, "correct": 0, "marks": 0})
+    st.session_state.setdefault("answered_ids", set())
+    st.session_state.setdefault("selected_class", "P6")
+    st.session_state.setdefault("active_tab", "Take Quiz")
+    st.session_state.setdefault("checkers_game", PoolCheckersGame())
+    st.session_state.setdefault("checkers_difficulty", "Medium")
+    st.session_state.setdefault("pupil_info", {"name": "", "school": "", "district": "Kampala"})
+    st.session_state.setdefault("attempt_records", [])
+    st.session_state.setdefault("last_checked_feedback", {})
+    st.session_state.setdefault("submitted_quiz_summary", None)
+    st.session_state.setdefault("sync_status", "")
+
+    if not st.session_state.get("sheet_hydrated", False):
+        persisted_records, status_msg = load_records_from_google_sheet()
+        st.session_state["sync_status"] = status_msg
+        if persisted_records:
+            _sync_state_from_records(persisted_records)
+        st.session_state["sheet_hydrated"] = True
+
+
+def main() -> None:
+    init_state()
+
+    ck_src_raw = st.query_params.get("ck_src", None)
+    ck_dst_raw = st.query_params.get("ck_dst", None)
+    if ck_src_raw and ck_dst_raw:
+        move_applied = False
+        try:
+            src_tuple = tuple(int(x) for x in str(ck_src_raw).split(","))
+            dst_tuple = tuple(int(x) for x in str(ck_dst_raw).split(","))
+            if len(src_tuple) == 2 and len(dst_tuple) == 2:
+                game: PoolCheckersGame = st.session_state["checkers_game"]
+                difficulty = st.session_state.get("checkers_difficulty", "Medium")
+                moved = game.make_move((src_tuple[0], src_tuple[1]), (dst_tuple[0], dst_tuple[1]))
+                if moved:
+                    move_applied = True
+                    st.session_state["active_tab"] = "Checkers Lab"
+                    if game.turn == -1:
+                        execute_computer_turns(game, difficulty=difficulty)
+        except Exception:
+            pass
+        for param_key in ("ck_src", "ck_dst", "ck_nonce", "tab"):
+            if param_key in st.query_params:
+                del st.query_params[param_key]
+        if move_applied:
+            st.rerun()
+
+    requested_tab = st.query_params.get("tab", None)
+    if requested_tab in TABS:
+        st.session_state["active_tab"] = requested_tab
+        del st.query_params["tab"]
+
+    active_tab = st.session_state.get("active_tab", "Take Quiz")
+    if active_tab not in TABS:
+        active_tab = "Take Quiz"
+        st.session_state["active_tab"] = active_tab
+
+    margin_theme = TAB_MARGIN_STYLES.get(active_tab, TAB_MARGIN_STYLES["Take Quiz"])
+    accent = margin_theme["accent"]
+    border_tint = margin_theme["border_tint"]
+    pill_bg = margin_theme["pill_bg"]
+    pill_text = margin_theme["pill_text"]
+
+    st.markdown(
+        f"""
+        <style>
+        .stApp {{
+            background: radial-gradient(circle at 12% 10%, rgba(11, 110, 63, 0.11), transparent 39%),
+                        radial-gradient(circle at 88% 14%, rgba(252, 220, 4, 0.06), transparent 35%),
+                        radial-gradient(circle at 75% 88%, rgba(6, 78, 44, 0.10), transparent 44%),
+                        linear-gradient(180deg, #E3EFE8 0%, #D6E7DD 55%, #C9DFD2 100%);
+            background-attachment: fixed;
+        }}
+        .ug-margin-rail {{
+            border-left: 6px solid {accent};
+            background: rgba(255, 255, 255, 0.90);
+            border-radius: 12px;
+            padding: 0.75rem 0.85rem;
+            box-shadow: 0 3px 12px rgba(6, 45, 25, 0.06);
+            transition: border-color 0.2s ease;
+        }}
+        .ug-margin-badge {{
+            display: inline-block;
+            background: {pill_bg};
+            color: {pill_text};
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 0.2rem 0.55rem;
+            border-radius: 999px;
+            margin-top: 0.35rem;
+        }}
+        .top-left-tab-label {{
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: #064e2c;
+            margin-bottom: 0.25rem;
+        }}
+        .ug-title-banner {{
+            display: flex;
+            align-items: center;
+            gap: 0.9rem;
+            padding: 0.8rem 1.1rem;
+            background: rgba(255, 255, 255, 0.94);
+            border: 1px solid rgba(6, 78, 44, 0.14);
+            border-left: 6px solid {accent};
+            border-radius: 14px;
+            box-shadow: 0 5px 16px rgba(6, 45, 25, 0.08);
+        }}
+        .ug-flag-stripes {{
+            display: inline-flex;
+            flex-direction: column;
+            width: 15px;
+            height: 46px;
+            border-radius: 3px;
+            overflow: hidden;
+            border: 1px solid #cbd5e1;
+            flex-shrink: 0;
+        }}
+        .ug-stripe-black {{ flex: 1; background-color: #000000; }}
+        .ug-stripe-yellow {{ flex: 1; background-color: #FCDC04; }}
+        .ug-stripe-red {{ flex: 1; background-color: #D90000; }}
+        .ug-main-heading {{ font-size: 2rem; font-weight: 700; line-height: 1.2; margin: 0; }}
+        .ug-subtitle {{ font-size: 0.88rem; color: #374151; margin-top: 0.2rem; }}
+        .ug-brand-black {{ color: #000000; }}
+        .ug-brand-yellow {{ color: #C9A800; }}
+        .ug-brand-red {{ color: #D90000; }}
+        .badge-card {{
+            border: 1px solid rgba(6, 78, 44, 0.14);
+            border-radius: 12px;
+            padding: 0.8rem 0.95rem;
+            background: rgba(255, 255, 255, 0.95);
+            margin-bottom: 0.5rem;
+            box-shadow: 0 3px 10px rgba(6, 45, 25, 0.06);
+        }}
+        .ug-workspace-card {{
+            background: rgba(255, 255, 255, 0.92);
+            border: 1.5px solid {border_tint};
+            border-left: 6px solid {accent};
+            border-radius: 16px;
+            padding: 1.35rem 1.55rem;
+            box-shadow: 0 6px 20px rgba(6, 45, 25, 0.08);
+        }}
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    class_list = list(QUIZ_BANK.keys())
+    if st.session_state.get("selected_class") not in class_list:
+        st.session_state["selected_class"] = "P6"
+
+    logo_kind, logo_val = get_logo_source()
+    left_bar_col, header_col = st.columns([1.6, 5.4])
+
+    with left_bar_col:
+        st.markdown('<div class="ug-margin-rail">', unsafe_allow_html=True)
+        if logo_kind == "file":
+            st.image(logo_val, width=116)
+        else:
+            st.markdown(
+                f'<img src="{logo_val}" alt="iLearn-Uganda Logo" width="116" style="border-radius:18px;"/>',
+                unsafe_allow_html=True,
+            )
+        st.caption("NCDC Primary Maths Hub (P1–P7)")
+        st.markdown('<div class="top-left-tab-label">Tab Selector</div>', unsafe_allow_html=True)
+
+        active_tab = st.selectbox(
+            "Tab Selector",
+            TABS,
+            index=TABS.index(active_tab),
+            label_visibility="collapsed",
+            key="active_tab",
+        )
+
+        margin_theme = TAB_MARGIN_STYLES.get(active_tab, TAB_MARGIN_STYLES["Take Quiz"])
+        st.markdown(
+            f'<div class="ug-margin-badge">● {active_tab}</div>'
+            f'<div style="font-size:0.74rem; color:#374151; margin-top:0.3rem;">{margin_theme["note"]}</div>'
+            "</div>",
+            unsafe_allow_html=True,
+        )
+
+    with header_col:
+        st.markdown(
+            f"""
+            <div class="ug-title-banner">
+                <div class="ug-flag-stripes" title="Uganda Flag Colors: Black, Yellow, Red">
+                    <div class="ug-stripe-black"></div>
+                    <div class="ug-stripe-yellow"></div>
+                    <div class="ug-stripe-red"></div>
+                </div>
+                <div>
+                    <h1 class="ug-main-heading">
+                        <span class="ug-brand-black">iLearn</span><span class="ug-brand-yellow">-</span><span class="ug-brand-red">Uganda</span>: NCDC Primary Mathematics (P1 – P7)
+                    </h1>
+                    <div class="ug-subtitle">
+                        Growing bright minds from the roots up • Interactive Practice, Syllabus &amp; Pool Checkers 3D AI Lab
+                    </div>
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+    st.divider()
+
+    _, tab_content_col = st.columns([0.4, 9.6])
+
+    with tab_content_col:
+        st.markdown('<div class="ug-workspace-card">', unsafe_allow_html=True)
+
+        if active_tab == "Take Quiz":
+            st.markdown("### Pupil Details")
+            p_col1, p_col2, p_col3 = st.columns(3)
+            with p_col1:
+                pupil_name = st.text_input(
+                    "Pupil Name",
+                    value=st.session_state["pupil_info"].get("name", ""),
+                    placeholder="Enter full name",
+                    key="input_pupil_name",
+                )
+            with p_col2:
+                school_name = st.text_input(
+                    "School Name",
+                    value=st.session_state["pupil_info"].get("school", ""),
+                    placeholder="Enter school name",
+                    key="input_school_name",
+                )
+            with p_col3:
+                saved_district = st.session_state["pupil_info"].get("district", "Kampala")
+                default_idx = UGANDA_DISTRICTS.index(saved_district) if saved_district in UGANDA_DISTRICTS else 0
+                district_name = st.selectbox(
+                    "District",
+                    UGANDA_DISTRICTS,
+                    index=default_idx,
+                    key="select_district_name",
+                )
+
+            clean_name = (pupil_name or "").strip()
+            clean_school = (school_name or "").strip()
+            st.session_state["pupil_info"] = {
+                "name": clean_name,
+                "school": clean_school,
+                "district": district_name,
+            }
+
+            selected_class = st.selectbox(
+                "Select Class",
+                class_list,
+                index=class_list.index(st.session_state.get("selected_class", "P6")),
+                key="selected_class",
+                help="Choose P1 through P7 to load that class's mathematics quiz.",
+            )
+            st.subheader(f"{selected_class} Mathematics Quiz")
+
+            if clean_name or clean_school or district_name:
+                st.caption(
+                    f"Candidate: **{clean_name or 'Not provided'}** | "
+                    f"School: **{clean_school or 'Not provided'}** | "
+                    f"District: **{district_name}**"
+                )
+
+            questions = QUIZ_BANK.get(selected_class, [])
+            selected_picks: Dict[int, Any] = {}
+
+            for idx, q in enumerate(questions):
+                st.markdown(f"**{q['question']}** *({q.get('marks', 1)} mark(s))*")
+
+                png = get_diagram_png(q.get("diagram_type"))
+                if png:
+                    st.image(png, caption="Diagram")
+
+                pick = st.radio(
+                    "Select answer:",
+                    q["options"],
+                    index=None,
+                    key=f"q_{selected_class}_{idx}",
+                )
+                selected_picks[idx] = pick
+                q_id = str(q.get("id", f"{selected_class}_q{idx + 1}"))
+                q_uid = f"{selected_class}:{q_id}"
+
+                if st.button("Check Answer", key=f"btn_{selected_class}_{idx}"):
+                    if not clean_name or not clean_school or not district_name:
+                        st.warning("Please enter your name, school name, and select a district before checking your answer.")
+                    elif pick is None:
+                        st.warning("Please select an option before checking your answer.")
+                    else:
+                        fb_item = record_single_answer(
+                            q=q,
+                            idx=idx,
+                            selected_class=selected_class,
+                            pick=pick,
+                            pupil_name=clean_name,
+                            school_name=clean_school,
+                            district_name=district_name,
+                        )
+                        st.session_state["last_checked_feedback"][q_uid] = fb_item
+
+                fb = st.session_state["last_checked_feedback"].get(q_uid)
+                if fb:
+                    if fb["ok"]:
+                        st.success(f"Correct! Selected: **{fb['record']['Selected']}**")
+                    else:
+                        st.error(f"Incorrect. Selected: **{fb['record']['Selected']}** | Answer: **{fb['ans']}**")
+                    render_line_by_line_explanation(fb["record"], correct_ans=fb["ans"])
+                    if fb.get("sync_msg"):
+                        st.caption(fb["sync_msg"])
+                st.divider()
+
+            st.markdown("### Submit Quiz")
+            sub_col1, sub_col2 = st.columns([1.4, 1.6])
+            with sub_col1:
+                submit_clicked = st.button("Submit Quiz", type="primary", use_container_width=True, key="btn_submit_quiz")
+            with sub_col2:
+                open_dash_clicked = st.button("Open Dashboard & Leaderboard", use_container_width=True, key="btn_go_dashboard")
+
+            if submit_clicked:
+                if not clean_name or not clean_school or not district_name:
+                    st.warning("Please enter your name, school name, and select a district before submitting the quiz.")
+                else:
+                    answered_items: List[Dict[str, Any]] = []
+                    unanswered_count = 0
+                    for idx, q in enumerate(questions):
+                        chosen = selected_picks.get(idx)
+                        if chosen is None:
+                            unanswered_count += 1
+                            continue
+                        fb_item = record_single_answer(
+                            q=q,
+                            idx=idx,
+                            selected_class=selected_class,
+                            pick=chosen,
+                            pupil_name=clean_name,
+                            school_name=clean_school,
+                            district_name=district_name,
+                        )
+                        answered_items.append(fb_item)
+
+                    if not answered_items:
+                        st.warning("Select at least one answer above before clicking Submit Quiz.")
+                    else:
+                        total_earned = sum(int(item["record"]["Marks"]) for item in answered_items)
+                        total_possible = sum(int(item["record"]["Max Marks"]) for item in answered_items)
+                        total_right = sum(1 for item in answered_items if item["ok"])
+                        st.session_state["submitted_quiz_summary"] = {
+                            "class": selected_class,
+                            "pupil_name": clean_name,
+                            "school_name": clean_school,
+                            "district_name": district_name,
+                            "submitted_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                            "earned": total_earned,
+                            "possible": total_possible,
+                            "right": total_right,
+                            "count": len(answered_items),
+                            "unanswered": unanswered_count,
+                            "items": answered_items,
+                        }
+
+            if open_dash_clicked:
+                st.query_params["tab"] = "Dashboard"
+                st.rerun()
+
+            summary = st.session_state.get("submitted_quiz_summary")
+            if isinstance(summary, dict):
+                st.success(
+                    f"Quiz submitted for **{summary['pupil_name']}** ({summary['class']}) — "
+                    f"Score: **{summary['earned']} / {summary['possible']} marks** "
+                    f"({summary['right']}/{summary['count']} answered correctly)"
+                )
+                if summary.get("unanswered", 0) > 0:
+                    st.caption(f"Note: {summary['unanswered']} question(s) in {summary['class']} had no option selected and were not scored.")
+                for item in summary.get("items", []):
+                    rec = item["record"]
+                    mark_status = "Correct" if item["ok"] else "Incorrect"
+                    with st.expander(f"{rec['Question']} — {mark_status} ({rec['Marks']}/{rec['Max Marks']} marks)", expanded=True):
+                        st.markdown(f"- **Your Answer:** `{rec['Selected']}` | **Correct Answer:** `{item['ans']}`")
+                        render_line_by_line_explanation(rec, correct_ans=item["ans"])
+
+        elif active_tab == "NCDC Syllabus":
+            active_cls = st.session_state.get("selected_class", "P6")
+            st.subheader(f"{active_cls} Syllabus Overview")
+            for topic_row in NCDC_MATH_CURRICULUM.get(active_cls, []):
+                with st.expander(f"{topic_row['topic']} ({topic_row['periods']} periods)", expanded=True):
+                    st.caption(topic_row["curriculum_type"])
+                    st.write(topic_row["learning_outcomes"])
+                    st.markdown("**Sub-topics:** " + ", ".join(topic_row["sub_topics"]))
+                    st.markdown("**Learning Aids:** " + ", ".join(topic_row["learning_aids"]))
+                    st.markdown("**Life Skills & Values:** " + ", ".join(topic_row["life_skills_values"]))
+
+        elif active_tab == "Dashboard":
+            st.subheader("Progress & Coverage Dashboard (P1 – P7)")
+            if st.session_state.get("sync_status"):
+                st.caption(f"Persistence Status: {st.session_state['sync_status']}")
+
+            if st.button("Reload Marks from Google Sheet", key="btn_reload_sheet"):
+                load_records_from_google_sheet.clear()
+                refreshed_records, status_msg = load_records_from_google_sheet()
+                st.session_state["sync_status"] = status_msg
+                if refreshed_records:
+                    _sync_state_from_records(refreshed_records)
+                st.rerun()
+
+            p_info = st.session_state.get("pupil_info", {})
+            if any(p_info.values()):
+                st.info(
+                    f"**Pupil:** {p_info.get('name') or '—'} | "
+                    f"**School:** {p_info.get('school') or '—'} | "
+                    f"**District:** {p_info.get('district') or '—'}"
+                )
+
+            all_records = st.session_state.get("attempt_records", [])
+            stats = st.session_state.get("quiz_score", {"attempted": 0, "correct": 0, "marks": 0})
+            all_classes_max_marks = sum(
+                int(item.get("marks", 1))
+                for cls_items in QUIZ_BANK.values()
+                for item in cls_items
+            )
+            c1, c2, c3 = st.columns(3)
+            c1.metric("Questions Attempted", stats.get("attempted", 0))
+            c2.metric("Correct Answers", stats.get("correct", 0))
+            c3.metric("Marks Earned (P1–P7 Bank)", f"{stats.get('marks', 0)} / {all_classes_max_marks}")
+
+            available_classes = ["All"] + class_list
+            available_districts = (
+                ["All"] + sorted({r["District"] for r in all_records if r.get("District")})
+                if all_records
+                else ["All"] + UGANDA_DISTRICTS
+            )
+
+            f_col1, f_col2 = st.columns(2)
+            with f_col1:
+                class_filter = st.selectbox("Filter Leaderboard by Class", available_classes, key="lb_class_filter")
+            with f_col2:
+                district_filter = st.selectbox("Filter Leaderboard by District", available_districts, key="lb_district_filter")
+
+            leaderboard_df = build_leaderboard(
+                all_records,
+                limit=25,
+                class_filter=class_filter,
+                district_filter=district_filter,
+            )
+
+            st.markdown("### Top Three Badges")
+            b_cols = st.columns(3)
+            for i, (badge_title, icon) in enumerate(BADGE_TIERS):
+                with b_cols[i]:
+                    if i < len(leaderboard_df):
+                        row = leaderboard_df.iloc[i]
+                        st.markdown(
+                            '<div class="badge-card">'
+                            f'<div style="font-size:1.25rem;">{icon} <strong>{badge_title}</strong></div>'
+                            f'<div style="font-size:1rem; margin-top:0.25rem;"><strong>{row["Pupil Name"]}</strong></div>'
+                            f'<div style="font-size:0.85rem; color:#4b5563;">{row["School"]} ({row["District"]}) • {row["Class"]}</div>'
+                            f'<div style="font-size:0.9rem; margin-top:0.35rem;"><strong>Marks: {row["Marks"]}</strong> ({row["Correct"]}/{row["Attempted"]} correct)</div>'
+                            "</div>",
+                            unsafe_allow_html=True,
+                        )
+                    else:
+                        st.markdown(
+                            '<div class="badge-card">'
+                            f'<div style="font-size:1.25rem;">{icon} <strong>{badge_title}</strong></div>'
+                            '<div style="font-size:0.9rem; color:#6b7280; margin-top:0.35rem;">Awaiting pupil score</div>'
+                            "</div>",
+                            unsafe_allow_html=True,
+                        )
+
+            st.markdown("### Top 25 Performers (P1 – P7)")
+            if not leaderboard_df.empty:
+                st.dataframe(leaderboard_df, use_container_width=True, hide_index=True)
+                lb_csv_bytes = leaderboard_df.to_csv(index=False).encode("utf-8")
+                st.download_button(
+                    label="Download Top 25 Performers (CSV)",
+                    data=lb_csv_bytes,
+                    file_name="ilearn_uganda_top_25_performers.csv",
+                    mime="text/csv",
+                )
+            else:
+                st.caption("No matching pupil quiz attempts yet for the selected filters.")
+
+            rows = [
+                {
+                    "Class": cls,
+                    "Model": items[0]["curriculum_type"],
+                    "Periods": sum(x["periods"] for x in items),
+                    "Quiz Questions": len(QUIZ_BANK.get(cls, [])),
+                    "Recorded Attempts": sum(1 for r in all_records if r.get("Class") == cls),
+                    "Recorded Marks": sum(int(r.get("Marks", 0)) for r in all_records if r.get("Class") == cls),
+                }
+                for cls, items in NCDC_MATH_CURRICULUM.items()
+            ]
+            st.markdown("### NCDC Syllabus & Marks Coverage (P1 – P7)")
+            st.dataframe(pd.DataFrame(rows), use_container_width=True, hide_index=True)
+
+            if all_records:
+                st.markdown("### Line-by-Line Detailed Explanations for Attempted Questions")
+                for idx_rec, rec in enumerate(reversed(all_records)):
+                    status_tag = "Correct" if rec.get("Correct") else "Incorrect"
+                    title_label = (
+                        f"{rec.get('Class', '')} • {rec.get('Pupil Name', 'Pupil')} — "
+                        f"{rec.get('Question', '')} [{status_tag}]"
+                    )
+                    with st.expander(title_label, expanded=(idx_rec == 0)):
+                        st.caption(
+                            f"School: {rec.get('School', '—')} | District: {rec.get('District', '—')} | "
+                            f"Selected Answer: {rec.get('Selected', '—')} | Timestamp: {rec.get('Timestamp', '—')}"
+                        )
+                        matched_q = QUESTION_LOOKUP.get(str(rec.get("q_uid", ""))) or QUESTION_LOOKUP.get(str(rec.get("Question", "")))
+                        correct_val = matched_q.get("ans") if matched_q else None
+                        render_line_by_line_explanation(rec, correct_ans=correct_val)
+
+                st.markdown("### Recorded Quiz Attempts")
+                records_df = pd.DataFrame(all_records)
+                st.dataframe(records_df, use_container_width=True, hide_index=True)
+                csv_bytes = records_df.to_csv(index=False).encode("utf-8")
+                st.download_button(
+                    label="Download Quiz Results (CSV)",
+                    data=csv_bytes,
+                    file_name="ilearn_uganda_quiz_results.csv",
+                    mime="text/csv",
+                )
+
+        elif active_tab == "Checkers Lab":
+            st.subheader("Pool Checkers 3D AI Lab (8×8 Tap-to-Move Board)")
+            game: PoolCheckersGame = st.session_state["checkers_game"]
+
+            ctrl_col1, ctrl_col2 = st.columns([2.2, 1.0])
+            with ctrl_col1:
+                current_diff = st.session_state.get("checkers_difficulty", "Medium")
+                diff_idx = CHECKERS_DIFFICULTIES.index(current_diff) if current_diff in CHECKERS_DIFFICULTIES else 1
+                selected_difficulty = st.selectbox(
+                    "Computer Difficulty Level",
+                    CHECKERS_DIFFICULTIES,
+                    index=diff_idx,
+                    key="checkers_difficulty",
+                    help="Easy • Medium • Hard • Expert • Candidate Master • Master • Champion",
+                )
+            with ctrl_col2:
+                st.markdown("<div style='height: 1.72rem;'></div>", unsafe_allow_html=True)
+                if st.button("Reset Board", use_container_width=True, key="btn_checkers_reset"):
+                    st.session_state["checkers_game"] = PoolCheckersGame()
+                    st.rerun()
+
+            if game.turn == -1 and game.must_jump_from is None and game.get_all_player_moves(-1):
+                execute_computer_turns(game, difficulty=selected_difficulty)
+
+            p1_left, p2_left = game.count_pieces()
+            m1, m2, m3 = st.columns(3)
+            m1.metric("Pupil (🟢) Pieces", p1_left)
+            m2.metric(f"Computer ({selected_difficulty}) 🔴", p2_left)
+            m3.metric("Current Turn", "Pupil Turn (🟢)" if game.turn == 1 else "Computer (🔴)")
+
+            render_checkers_3d_board(game, difficulty=selected_difficulty, height=540)
+
+            legal_p1 = game.get_all_player_moves(1)
+            legal_comp = game.get_all_player_moves(-1)
+
+            if p1_left == 0 or (game.turn == 1 and not legal_p1):
+                st.error(f"Computer ({selected_difficulty}) wins! Click Reset Board to play again.")
+            elif p2_left == 0 or (game.turn == -1 and not legal_comp):
+                st.success(f"Pupil wins against {selected_difficulty} Computer! Click Reset Board to play again.")
+
+            if legal_p1:
+                with st.expander("Quick Move Controls (Optional Selector)", expanded=False):
+                    src_options = sorted(legal_p1.keys())
+                    src_choice = st.selectbox(
+                        "Select your piece (Row, Col):",
+                        src_options,
+                        format_func=lambda rc: f"Row {rc[0]}, Col {rc[1]}",
+                        key="checkers_src_select",
+                    )
+                    dest_candidates = legal_p1.get(src_choice, [])
+                    if dest_candidates:
+                        dst_choice = st.selectbox(
+                            "Select target square:",
+                            dest_candidates,
+                            format_func=lambda m: (
+                                f"Row {m[0]}, Col {m[1]} (Captures piece at {m[2]})"
+                                if m[2] is not None
+                                else f"Row {m[0]}, Col {m[1]}"
+                            ),
+                            key="checkers_dst_select",
+                        )
+                        if st.button("Move Piece", type="primary", key="btn_checkers_move"):
+                            moved = game.make_move(src_choice, (dst_choice[0], dst_choice[1]))
+                            if moved and game.turn == -1:
+                                execute_computer_turns(game, difficulty=selected_difficulty)
+                            st.rerun()
+
+            st.info(game.log[-1])
+            with st.expander("Recent Pool Checkers Move Log", expanded=False):
+                for entry in reversed(game.log[-12:]):
+                    st.markdown(f"- {entry}")
+
+        st.markdown("</div>", unsafe_allow_html=True)
+
+
+if __name__ == "__main__":
+    main()
