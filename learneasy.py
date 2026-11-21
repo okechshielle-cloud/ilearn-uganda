@@ -15,6 +15,7 @@ import matplotlib.patches as patches
 import matplotlib.pyplot as plt
 import pandas as pd
 import streamlit as st
+import streamlit.components.v1 as components
 
 st.set_page_config(page_title="iLearn-Uganda | Primary Maths", layout="wide")
 
@@ -81,7 +82,7 @@ TAB_MARGIN_STYLES: Dict[str, Dict[str, str]] = {
         "border_tint": "rgba(185, 28, 28, 0.22)",
         "pill_bg": "rgba(254, 226, 226, 0.80)",
         "pill_text": "#991b1b",
-        "note": "Strategy Board Margin",
+        "note": "3D Tap Board Margin",
     },
 }
 
@@ -1138,7 +1139,7 @@ def record_single_answer(
 
 
 # ==============================================================================
-# 5. CHECKERS ENGINE (8x8 BOARD)
+# 5. CHECKERS ENGINE (8x8 BOARD) & 3D TAP-TO-MOVE RENDERER
 # ==============================================================================
 
 
@@ -1160,7 +1161,7 @@ class CheckersGame:
             for c in range(8):
                 if (r + c) % 2 == 1:
                     self.board[r][c] = 1
-        self.turn: int = 1  # 1 for Player 1, -1 for Player 2
+        self.turn: int = 1
         self.must_jump_from: Optional[Tuple[int, int]] = None
         self.log: List[str] = ["Checkers board ready (12 pieces per side). Player 1 moves first."]
 
@@ -1244,7 +1245,6 @@ class CheckersGame:
             cr, cc = captured
             self.board[cr][cc] = 0
 
-        # King promotion
         crowned = False
         if player == 1 and dr == 0 and self.board[dr][dc] == 1:
             self.board[dr][dc] = 2
@@ -1253,7 +1253,6 @@ class CheckersGame:
             self.board[dr][dc] = -2
             crowned = True
 
-        # Check multi-jump continuation
         if captured is not None and not crowned:
             follow_jumps = [m for m in self.get_piece_moves(dr, dc) if m[2] is not None]
             if follow_jumps:
@@ -1274,6 +1273,359 @@ class CheckersGame:
         p1_count = sum(1 for row in self.board for v in row if v > 0)
         p2_count = sum(1 for row in self.board for v in row if v < 0)
         return p1_count, p2_count
+
+
+def render_checkers_3d_board(game: CheckersGame, height: int = 540) -> None:
+    """Renders an interactive 3D Checkers board with tap/click piece selection and destination squares."""
+    legal_p1 = game.get_all_player_moves(1) if game.turn == 1 else {}
+    serialized_moves: Dict[str, List[List[Any]]] = {}
+    for (sr, sc), moves in legal_p1.items():
+        serialized_moves[f"{sr},{sc}"] = [
+            [dr, dc, list(cap) if cap is not None else None]
+            for (dr, dc, cap) in moves
+        ]
+
+    payload = json.dumps({
+        "board": game.board,
+        "turn": game.turn,
+        "mustJumpFrom": list(game.must_jump_from) if game.must_jump_from else None,
+        "legalMoves": serialized_moves,
+        "lastLog": game.log[-1] if game.log else "",
+    })
+
+    html_code = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8" />
+      <style>
+        body {{
+          margin: 0;
+          padding: 0;
+          background: transparent;
+          font-family: system-ui, -apple-system, sans-serif;
+          overflow: hidden;
+          touch-action: none;
+        }}
+        #ck-3d-wrap {{
+          position: relative;
+          width: 100%;
+          height: {height}px;
+          border-radius: 16px;
+          overflow: hidden;
+          border: 1px solid rgba(6, 78, 44, 0.24);
+          background: linear-gradient(155deg, #16231c 0%, #0b130f 100%);
+        }}
+        .ck-hud-top {{
+          position: absolute;
+          top: 10px;
+          left: 12px;
+          right: 12px;
+          display: flex;
+          flex-wrap: wrap;
+          justify-content: space-between;
+          align-items: center;
+          gap: 8px;
+          z-index: 6;
+          pointer-events: none;
+        }}
+        .ck-pill {{
+          pointer-events: auto;
+          background: rgba(14, 24, 18, 0.86);
+          color: #f8fafc;
+          border: 1px solid rgba(252, 220, 4, 0.35);
+          padding: 6px 11px;
+          border-radius: 999px;
+          font-size: 12px;
+          backdrop-filter: blur(6px);
+        }}
+        .ck-btn {{
+          pointer-events: auto;
+          cursor: pointer;
+          background: #13a65b;
+          color: #ffffff;
+          border: none;
+          padding: 6px 10px;
+          border-radius: 8px;
+          font-size: 12px;
+          font-weight: 600;
+        }}
+        .ck-btn:hover {{ background: #0b6e3f; }}
+        .ck-hud-bottom {{
+          position: absolute;
+          bottom: 10px;
+          left: 12px;
+          right: 12px;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          gap: 10px;
+          color: #e2e8f0;
+          font-size: 12px;
+          background: rgba(14, 24, 18, 0.84);
+          padding: 7px 12px;
+          border-radius: 10px;
+          z-index: 6;
+        }}
+      </style>
+    </head>
+    <body>
+      <div id="ck-3d-wrap">
+        <div class="ck-hud-top">
+          <div class="ck-pill" id="ck-prompt">Tap a green piece (🟢) to see valid moves • Drag to orbit</div>
+          <div style="display:flex; gap:6px;">
+            <button class="ck-btn" onclick="setCam('p1')">Player 1 Angle</button>
+            <button class="ck-btn" onclick="setCam('top')">Top-Down</button>
+            <button class="ck-btn" onclick="setCam('overview')">3D Overview</button>
+          </div>
+        </div>
+        <div class="ck-hud-bottom">
+          <span><strong>🟢</strong> Player 1 • <strong>🔴</strong> Player 2 • <strong>👑</strong> King • <strong>Highlighted Squares</strong> = Tap to Move</span>
+          <span id="ck-log"></span>
+        </div>
+      </div>
+
+      <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
+      <script>
+        const STATE = {payload};
+        const promptEl = document.getElementById("ck-prompt");
+        document.getElementById("ck-log").textContent = STATE.lastLog || "";
+
+        const container = document.getElementById("ck-3d-wrap");
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(42, container.clientWidth / container.clientHeight, 0.1, 100);
+
+        const renderer = new THREE.WebGLRenderer({{ antialias: true, alpha: true }});
+        renderer.setSize(container.clientWidth, container.clientHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.shadowMap.enabled = true;
+        scene.add(new THREE.AmbientLight(0xffffff, 0.72));
+
+        const dirLight = new THREE.DirectionalLight(0xfff7dc, 1.15);
+        dirLight.position.set(7, 13, 9);
+        dirLight.castShadow = true;
+        scene.add(dirLight);
+
+        const fillLight = new THREE.DirectionalLight(0x93c5fd, 0.4);
+        fillLight.position.set(-8, 6, -7);
+        scene.add(fillLight);
+
+        const boardGroup = new THREE.Group();
+        scene.add(boardGroup);
+
+        const frameMat = new THREE.MeshStandardMaterial({{ color: 0x3b2210, roughness: 0.6 }});
+        const lightSqMat = new THREE.MeshStandardMaterial({{ color: 0xf3e5ab, roughness: 0.55 }});
+        const darkSqMat = new THREE.MeshStandardMaterial({{ color: 0x294b38, roughness: 0.6 }});
+        const moveSqMat = new THREE.MeshStandardMaterial({{ color: 0x22c55e, emissive: 0x15803d, emissiveIntensity: 0.55, roughness: 0.35 }});
+        const jumpSqMat = new THREE.MeshStandardMaterial({{ color: 0xfacc15, emissive: 0xca8a04, emissiveIntensity: 0.65, roughness: 0.35 }});
+        const selPieceMat = new THREE.MeshStandardMaterial({{ color: 0x4ade80, emissive: 0x16a34a, emissiveIntensity: 0.6, roughness: 0.3 }});
+
+        const p1Mat = new THREE.MeshStandardMaterial({{ color: 0x0b875b, roughness: 0.35, metalness: 0.12 }});
+        const p2Mat = new THREE.MeshStandardMaterial({{ color: 0xdc2626, roughness: 0.35, metalness: 0.12 }});
+        const crownMat = new THREE.MeshStandardMaterial({{ color: 0xfcdc04, roughness: 0.25, metalness: 0.45 }});
+
+        const boardBase = new THREE.Mesh(new THREE.BoxGeometry(9.2, 0.5, 9.2), frameMat);
+        boardBase.position.y = -0.25;
+        boardBase.receiveShadow = true;
+        boardGroup.add(boardBase);
+
+        const sqGeo = new THREE.BoxGeometry(1.0, 0.14, 1.0);
+        const discGeo = new THREE.CylinderGeometry(0.38, 0.4, 0.22, 28);
+        const crownGeo = new THREE.TorusGeometry(0.19, 0.055, 12, 24);
+
+        const squareMeshes = [];
+        const pieceMeshes = [];
+        const tapTargets = [];
+
+        let selectedSrc = null;
+        if (STATE.mustJumpFrom && STATE.legalMoves[STATE.mustJumpFrom.join(",")]) {{
+          selectedSrc = STATE.mustJumpFrom;
+        }} else {{
+          const keys = Object.keys(STATE.legalMoves);
+          if (keys.length === 1) {{
+            selectedSrc = keys[0].split(",").map(Number);
+          }}
+        }}
+
+        function coordToWorld(r, c) {{
+          return {{ x: (c - 3.5) * 1.02, z: (r - 3.5) * 1.02 }};
+        }}
+
+        function getTargetsForSelected() {{
+          if (!selectedSrc) return [];
+          return STATE.legalMoves[selectedSrc.join(",")] || [];
+        }}
+
+        function rebuildBoardVisuals() {{
+          for (const m of squareMeshes) boardGroup.remove(m);
+          for (const m of pieceMeshes) boardGroup.remove(m);
+          squareMeshes.length = 0;
+          pieceMeshes.length = 0;
+          tapTargets.length = 0;
+
+          const activeTargets = getTargetsForSelected();
+          const targetMap = new Map();
+          for (const [dr, dc, cap] of activeTargets) {{
+            targetMap.set(`${{dr}},${{dc}}`, cap);
+          }}
+
+          for (let r = 0; r < 8; r++) {{
+            for (let c = 0; c < 8; c++) {{
+              const {{ x, z }} = coordToWorld(r, c);
+              const isDark = (r + c) % 2 === 1;
+              const key = `${{r}},${{c}}`;
+              let mat = isDark ? darkSqMat : lightSqMat;
+
+              if (targetMap.has(key)) {{
+                mat = targetMap.get(key) ? jumpSqMat : moveSqMat;
+              }}
+
+              const sq = new THREE.Mesh(sqGeo, mat);
+              sq.position.set(x, 0.05, z);
+              sq.receiveShadow = true;
+              sq.userData = {{ kind: "square", r, c, isTarget: targetMap.has(key) }};
+              boardGroup.add(sq);
+              squareMeshes.push(sq);
+              if (targetMap.has(key)) tapTargets.push(sq);
+
+              const val = STATE.board[r][c];
+              if (val !== 0) {{
+                const isP1 = val > 0;
+                const isKing = Math.abs(val) === 2;
+                const isSelected = selectedSrc && selectedSrc[0] === r && selectedSrc[1] === c;
+                const canSelect = STATE.turn === 1 && isP1 && Boolean(STATE.legalMoves[key]);
+
+                const disc = new THREE.Mesh(discGeo, isSelected ? selPieceMat : (isP1 ? p1Mat : p2Mat));
+                disc.position.set(x, isSelected ? 0.34 : 0.23, z);
+                disc.castShadow = true;
+                disc.userData = {{ kind: "piece", r, c, isP1, canSelect }};
+                boardGroup.add(disc);
+                pieceMeshes.push(disc);
+                if (canSelect) tapTargets.push(disc);
+
+                if (isKing) {{
+                  const crown = new THREE.Mesh(crownGeo, crownMat);
+                  crown.rotation.x = Math.PI / 2;
+                  crown.position.set(x, disc.position.y + 0.13, z);
+                  boardGroup.add(crown);
+                  pieceMeshes.push(crown);
+                }}
+              }}
+            }}
+          }}
+
+          if (STATE.turn !== 1) {{
+            promptEl.textContent = "Waiting for turn or game over — click Reset Board to replay";
+          }} else if (selectedSrc) {{
+            const nTargets = activeTargets.length;
+            promptEl.textContent = `Selected (${{selectedSrc[0]}}, ${{selectedSrc[1]}}) • Tap one of ${{nTargets}} highlighted square(s) to move`;
+          }} else {{
+            promptEl.textContent = "Tap a green piece (🟢) to select • Tap a highlighted square to move";
+          }}
+        }}
+
+        function submitMoveToStreamlit(src, dst) {{
+          promptEl.textContent = `Moving from (${{src[0]}}, ${{src[1]}}) to (${{dst[0]}}, ${{dst[1]}})...`;
+          const url = new URL(window.parent.location.href);
+          url.searchParams.set("tab", "Checkers Lab");
+          url.searchParams.set("ck_src", `${{src[0]}},${{src[1]}}`);
+          url.searchParams.set("ck_dst", `${{dst[0]}},${{dst[1]}}`);
+          url.searchParams.set("ck_nonce", String(Date.now()));
+          window.parent.location.assign(url.toString());
+        }}
+
+        container.appendChild(renderer.domElement);
+
+        let isPointerDown = false;
+        let wasDragged = false;
+        let downX = 0, downY = 0, lastX = 0, lastY = 0;
+        let yaw = 0, pitch = 0.72, dist = 12.6;
+
+        function updateCamera() {{
+          const clampedPitch = Math.max(0.2, Math.min(1.48, pitch));
+          camera.position.x = dist * Math.sin(yaw) * Math.cos(clampedPitch);
+          camera.position.y = dist * Math.sin(clampedPitch);
+          camera.position.z = dist * Math.cos(yaw) * Math.cos(clampedPitch);
+          camera.lookAt(0, 0, 0);
+        }}
+
+        window.setCam = function(mode) {{
+          if (mode === "p1") {{ yaw = 0; pitch = 0.62; dist = 11.4; }}
+          else if (mode === "top") {{ yaw = 0; pitch = 1.47; dist = 13.0; }}
+          else {{ yaw = 0.25; pitch = 0.72; dist = 12.6; }}
+          updateCamera();
+        }};
+
+        const raycaster = new THREE.Raycaster();
+        const pointer = new THREE.Vector2();
+
+        function pickHit(clientX, clientY) {{
+          const rect = renderer.domElement.getBoundingClientRect();
+          pointer.x = ((clientX - rect.left) / rect.width) * 2 - 1;
+          pointer.y = -((clientY - rect.top) / rect.height) * 2 + 1;
+          raycaster.setFromCamera(pointer, camera);
+          const hits = raycaster.intersectObjects(tapTargets, false);
+          return hits.length > 0 ? hits[0].object.userData : null;
+        }}
+
+        renderer.domElement.addEventListener("pointerdown", (e) => {{
+          isPointerDown = true;
+          wasDragged = false;
+          downX = lastX = e.clientX;
+          downY = lastY = e.clientY;
+        }});
+
+        window.addEventListener("pointermove", (e) => {{
+          if (!isPointerDown) return;
+          const dx = e.clientX - lastX;
+          const dy = e.clientY - lastY;
+          if (Math.hypot(e.clientX - downX, e.clientY - downY) > 6) {{
+            wasDragged = true;
+          }}
+          lastX = e.clientX;
+          lastY = e.clientY;
+          if (wasDragged) {{
+            yaw -= dx * 0.008;
+            pitch += dy * 0.008;
+            updateCamera();
+          }}
+        }});
+
+        window.addEventListener("pointerup", (e) => {{
+          if (!isPointerDown) return;
+          isPointerDown = false;
+          if (wasDragged) return;
+
+          const hit = pickHit(e.clientX, e.clientY);
+          if (!hit) return;
+
+          if (hit.kind === "piece" && hit.canSelect) {{
+            selectedSrc = [hit.r, hit.c];
+            rebuildBoardVisuals();
+          }} else if (hit.kind === "square" && hit.isTarget && selectedSrc) {{
+            submitMoveToStreamlit(selectedSrc, [hit.r, hit.c]);
+          }}
+        }});
+
+        renderer.domElement.addEventListener("wheel", (e) => {{
+          e.preventDefault();
+          dist = Math.max(7.2, Math.min(18.5, dist + e.deltaY * 0.008));
+          updateCamera();
+        }}, {{ passive: false }});
+
+        updateCamera();
+        rebuildBoardVisuals();
+
+        function animate() {{
+          requestAnimationFrame(animate);
+          renderer.render(scene, camera);
+        }}
+        animate();
+      </script>
+    </body>
+    </html>
+    """
+    components.html(html_code, height=height + 12)
 
 
 # ==============================================================================
@@ -1366,24 +1718,6 @@ def init_state() -> None:
         st.session_state["sheet_hydrated"] = True
 
 
-def _render_checkers_board_grid(game: CheckersGame) -> None:
-    symbol_map = {
-        0: "·",
-        1: "🟢",
-        2: "👑🟢",
-        -1: "🔴",
-        -2: "👑🔴",
-    }
-    grid_rows: List[Dict[str, str]] = []
-    for r in range(8):
-        row_dict: Dict[str, str] = {"Row": str(r)}
-        for c in range(8):
-            val = game.board[r][c]
-            row_dict[f"C{c}"] = symbol_map.get(val, "·")
-        grid_rows.append(row_dict)
-    st.dataframe(pd.DataFrame(grid_rows), use_container_width=True, hide_index=True)
-
-
 def main() -> None:
     init_state()
 
@@ -1391,6 +1725,27 @@ def main() -> None:
     if requested_tab in TABS:
         st.session_state["active_tab"] = requested_tab
         del st.query_params["tab"]
+
+    ck_src_raw = st.query_params.get("ck_src", None)
+    ck_dst_raw = st.query_params.get("ck_dst", None)
+    if ck_src_raw and ck_dst_raw:
+        try:
+            src_tuple = tuple(int(x) for x in str(ck_src_raw).split(","))
+            dst_tuple = tuple(int(x) for x in str(ck_dst_raw).split(","))
+            if len(src_tuple) == 2 and len(dst_tuple) == 2:
+                game: CheckersGame = st.session_state["checkers_game"]
+                moved = game.make_move((src_tuple[0], src_tuple[1]), (dst_tuple[0], dst_tuple[1]))
+                if moved and game.turn == -1:
+                    opp_moves = game.get_all_player_moves(-1)
+                    if opp_moves:
+                        opp_src = random.choice(list(opp_moves.keys()))
+                        opp_dst = random.choice(opp_moves[opp_src])
+                        game.make_move(opp_src, (opp_dst[0], opp_dst[1]))
+        except Exception:
+            pass
+        for param_key in ("ck_src", "ck_dst", "ck_nonce"):
+            if param_key in st.query_params:
+                del st.query_params[param_key]
 
     active_tab = st.session_state.get("active_tab", "Take Quiz")
     if active_tab not in TABS:
@@ -1536,7 +1891,7 @@ def main() -> None:
                         <span class="ug-brand-black">iLearn</span><span class="ug-brand-yellow">-</span><span class="ug-brand-red">Uganda</span>: NCDC Primary Mathematics (P1 – P7)
                     </h1>
                     <div class="ug-subtitle">
-                        Growing bright minds from the roots up • Interactive Practice, Syllabus &amp; Checkers Lab
+                        Growing bright minds from the roots up • Interactive Practice, Syllabus &amp; 3D Checkers Lab
                     </div>
                 </div>
             </div>
@@ -1863,7 +2218,7 @@ def main() -> None:
                 )
 
         elif active_tab == "Checkers Lab":
-            st.subheader("Checkers Strategy Lab (8×8 Board)")
+            st.subheader("3D Checkers Strategy Lab (8×8 Tap-to-Move Board)")
             game: CheckersGame = st.session_state["checkers_game"]
             p1_left, p2_left = game.count_pieces()
 
@@ -1872,8 +2227,7 @@ def main() -> None:
             m2.metric("Player 2 (🔴) Pieces", p2_left)
             m3.metric("Current Turn", "Player 1 (You)" if game.turn == 1 else "Player 2")
 
-            _render_checkers_board_grid(game)
-            st.caption("Legend: 🟢 Player 1 Piece • 👑🟢 Player 1 King • 🔴 Player 2 Piece • 👑🔴 Player 2 King")
+            render_checkers_3d_board(game, height=540)
 
             if p1_left == 0:
                 st.error("Player 2 wins! Click Reset Board to play again.")
@@ -1882,34 +2236,35 @@ def main() -> None:
 
             legal_p1 = game.get_all_player_moves(1)
             if legal_p1:
-                src_options = sorted(legal_p1.keys())
-                src_choice = st.selectbox(
-                    "Select your piece (Row, Col):",
-                    src_options,
-                    format_func=lambda rc: f"Row {rc[0]}, Col {rc[1]}",
-                    key="checkers_src_select",
-                )
-                dest_candidates = legal_p1.get(src_choice, [])
-                if dest_candidates:
-                    dst_choice = st.selectbox(
-                        "Select target square:",
-                        dest_candidates,
-                        format_func=lambda m: (
-                            f"Row {m[0]}, Col {m[1]} (Captures piece at {m[2]})"
-                            if m[2] is not None
-                            else f"Row {m[0]}, Col {m[1]}"
-                        ),
-                        key="checkers_dst_select",
+                with st.expander("Quick Move Controls (Optional Selector)", expanded=False):
+                    src_options = sorted(legal_p1.keys())
+                    src_choice = st.selectbox(
+                        "Select your piece (Row, Col):",
+                        src_options,
+                        format_func=lambda rc: f"Row {rc[0]}, Col {rc[1]}",
+                        key="checkers_src_select",
                     )
-                    if st.button("Move Piece", type="primary", key="btn_checkers_move"):
-                        moved = game.make_move(src_choice, (dst_choice[0], dst_choice[1]))
-                        if moved and game.turn == -1:
-                            opp_moves = game.get_all_player_moves(-1)
-                            if opp_moves:
-                                opp_src = random.choice(list(opp_moves.keys()))
-                                opp_dst = random.choice(opp_moves[opp_src])
-                                game.make_move(opp_src, (opp_dst[0], opp_dst[1]))
-                        st.rerun()
+                    dest_candidates = legal_p1.get(src_choice, [])
+                    if dest_candidates:
+                        dst_choice = st.selectbox(
+                            "Select target square:",
+                            dest_candidates,
+                            format_func=lambda m: (
+                                f"Row {m[0]}, Col {m[1]} (Captures piece at {m[2]})"
+                                if m[2] is not None
+                                else f"Row {m[0]}, Col {m[1]}"
+                            ),
+                            key="checkers_dst_select",
+                        )
+                        if st.button("Move Piece", type="primary", key="btn_checkers_move"):
+                            moved = game.make_move(src_choice, (dst_choice[0], dst_choice[1]))
+                            if moved and game.turn == -1:
+                                opp_moves = game.get_all_player_moves(-1)
+                                if opp_moves:
+                                    opp_src = random.choice(list(opp_moves.keys()))
+                                    opp_dst = random.choice(opp_moves[opp_src])
+                                    game.make_move(opp_src, (opp_dst[0], opp_dst[1]))
+                            st.rerun()
             else:
                 st.warning("No legal moves available for Player 1. Click Reset Board to start a new game.")
 
