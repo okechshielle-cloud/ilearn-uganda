@@ -15,8 +15,11 @@ import matplotlib.patches as patches
 import matplotlib.pyplot as plt
 import pandas as pd
 import streamlit as st
+import streamlit.components.v1 as components
 
 st.set_page_config(page_title="iLearn-Uganda | Primary Maths", layout="wide")
+
+TABS = ["Take Quiz", "NCDC Syllabus", "Dashboard", "Omweso Lab"]
 
 SPREADSHEET_ID = "12Kv-84apVPF5BRDF84wiWJ5l3j8X9rAYHpu3A9KAhWo"
 QUIZ_LOG_SHEET_NAME = "Quiz_Marks_Log"
@@ -79,7 +82,7 @@ TAB_MARGIN_STYLES: Dict[str, Dict[str, str]] = {
         "border_tint": "rgba(185, 28, 28, 0.22)",
         "pill_bg": "rgba(254, 226, 226, 0.80)",
         "pill_text": "#991b1b",
-        "note": "Strategy Board Margin",
+        "note": "3D Strategy Board Margin",
     },
 }
 
@@ -176,6 +179,9 @@ def get_diagram_png(diagram_type: Optional[str]) -> Optional[bytes]:
         fig.savefig(buf, format="png", dpi=150, bbox_inches="tight")
         plt.close(fig)
         return buf.getvalue()
+
+    return None
+
 
 # ==============================================================================
 # 2. NCDC PRIMARY MATHEMATICS CURRICULUM (P1 - P7) & UGANDA DISTRICTS
@@ -1117,10 +1123,9 @@ def record_single_answer(
             st.session_state["quiz_score"]["marks"] += earned
         st.session_state["attempt_records"].append(record)
 
-        synced, sync_msg = append_attempt_to_google_sheet(record)
+        _, sync_msg = append_attempt_to_google_sheet(record)
         st.session_state["sync_status"] = sync_msg
     else:
-        synced = False
         sync_msg = "Attempt already recorded for this pupil and question."
 
     feedback_item = {
@@ -1134,7 +1139,7 @@ def record_single_answer(
 
 
 # ==============================================================================
-# 5. TRADITIONAL UGANDAN OMWESO ENGINE
+# 5. TRADITIONAL UGANDAN OMWESO ENGINE & 3D BOARD RENDERER
 # ==============================================================================
 
 
@@ -1188,6 +1193,273 @@ class OmwesoGame:
 
         self.turn = opp
         return True
+
+
+def render_omweso_3d_board(game: OmwesoGame, selected_pit: Optional[int] = None, height: int = 500) -> None:
+    """Renders an interactive 3D wooden Omweso board with stacked seeds using Three.js."""
+    board_payload = json.dumps({
+        "p1": game.board[0],
+        "p2": game.board[1],
+        "selectedPit": selected_pit,
+        "lastLog": game.log[-1] if game.log else "",
+    })
+
+    html_code = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8" />
+      <style>
+        body {{
+          margin: 0;
+          padding: 0;
+          background: transparent;
+          font-family: system-ui, -apple-system, sans-serif;
+          overflow: hidden;
+        }}
+        #omweso-3d-wrap {{
+          position: relative;
+          width: 100%;
+          height: {height}px;
+          border-radius: 16px;
+          overflow: hidden;
+          border: 1px solid rgba(6, 78, 44, 0.22);
+          background: linear-gradient(160deg, #1b2820 0%, #0d1611 100%);
+        }}
+        .hud-bar {{
+          position: absolute;
+          top: 10px;
+          left: 12px;
+          right: 12px;
+          display: flex;
+          flex-wrap: wrap;
+          justify-content: space-between;
+          align-items: center;
+          gap: 8px;
+          z-index: 5;
+          pointer-events: none;
+        }}
+        .hud-pill {{
+          pointer-events: auto;
+          background: rgba(15, 25, 19, 0.82);
+          color: #f8fafc;
+          border: 1px solid rgba(252, 220, 4, 0.35);
+          padding: 5px 10px;
+          border-radius: 999px;
+          font-size: 12px;
+          backdrop-filter: blur(6px);
+        }}
+        .cam-btn {{
+          pointer-events: auto;
+          cursor: pointer;
+          background: rgba(19, 166, 91, 0.9);
+          color: #ffffff;
+          border: none;
+          padding: 5px 10px;
+          border-radius: 8px;
+          font-size: 12px;
+          font-weight: 600;
+        }}
+        .cam-btn:hover {{ background: #0d7c47; }}
+        .legend-bar {{
+          position: absolute;
+          bottom: 10px;
+          left: 12px;
+          right: 12px;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          color: #e2e8f0;
+          font-size: 12px;
+          background: rgba(15, 25, 19, 0.78);
+          padding: 6px 12px;
+          border-radius: 10px;
+          z-index: 5;
+        }}
+      </style>
+    </head>
+    <body>
+      <div id="omweso-3d-wrap">
+        <div class="hud-bar">
+          <div class="hud-pill" id="pit-readout">Drag to orbit • Scroll to zoom • Hover a pit to inspect</div>
+          <div style="display:flex; gap:6px;">
+            <button class="cam-btn" onclick="setView('p1')">Player 1 View</button>
+            <button class="cam-btn" onclick="setView('top')">Top-Down</button>
+            <button class="cam-btn" onclick="setView('overview')">3D Overview</button>
+          </div>
+        </div>
+        <div class="legend-bar">
+          <span><strong>Gold Seeds:</strong> Player 1 (You) • <strong>Crimson/Amber Seeds:</strong> Player 2</span>
+          <span id="status-text"></span>
+        </div>
+      </div>
+
+      <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
+      <script>
+        const DATA = {board_payload};
+        document.getElementById("status-text").textContent = DATA.lastLog || "";
+
+        const container = document.getElementById("omweso-3d-wrap");
+        const scene = new THREE.Scene();
+
+        const camera = new THREE.PerspectiveCamera(42, container.clientWidth / container.clientHeight, 0.1, 100);
+        const views = {{
+          overview: {{ pos: [0, 8.2, 9.2], target: [0, 0, 0] }},
+          p1: {{ pos: [0, 5.4, 8.8], target: [0, 0, 0.8] }},
+          top: {{ pos: [0, 12.2, 0.01], target: [0, 0, 0] }},
+        }};
+        let activeView = views.overview;
+        camera.position.set(...activeView.pos);
+        camera.lookAt(...activeView.target);
+
+        const renderer = new THREE.WebGLRenderer({{ antialias: true, alpha: true }});
+        renderer.setSize(container.clientWidth, container.clientHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.shadowMap.enabled = true;
+        scene.add(new THREE.AmbientLight(0xffffff, 0.72));
+
+        const keyLight = new THREE.DirectionalLight(0xfff5d6, 1.15);
+        keyLight.position.set(6, 12, 8);
+        keyLight.castShadow = true;
+        scene.add(keyLight);
+
+        const rimLight = new THREE.DirectionalLight(0x7dd3fc, 0.45);
+        rimLight.position.set(-7, 6, -6);
+        scene.add(rimLight);
+
+        const boardGroup = new THREE.Group();
+        scene.add(boardGroup);
+
+        const woodMat = new THREE.MeshStandardMaterial({{ color: 0x5c3619, roughness: 0.55, metalness: 0.08 }});
+        const rimMat = new THREE.MeshStandardMaterial({{ color: 0x3b200c, roughness: 0.65 }});
+        const pitMat = new THREE.MeshStandardMaterial({{ color: 0x241206, roughness: 0.85 }});
+        const selMat = new THREE.MeshStandardMaterial({{ color: 0x13a65b, roughness: 0.4, emissive: 0x0b6e3f, emissiveIntensity: 0.45 }});
+
+        const baseMesh = new THREE.Mesh(new THREE.BoxGeometry(13.2, 0.75, 6.4), woodMat);
+        baseMesh.position.y = -0.375;
+        baseMesh.receiveShadow = true;
+        boardGroup.add(baseMesh);
+
+        const borderTrim = new THREE.Mesh(new THREE.BoxGeometry(13.4, 0.2, 6.6), rimMat);
+        borderTrim.position.y = -0.02;
+        boardGroup.add(borderTrim);
+
+        const p1SeedMat = new THREE.MeshStandardMaterial({{ color: 0xfcdc04, roughness: 0.35, metalness: 0.15 }});
+        const p2SeedMat = new THREE.MeshStandardMaterial({{ color: 0xe11d48, roughness: 0.35, metalness: 0.15 }});
+        const seedGeo = new THREE.SphereGeometry(0.16, 14, 14);
+        const pitGeo = new THREE.CylinderGeometry(0.46, 0.42, 0.24, 24);
+
+        const interactivePits = [];
+
+        function addRowPits(playerIdx, counts, rowZ, labelPrefix) {{
+          for (let col = 0; col < 8; col++) {{
+            const x = (col - 3.5) * 1.45;
+            const isSelected = playerIdx === 0 && DATA.selectedPit === col;
+            const pitMesh = new THREE.Mesh(pitGeo, isSelected ? selMat : pitMat);
+            pitMesh.position.set(x, 0.02, rowZ);
+            pitMesh.receiveShadow = true;
+            pitMesh.userData = {{
+              label: `${{labelPrefix}} Col ${{col + 1}} (idx ${{col}}) — ${{counts[col]}} seeds`
+            }};
+            boardGroup.add(pitMesh);
+            interactivePits.push(pitMesh);
+
+            const nSeeds = counts[col] || 0;
+            const visibleCount = Math.min(nSeeds, 28);
+            for (let s = 0; s < visibleCount; s++) {{
+              const layer = Math.floor(s / 7);
+              const angle = (s % 7) * ((Math.PI * 2) / 7) + layer * 0.45;
+              const radius = layer === 0 ? 0.14 : 0.22;
+              const sx = x + Math.cos(angle) * radius;
+              const sz = rowZ + Math.sin(angle) * radius;
+              const sy = 0.14 + layer * 0.19;
+              const seedMesh = new THREE.Mesh(seedGeo, playerIdx === 0 ? p1SeedMat : p2SeedMat);
+              seedMesh.position.set(sx, sy, sz);
+              seedMesh.castShadow = true;
+              boardGroup.add(seedMesh);
+            }}
+          }}
+        }}
+
+        // Rows from back (-Z, Player 2) to front (+Z, Player 1)
+        addRowPits(1, DATA.p2.slice(0, 8), -2.05, "P2 Outer");
+        addRowPits(1, DATA.p2.slice(8, 16).reverse(), -0.75, "P2 Inner");
+        addRowPits(0, DATA.p1.slice(8, 16).reverse(), 0.75, "P1 Inner");
+        addRowPits(0, DATA.p1.slice(0, 8), 2.05, "P1 Outer");
+
+        container.appendChild(renderer.domElement);
+
+        let isDragging = false;
+        let prevX = 0, prevY = 0;
+        let yaw = 0, pitch = 0.68, dist = 12.2;
+
+        function updateCameraFromOrbit() {{
+          const clampedPitch = Math.max(0.18, Math.min(1.48, pitch));
+          camera.position.x = dist * Math.sin(yaw) * Math.cos(clampedPitch);
+          camera.position.y = dist * Math.sin(clampedPitch);
+          camera.position.z = dist * Math.cos(yaw) * Math.cos(clampedPitch);
+          camera.lookAt(0, 0, 0);
+        }}
+
+        window.setView = function(mode) {{
+          if (mode === "p1") {{ yaw = 0; pitch = 0.56; dist = 10.6; }}
+          else if (mode === "top") {{ yaw = 0; pitch = 1.47; dist = 12.6; }}
+          else {{ yaw = 0.28; pitch = 0.68; dist = 12.2; }}
+          updateCameraFromOrbit();
+        }};
+
+        renderer.domElement.addEventListener("pointerdown", (e) => {{
+          isDragging = true;
+          prevX = e.clientX;
+          prevY = e.clientY;
+        }});
+        window.addEventListener("pointerup", () => {{ isDragging = false; }});
+
+        const raycaster = new THREE.Raycaster();
+        const pointer = new THREE.Vector2();
+        const readout = document.getElementById("pit-readout");
+
+        renderer.domElement.addEventListener("pointermove", (e) => {{
+          const rect = renderer.domElement.getBoundingClientRect();
+          pointer.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+          pointer.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+
+          if (isDragging) {{
+            const dx = e.clientX - prevX;
+            const dy = e.clientY - prevY;
+            prevX = e.clientX;
+            prevY = e.clientY;
+            yaw -= dx * 0.008;
+            pitch += dy * 0.008;
+            updateCameraFromOrbit();
+            return;
+          }}
+
+          raycaster.setFromCamera(pointer, camera);
+          const hits = raycaster.intersectObjects(interactivePits, false);
+          if (hits.length > 0 && hits[0].object.userData.label) {{
+            readout.textContent = hits[0].object.userData.label;
+          }}
+        }});
+
+        renderer.domElement.addEventListener("wheel", (e) => {{
+          e.preventDefault();
+          dist = Math.max(6.5, Math.min(18.5, dist + e.deltaY * 0.008));
+          updateCameraFromOrbit();
+        }}, {{ passive: false }});
+
+        updateCameraFromOrbit();
+
+        function animate() {{
+          requestAnimationFrame(animate);
+          renderer.render(scene, camera);
+        }}
+        animate();
+      </script>
+    </body>
+    </html>
+    """
+    components.html(html_code, height=height + 12)
 
 
 # ==============================================================================
@@ -1259,8 +1531,6 @@ def build_leaderboard(
 # 7. MAIN STREAMLIT BLOCK
 # ==============================================================================
 
-TABS = ["Take Quiz", "NCDC Syllabus", "Dashboard", "Omweso Lab"]
-
 
 def init_state() -> None:
     st.session_state.setdefault("quiz_score", {"attempted": 0, "correct": 0, "marks": 0})
@@ -1285,9 +1555,16 @@ def init_state() -> None:
 def main() -> None:
     init_state()
 
+    requested_tab = st.query_params.get("tab", None)
+    if requested_tab in TABS:
+        st.session_state["active_tab"] = requested_tab
+        del st.query_params["tab"]
+
     active_tab = st.session_state.get("active_tab", "Take Quiz")
     if active_tab not in TABS:
         active_tab = "Take Quiz"
+        st.session_state["active_tab"] = active_tab
+
     margin_theme = TAB_MARGIN_STYLES.get(active_tab, TAB_MARGIN_STYLES["Take Quiz"])
     accent = margin_theme["accent"]
     border_tint = margin_theme["border_tint"]
@@ -1295,67 +1572,86 @@ def main() -> None:
     pill_text = margin_theme["pill_text"]
 
     st.markdown(
-        "<style>"
-        ".stApp {"
-        "background: radial-gradient(circle at 12% 10%, rgba(11, 110, 63, 0.11), transparent 39%),"
-        "radial-gradient(circle at 88% 14%, rgba(252, 220, 4, 0.06), transparent 35%),"
-        "radial-gradient(circle at 75% 88%, rgba(6, 78, 44, 0.10), transparent 44%),"
-        "linear-gradient(180deg, #E3EFE8 0%, #D6E7DD 55%, #C9DFD2 100%);"
-        "background-attachment: fixed;"
-        "}"
-        f".ug-margin-rail {{"
-        f"border-left: 6px solid {accent};"
-        f"background: rgba(255, 255, 255, 0.90);"
-        f"border-radius: 12px;"
-        f"padding: 0.75rem 0.85rem;"
-        f"box-shadow: 0 3px 12px rgba(6, 45, 25, 0.06);"
-        f"transition: border-color 0.2s ease;"
-        f"}}"
-        f".ug-margin-badge {{"
-        f"display: inline-block;"
-        f"background: {pill_bg};"
-        f"color: {pill_text};"
-        f"font-size: 0.75rem;"
-        f"font-weight: 700;"
-        f"padding: 0.2rem 0.55rem;"
-        f"border-radius: 999px;"
-        f"margin-top: 0.35rem;"
-        f"}}"
-        ".top-left-tab-label {"
-        "font-size: 0.78rem; font-weight: 700; color: #064e2c; margin-bottom: 0.25rem;"
-        "}"
-        ".ug-title-banner {"
-        "display: flex; align-items: center; gap: 0.9rem; padding: 0.8rem 1.1rem;"
-        "background: rgba(255, 255, 255, 0.94); border: 1px solid rgba(6, 78, 44, 0.14);"
-        f"border-left: 6px solid {accent}; border-radius: 14px;"
-        "box-shadow: 0 5px 16px rgba(6, 45, 25, 0.08);"
-        "}"
-        ".ug-flag-stripes {"
-        "display: inline-flex; flex-direction: column; width: 15px; height: 46px;"
-        "border-radius: 3px; overflow: hidden; border: 1px solid #cbd5e1; flex-shrink: 0;"
-        "}"
-        ".ug-stripe-black { flex: 1; background-color: #000000; }"
-        ".ug-stripe-yellow { flex: 1; background-color: #FCDC04; }"
-        ".ug-stripe-red { flex: 1; background-color: #D90000; }"
-        ".ug-main-heading { font-size: 2rem; font-weight: 700; line-height: 1.2; margin: 0; }"
-        ".ug-subtitle { font-size: 0.88rem; color: #374151; margin-top: 0.2rem; }"
-        ".ug-brand-black { color: #000000; }"
-        ".ug-brand-yellow { color: #C9A800; }"
-        ".ug-brand-red { color: #D90000; }"
-        ".badge-card {"
-        "border: 1px solid rgba(6, 78, 44, 0.14); border-radius: 12px;"
-        "padding: 0.8rem 0.95rem; background: rgba(255, 255, 255, 0.95); margin-bottom: 0.5rem;"
-        "box-shadow: 0 3px 10px rgba(6, 45, 25, 0.06);"
-        "}"
-        f'[data-testid="stHorizontalBlock"]:last-of-type > [data-testid="stColumn"]:nth-child(2) {{'
-        f"background: rgba(255, 255, 255, 0.92);"
-        f"border: 1.5px solid {border_tint};"
-        f"border-left: 6px solid {accent};"
-        f"border-radius: 16px;"
-        f"padding: 1.35rem 1.55rem;"
-        f"box-shadow: 0 6px 20px rgba(6, 45, 25, 0.08);"
-        f"}}"
-        "</style>",
+        f"""
+        <style>
+        .stApp {{
+            background: radial-gradient(circle at 12% 10%, rgba(11, 110, 63, 0.11), transparent 39%),
+                        radial-gradient(circle at 88% 14%, rgba(252, 220, 4, 0.06), transparent 35%),
+                        radial-gradient(circle at 75% 88%, rgba(6, 78, 44, 0.10), transparent 44%),
+                        linear-gradient(180deg, #E3EFE8 0%, #D6E7DD 55%, #C9DFD2 100%);
+            background-attachment: fixed;
+        }}
+        .ug-margin-rail {{
+            border-left: 6px solid {accent};
+            background: rgba(255, 255, 255, 0.90);
+            border-radius: 12px;
+            padding: 0.75rem 0.85rem;
+            box-shadow: 0 3px 12px rgba(6, 45, 25, 0.06);
+            transition: border-color 0.2s ease;
+        }}
+        .ug-margin-badge {{
+            display: inline-block;
+            background: {pill_bg};
+            color: {pill_text};
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 0.2rem 0.55rem;
+            border-radius: 999px;
+            margin-top: 0.35rem;
+        }}
+        .top-left-tab-label {{
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: #064e2c;
+            margin-bottom: 0.25rem;
+        }}
+        .ug-title-banner {{
+            display: flex;
+            align-items: center;
+            gap: 0.9rem;
+            padding: 0.8rem 1.1rem;
+            background: rgba(255, 255, 255, 0.94);
+            border: 1px solid rgba(6, 78, 44, 0.14);
+            border-left: 6px solid {accent};
+            border-radius: 14px;
+            box-shadow: 0 5px 16px rgba(6, 45, 25, 0.08);
+        }}
+        .ug-flag-stripes {{
+            display: inline-flex;
+            flex-direction: column;
+            width: 15px;
+            height: 46px;
+            border-radius: 3px;
+            overflow: hidden;
+            border: 1px solid #cbd5e1;
+            flex-shrink: 0;
+        }}
+        .ug-stripe-black {{ flex: 1; background-color: #000000; }}
+        .ug-stripe-yellow {{ flex: 1; background-color: #FCDC04; }}
+        .ug-stripe-red {{ flex: 1; background-color: #D90000; }}
+        .ug-main-heading {{ font-size: 2rem; font-weight: 700; line-height: 1.2; margin: 0; }}
+        .ug-subtitle {{ font-size: 0.88rem; color: #374151; margin-top: 0.2rem; }}
+        .ug-brand-black {{ color: #000000; }}
+        .ug-brand-yellow {{ color: #C9A800; }}
+        .ug-brand-red {{ color: #D90000; }}
+        .badge-card {{
+            border: 1px solid rgba(6, 78, 44, 0.14);
+            border-radius: 12px;
+            padding: 0.8rem 0.95rem;
+            background: rgba(255, 255, 255, 0.95);
+            margin-bottom: 0.5rem;
+            box-shadow: 0 3px 10px rgba(6, 45, 25, 0.06);
+        }}
+        .ug-workspace-card {{
+            background: rgba(255, 255, 255, 0.92);
+            border: 1.5px solid {border_tint};
+            border-left: 6px solid {accent};
+            border-radius: 16px;
+            padding: 1.35rem 1.55rem;
+            box-shadow: 0 6px 20px rgba(6, 45, 25, 0.08);
+        }}
+        </style>
+        """,
         unsafe_allow_html=True,
     )
 
@@ -1378,21 +1674,13 @@ def main() -> None:
         st.caption("NCDC Primary Maths Hub (P1–P7)")
         st.markdown('<div class="top-left-tab-label">Tab Selector</div>', unsafe_allow_html=True)
 
-        requested_tab = st.query_params.get("tab", None)
-        if requested_tab in TABS:
-            default_tab = requested_tab
-        else:
-            default_tab = st.session_state.get("active_tab", TABS[0])
-
         active_tab = st.selectbox(
             "Tab Selector",
             TABS,
-            index=TABS.index(default_tab),
+            index=TABS.index(active_tab),
             label_visibility="collapsed",
             key="active_tab",
         )
-        if "tab" in st.query_params:
-            del st.query_params["tab"]
 
         margin_theme = TAB_MARGIN_STYLES.get(active_tab, TAB_MARGIN_STYLES["Take Quiz"])
         st.markdown(
@@ -1404,7 +1692,7 @@ def main() -> None:
 
     with header_col:
         st.markdown(
-            """
+            f"""
             <div class="ug-title-banner">
                 <div class="ug-flag-stripes" title="Uganda Flag Colors: Black, Yellow, Red">
                     <div class="ug-stripe-black"></div>
@@ -1416,7 +1704,7 @@ def main() -> None:
                         <span class="ug-brand-black">iLearn</span><span class="ug-brand-yellow">-</span><span class="ug-brand-red">Uganda</span>: NCDC Primary Mathematics (P1 – P7)
                     </h1>
                     <div class="ug-subtitle">
-                        Growing bright minds from the roots up • Interactive Practice, Syllabus &amp; Omweso Lab
+                        Growing bright minds from the roots up • Interactive Practice, Syllabus &amp; 3D Omweso Lab
                     </div>
                 </div>
             </div>
@@ -1426,9 +1714,11 @@ def main() -> None:
 
     st.divider()
 
-    _, tab_content_col = st.columns([1, 3])
+    _, tab_content_col = st.columns([0.4, 9.6])
 
     with tab_content_col:
+        st.markdown('<div class="ug-workspace-card">', unsafe_allow_html=True)
+
         if active_tab == "Take Quiz":
             st.markdown("### Pupil Details")
             p_col1, p_col2, p_col3 = st.columns(3)
@@ -1467,6 +1757,7 @@ def main() -> None:
             selected_class = st.selectbox(
                 "Select Class",
                 class_list,
+                index=class_list.index(st.session_state.get("selected_class", "P6")),
                 key="selected_class",
                 help="Choose P1 through P7 to load that class's mathematics quiz.",
             )
@@ -1530,9 +1821,9 @@ def main() -> None:
             st.markdown("### Submit Quiz")
             sub_col1, sub_col2 = st.columns([1.4, 1.6])
             with sub_col1:
-                submit_clicked = st.button("Submit Quiz", type="primary", width="stretch", key="btn_submit_quiz")
+                submit_clicked = st.button("Submit Quiz", type="primary", use_container_width=True, key="btn_submit_quiz")
             with sub_col2:
-                open_dash_clicked = st.button("Open Dashboard & Leaderboard", width="stretch", key="btn_go_dashboard")
+                open_dash_clicked = st.button("Open Dashboard & Leaderboard", use_container_width=True, key="btn_go_dashboard")
 
             if submit_clicked:
                 if not clean_name or not clean_school or not district_name:
@@ -1686,7 +1977,7 @@ def main() -> None:
 
             st.markdown("### Top 25 Performers (P1 – P7)")
             if not leaderboard_df.empty:
-                st.dataframe(leaderboard_df, width="stretch", hide_index=True)
+                st.dataframe(leaderboard_df, use_container_width=True, hide_index=True)
                 lb_csv_bytes = leaderboard_df.to_csv(index=False).encode("utf-8")
                 st.download_button(
                     label="Download Top 25 Performers (CSV)",
@@ -1709,7 +2000,7 @@ def main() -> None:
                 for cls, items in NCDC_MATH_CURRICULUM.items()
             ]
             st.markdown("### NCDC Syllabus & Marks Coverage (P1 – P7)")
-            st.dataframe(pd.DataFrame(rows), width="stretch", hide_index=True)
+            st.dataframe(pd.DataFrame(rows), use_container_width=True, hide_index=True)
 
             if all_records:
                 st.markdown("### Line-by-Line Detailed Explanations for Attempted Questions")
@@ -1730,7 +2021,7 @@ def main() -> None:
 
                 st.markdown("### Recorded Quiz Attempts")
                 records_df = pd.DataFrame(all_records)
-                st.dataframe(records_df, width="stretch", hide_index=True)
+                st.dataframe(records_df, use_container_width=True, hide_index=True)
                 csv_bytes = records_df.to_csv(index=False).encode("utf-8")
                 st.download_button(
                     label="Download Quiz Results (CSV)",
@@ -1740,8 +2031,13 @@ def main() -> None:
                 )
 
         elif active_tab == "Omweso Lab":
-            st.subheader("Traditional Ugandan Omweso")
+            st.subheader("Traditional Ugandan Omweso — 3D Board")
             game: OmwesoGame = st.session_state["omweso_game"]
+
+            valid_pits = [i for i in range(16) if game.board[0][i] >= 2]
+            pit_choice: Optional[int] = st.session_state.get("omweso_pit_select") if valid_pits else None
+
+            render_omweso_3d_board(game, selected_pit=pit_choice, height=480)
 
             st.caption("Opponent (Player 2) Board")
             opp_outer = st.columns(8)
@@ -1762,7 +2058,6 @@ def main() -> None:
                 idx = 15 - c
                 inner_cols[c].metric(f"Inner {c + 1} [#{idx}]", game.board[0][idx])
 
-            valid_pits = [i for i in range(16) if game.board[0][i] >= 2]
             if valid_pits:
                 pit_choice = st.selectbox(
                     "Pick pit to sow:",
@@ -1772,10 +2067,11 @@ def main() -> None:
                 )
                 rev = st.checkbox("Reverse sow (corner pits 0, 1, 6, 7, 8, 9, 14, 15)", key="omweso_rev_check")
                 if st.button("Sow", key="btn_omweso_sow"):
-                    game.sow(0, pit_choice, reverse=rev)
-                    opp_pits = [i for i in range(16) if game.board[1][i] >= 2]
-                    if opp_pits:
-                        game.sow(1, random.choice(opp_pits), reverse=False)
+                    moved = game.sow(0, pit_choice, reverse=rev)
+                    if moved:
+                        opp_pits = [i for i in range(16) if game.board[1][i] >= 2]
+                        if opp_pits:
+                            game.sow(1, random.choice(opp_pits), reverse=False)
                     st.rerun()
             else:
                 st.warning("No pit has 2 or more seeds left to sow! Click Reset Board to play again.")
@@ -1784,6 +2080,8 @@ def main() -> None:
                 st.session_state["omweso_game"] = OmwesoGame()
                 st.rerun()
             st.info(game.log[-1])
+
+        st.markdown("</div>", unsafe_allow_html=True)
 
 
 if __name__ == "__main__":
