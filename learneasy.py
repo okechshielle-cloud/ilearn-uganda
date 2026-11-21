@@ -1139,10 +1139,18 @@ def record_single_answer(
 
 
 # ==============================================================================
-# 5. POOL CHECKERS ENGINE (8x8 BOARD), AI DIFFICULTIES & 3D TAP-TO-MOVE UI
+# 5. POOL CHECKERS ENGINE (8x8 BOARD), 7-TIER AI & 3D TAP-TO-MOVE UI
 # ==============================================================================
 
-CHECKERS_DIFFICULTIES: List[str] = ["Easy", "Medium", "Hard", "Champion"]
+CHECKERS_DIFFICULTIES: List[str] = [
+    "Easy",
+    "Medium",
+    "Hard",
+    "Expert",
+    "Candidate Master",
+    "Master",
+    "Champion",
+]
 DIAGONAL_DIRS: List[Tuple[int, int]] = [(-1, -1), (-1, 1), (1, -1), (1, 1)]
 
 
@@ -1439,7 +1447,7 @@ def _evaluate_board_for_computer(game: PoolCheckersGame) -> float:
             elif val == -2:
                 comp_kings += 1
                 center_bonus = 0.35 if 2 <= c <= 5 and 2 <= r <= 5 else 0.0
-                score += 2.65 + center_bonus
+                score += 2.75 + center_bonus
             elif val == 1:
                 p1_men += 1
                 advance = (7 - r) * 0.14
@@ -1449,14 +1457,13 @@ def _evaluate_board_for_computer(game: PoolCheckersGame) -> float:
             elif val == 2:
                 p1_kings += 1
                 center_bonus = 0.35 if 2 <= c <= 5 and 2 <= r <= 5 else 0.0
-                score -= (2.65 + center_bonus)
+                score -= (2.75 + center_bonus)
 
     if p1_men + p1_kings == 0:
         return 100.0
     if comp_men + comp_kings == 0:
         return -100.0
 
-    # Mobility & capture threat bonus
     comp_moves_map = game.get_all_player_moves(-1)
     p1_moves_map = game.get_all_player_moves(1)
     comp_move_count = sum(len(v) for v in comp_moves_map.values())
@@ -1523,7 +1530,6 @@ def _alphabeta(
         for d_r, d_c, cap_rc in m_list:
             all_pairs.append((s_rc, (d_r, d_c), cap_rc))
 
-    # Order captures first for better alpha-beta pruning
     all_pairs.sort(key=lambda item: 1 if item[2] is not None else 0, reverse=True)
 
     if maximizing_comp:
@@ -1550,7 +1556,9 @@ def choose_computer_move(
     game: PoolCheckersGame,
     difficulty: str = "Medium",
 ) -> Optional[Tuple[Tuple[int, int], Tuple[int, int]]]:
-    """Selects a legal move `(src, dst)` for Computer (-1) across Easy, Medium, Hard, Champion."""
+    """Selects a legal move `(src, dst)` for Computer (-1) across all 7 difficulty tiers:
+    Easy, Medium, Hard, Expert, Candidate Master, Master, Champion.
+    """
     moves_map = game.get_all_player_moves(-1)
     if not moves_map:
         return None
@@ -1566,12 +1574,13 @@ def choose_computer_move(
     level = difficulty if difficulty in CHECKERS_DIFFICULTIES else "Medium"
 
     if level == "Easy":
-        # Random legal move, with a slight bias against immediate loss when options abound
         if len(candidates) > 2 and random.random() < 0.65:
             scored_easy: List[Tuple[float, Tuple[Tuple[int, int], Tuple[int, int]]]] = []
             for s_rc, d_rc, _ in candidates:
                 child = _apply_full_turn_in_sim(game, s_rc, d_rc)
-                scored_easy.append((_evaluate_board_for_computer(child) + random.uniform(-1.5, 1.5), (s_rc, d_rc)))
+                scored_easy.append(
+                    (_evaluate_board_for_computer(child) + random.uniform(-1.5, 1.5), (s_rc, d_rc))
+                )
             scored_easy.sort(key=lambda x: x[0], reverse=True)
             return random.choice([item[1] for item in scored_easy[:2]])
         picked = random.choice(candidates)
@@ -1582,7 +1591,11 @@ def choose_computer_move(
         best_pairs: List[Tuple[Tuple[int, int], Tuple[int, int]]] = []
         for s_rc, d_rc, cap_rc in candidates:
             child = _apply_full_turn_in_sim(game, s_rc, d_rc)
-            sc = _evaluate_board_for_computer(child) + (0.65 if cap_rc is not None else 0.0) + random.uniform(-0.15, 0.15)
+            sc = (
+                _evaluate_board_for_computer(child)
+                + (0.65 if cap_rc is not None else 0.0)
+                + random.uniform(-0.15, 0.15)
+            )
             if sc > best_score + 1e-6:
                 best_score = sc
                 best_pairs = [(s_rc, d_rc)]
@@ -1590,20 +1603,26 @@ def choose_computer_move(
                 best_pairs.append((s_rc, d_rc))
         return random.choice(best_pairs)
 
-    search_depth = 2 if level == "Hard" else 4
+    depth_by_level: Dict[str, int] = {
+        "Hard": 2,
+        "Expert": 3,
+        "Candidate Master": 4,
+        "Master": 5,
+        "Champion": 6,
+    }
+    search_depth = depth_by_level.get(level, 2)
     best_val = float("-inf")
     best_moves: List[Tuple[Tuple[int, int], Tuple[int, int]]] = []
 
-    # Sort candidates with captures first
     ordered = sorted(candidates, key=lambda item: 1 if item[2] is not None else 0, reverse=True)
     for s_rc, d_rc, cap_rc in ordered:
         child = _apply_full_turn_in_sim(game, s_rc, d_rc)
         val = _alphabeta(child, search_depth - 1, float("-inf"), float("inf"), False)
-        if level == "Hard":
-            val += random.uniform(-0.08, 0.08)
+        if level in {"Hard", "Expert"}:
+            jitter = 0.08 if level == "Hard" else 0.03
+            val += random.uniform(-jitter, jitter)
         else:
-            # Tiny tie-breaker favoring aggressive capture/advancement in Champion mode
-            val += (0.03 if cap_rc is not None else 0.0) + 0.01 * d_rc[0]
+            val += (0.04 if cap_rc is not None else 0.0) + 0.015 * d_rc[0]
 
         if val > best_val + 1e-6:
             best_val = val
@@ -1630,7 +1649,7 @@ def render_checkers_3d_board(
     difficulty: str = "Medium",
     height: int = 540,
 ) -> None:
-    """Renders an interactive 3D Pool Checkers board with tap/click piece selection and destination squares."""
+    """Renders an interactive 3D Pool Checkers board with reliable tap/click piece & square movement."""
     legal_p1 = game.get_all_player_moves(1) if game.turn == 1 else {}
     serialized_moves: Dict[str, List[List[Any]]] = {}
     for (sr, sc), moves in legal_p1.items():
@@ -1879,18 +1898,23 @@ def render_checkers_3d_board(
           }}
         }}
 
-        function navigateTopWithParams(src, dst) {{
+        function triggerStreamlitMove(src, dst) {{
+          const srcStr = `${{src[0]}},${{src[1]}}`;
+          const dstStr = `${{dst[0]}},${{dst[1]}}`;
           const nonce = `${{Date.now()}}_${{Math.floor(Math.random() * 100000)}}`;
-          const targets = [window.top, window.parent, window];
-          for (const winObj of targets) {{
+
+          for (const winObj of [window.top, window.parent, window]) {{
             try {{
               if (!winObj || !winObj.location) continue;
               const url = new URL(winObj.location.href);
               url.searchParams.set("tab", "Checkers Lab");
-              url.searchParams.set("ck_src", `${{src[0]}},${{src[1]}}`);
-              url.searchParams.set("ck_dst", `${{dst[0]}},${{dst[1]}}`);
+              url.searchParams.set("ck_src", srcStr);
+              url.searchParams.set("ck_dst", dstStr);
               url.searchParams.set("ck_nonce", nonce);
-              winObj.location.href = url.toString();
+              if (winObj.history && typeof winObj.history.replaceState === "function") {{
+                winObj.history.replaceState({{}}, "", url.toString());
+              }}
+              winObj.location.assign(url.toString());
               return;
             }} catch (_) {{}}
           }}
@@ -1903,7 +1927,6 @@ def render_checkers_3d_board(
           const matched = activeTargets.find((m) => m[0] === dr && m[1] === dc);
           const cap = matched ? matched[2] : null;
 
-          // Optimistic visual update before server rerun
           const movingVal = STATE.board[sr][sc];
           STATE.board[sr][sc] = 0;
           STATE.board[dr][dc] = (dr === 0 && movingVal === 1) ? 2 : movingVal;
@@ -1912,8 +1935,8 @@ def render_checkers_3d_board(
           }}
           selectedSrc = null;
           rebuildBoardVisuals();
-          promptEl.textContent = `Moving (${{sr}}, ${{sc}}) → (${{dr}}, ${{dc}}) & computing reply...`;
-          navigateTopWithParams(src, dst);
+          promptEl.textContent = `Moved (${{sr}}, ${{sc}}) → (${{dr}}, ${{dc}}) • Computer thinking...`;
+          triggerStreamlitMove(src, dst);
         }}
 
         container.appendChild(renderer.domElement);
@@ -2104,11 +2127,6 @@ def init_state() -> None:
 def main() -> None:
     init_state()
 
-    requested_tab = st.query_params.get("tab", None)
-    if requested_tab in TABS:
-        st.session_state["active_tab"] = requested_tab
-        del st.query_params["tab"]
-
     ck_src_raw = st.query_params.get("ck_src", None)
     ck_dst_raw = st.query_params.get("ck_dst", None)
     if ck_src_raw and ck_dst_raw:
@@ -2122,15 +2140,21 @@ def main() -> None:
                 moved = game.make_move((src_tuple[0], src_tuple[1]), (dst_tuple[0], dst_tuple[1]))
                 if moved:
                     move_applied = True
+                    st.session_state["active_tab"] = "Checkers Lab"
                     if game.turn == -1:
                         execute_computer_turns(game, difficulty=difficulty)
         except Exception:
             pass
-        for param_key in ("ck_src", "ck_dst", "ck_nonce"):
+        for param_key in ("ck_src", "ck_dst", "ck_nonce", "tab"):
             if param_key in st.query_params:
                 del st.query_params[param_key]
         if move_applied:
             st.rerun()
+
+    requested_tab = st.query_params.get("tab", None)
+    if requested_tab in TABS:
+        st.session_state["active_tab"] = requested_tab
+        del st.query_params["tab"]
 
     active_tab = st.session_state.get("active_tab", "Take Quiz")
     if active_tab not in TABS:
@@ -2615,7 +2639,7 @@ def main() -> None:
                     CHECKERS_DIFFICULTIES,
                     index=diff_idx,
                     key="checkers_difficulty",
-                    help="Easy: casual moves • Medium: capture & safety aware • Hard: 2-ply lookahead • Champion: deep alpha-beta search",
+                    help="Easy • Medium • Hard • Expert • Candidate Master • Master • Champion",
                 )
             with ctrl_col2:
                 st.markdown("<div style='height: 1.72rem;'></div>", unsafe_allow_html=True)
