@@ -2004,4 +2004,14 @@ def main() -> None:
                 st.dataframe(records_df, use_container_width=True, hide_index=True)
                 csv_bytes = records_df.to_csv(index=False).encode("utf-8")
                 st.download_button(
-                    label="Download Quiz Results (
+                    label="Download Quiz Results (CSV)",
+                    data=csv_bytes,
+                    file_name="ilearn_uganda_quiz_results.csv",
+                    mime="text/csv",
+                )
+
+        st.markdown("</div>", unsafe_allow_html=True)
+
+
+if __name__ == "__main__":
+    main()
