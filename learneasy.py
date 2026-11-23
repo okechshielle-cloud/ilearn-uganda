@@ -4,7 +4,6 @@ import io
 import json
 import os
 import random
-import tempfile
 from typing import Any, Dict, List, Optional, Tuple
 from urllib import error as urlerror
 from urllib import request as urlrequest
@@ -16,7 +15,6 @@ import matplotlib.patches as patches
 import matplotlib.pyplot as plt
 import pandas as pd
 import streamlit as st
-import streamlit.components.v1 as components
 
 st.set_page_config(page_title="iLearn-Uganda | Primary Maths", layout="wide")
 
@@ -83,7 +81,7 @@ TAB_MARGIN_STYLES: Dict[str, Dict[str, str]] = {
         "border_tint": "rgba(185, 28, 28, 0.22)",
         "pill_bg": "rgba(254, 226, 226, 0.80)",
         "pill_text": "#991b1b",
-        "note": "Pool Checkers 3D AI Margin",
+        "note": "Pool Checkers AI Margin",
     },
 }
 
@@ -1140,7 +1138,7 @@ def record_single_answer(
 
 
 # ==============================================================================
-# 5. POOL CHECKERS ENGINE (8x8 BOARD), 7-TIER AI & BIDIRECTIONAL 3D COMPONENT
+# 5. POOL CHECKERS ENGINE (8x8 BOARD) & 7-TIER AI
 # ==============================================================================
 
 CHECKERS_DIFFICULTIES: List[str] = [
@@ -1645,344 +1643,6 @@ def execute_computer_turns(game: PoolCheckersGame, difficulty: str) -> None:
         game.make_move(comp_move[0], comp_move[1])
 
 
-@st.cache_resource
-def _get_checkers_component():
-    """Creates a bidirectional Streamlit custom component using postMessage (`streamlit:setComponentValue`)."""
-    comp_dir = os.path.join(tempfile.gettempdir(), "ilearn_pool_checkers_3d_v1")
-    os.makedirs(comp_dir, exist_ok=True)
-    index_path = os.path.join(comp_dir, "index.html")
-
-    html_template = """<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8" />
-  <style>
-    body {
-      margin: 0;
-      padding: 0;
-      background: transparent;
-      font-family: system-ui, -apple-system, sans-serif;
-      overflow: hidden;
-      touch-action: none;
-    }
-    #ck-3d-wrap {
-      position: relative;
-      width: 100%;
-      height: 540px;
-      border-radius: 16px;
-      overflow: hidden;
-      border: 1px solid rgba(6, 78, 44, 0.24);
-      background: linear-gradient(155deg, #16231c 0%, #0b130f 100%);
-    }
-    .ck-hud-top {
-      position: absolute;
-      top: 10px;
-      left: 12px;
-      right: 12px;
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: space-between;
-      align-items: center;
-      gap: 8px;
-      z-index: 6;
-      pointer-events: none;
-    }
-    .ck-pill {
-      pointer-events: auto;
-      background: rgba(14, 24, 18, 0.88);
-      color: #f8fafc;
-      border: 1px solid rgba(252, 220, 4, 0.35);
-      padding: 6px 11px;
-      border-radius: 999px;
-      font-size: 12px;
-    }
-    .ck-btn {
-      pointer-events: auto;
-      cursor: pointer;
-      background: #13a65b;
-      color: #ffffff;
-      border: none;
-      padding: 6px 10px;
-      border-radius: 8px;
-      font-size: 12px;
-      font-weight: 600;
-    }
-    .ck-btn:hover { background: #0b6e3f; }
-    .ck-hud-bottom {
-      position: absolute;
-      bottom: 10px;
-      left: 12px;
-      right: 12px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 10px;
-      color: #e2e8f0;
-      font-size: 12px;
-      background: rgba(14, 24, 18, 0.86);
-      padding: 7px 12px;
-      border-radius: 10px;
-      z-index: 6;
-    }
-  </style>
-</head>
-<body>
-  <div id="ck-3d-wrap">
-    <div class="ck-hud-top">
-      <div class="ck-pill" id="ck-prompt">Tap a green piece to see valid moves</div>
-      <div style="display:flex; gap:6px;">
-        <button class="ck-btn" onclick="setCam('p1')">Pupil Angle</button>
-        <button class="ck-btn" onclick="setCam('top')">Top-Down</button>
-        <button class="ck-btn" onclick="setCam('overview')">3D Overview</button>
-      </div>
-    </div>
-    <div class="ck-hud-bottom">
-      <span><strong>Green</strong> Pupil &bull; <strong>Red</strong> Computer (<span id="ck-diff"></span>) &bull; <strong>Gold Ring</strong> King</span>
-      <span id="ck-log"></span>
-    </div>
-  </div>
-
-  <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
-  <script>
-    function sendToStreamlit(type, data) {
-      window.parent.postMessage(
-        Object.assign({ isStreamlitMessage: true, type: type }, data),
-        "*"
-      );
-    }
-    function setComponentValue(val) {
-      sendToStreamlit("streamlit:setComponentValue", { value: val });
-    }
-    function setFrameHeight(h) {
-      sendToStreamlit("streamlit:setFrameHeight", { height: h });
-    }
-
-    let STATE = null;
-    let selectedSrc = null;
-
-    const promptEl = document.getElementById("ck-prompt");
-    const logEl = document.getElementById("ck-log");
-    const diffEl = document.getElementById("ck-diff");
-    const container = document.getElementById("ck-3d-wrap");
-
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(42, container.clientWidth / 540, 0.1, 100);
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    renderer.setSize(container.clientWidth, 540);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.shadowMap.enabled = true;
-    container.appendChild(renderer.domElement);
-
-    scene.add(new THREE.AmbientLight(0xffffff, 0.72));
-    const dirLight = new THREE.DirectionalLight(0xfff7dc, 1.15);
-    dirLight.position.set(7, 13, 9);
-    scene.add(dirLight);
-
-    const boardGroup = new THREE.Group();
-    scene.add(boardGroup);
-
-    const frameMat = new THREE.MeshStandardMaterial({ color: 0x3b2210, roughness: 0.6 });
-    const lightSqMat = new THREE.MeshStandardMaterial({ color: 0xf3e5ab, roughness: 0.55 });
-    const darkSqMat = new THREE.MeshStandardMaterial({ color: 0x294b38, roughness: 0.6 });
-    const moveSqMat = new THREE.MeshStandardMaterial({ color: 0x22c55e, emissive: 0x15803d, emissiveIntensity: 0.58 });
-    const jumpSqMat = new THREE.MeshStandardMaterial({ color: 0xfacc15, emissive: 0xca8a04, emissiveIntensity: 0.68 });
-    const selPieceMat = new THREE.MeshStandardMaterial({ color: 0x4ade80, emissive: 0x16a34a, emissiveIntensity: 0.62 });
-    const p1Mat = new THREE.MeshStandardMaterial({ color: 0x0b875b, roughness: 0.35 });
-    const p2Mat = new THREE.MeshStandardMaterial({ color: 0xdc2626, roughness: 0.35 });
-    const crownMat = new THREE.MeshStandardMaterial({ color: 0xfcdc04, roughness: 0.25 });
-
-    const boardBase = new THREE.Mesh(new THREE.BoxGeometry(9.2, 0.5, 9.2), frameMat);
-    boardBase.position.y = -0.25;
-    boardGroup.add(boardBase);
-
-    const sqGeo = new THREE.BoxGeometry(1.0, 0.14, 1.0);
-    const discGeo = new THREE.CylinderGeometry(0.38, 0.4, 0.22, 28);
-    const crownGeo = new THREE.TorusGeometry(0.19, 0.055, 12, 24);
-
-    const dynamicMeshes = [];
-    const tapTargets = [];
-
-    function coordToWorld(r, c) {
-      return { x: (c - 3.5) * 1.02, z: (r - 3.5) * 1.02 };
-    }
-
-    function getTargetsForSelected() {
-      if (!STATE || !selectedSrc) return [];
-      return STATE.legalMoves[selectedSrc.join(",")] || [];
-    }
-
-    function rebuildBoardVisuals() {
-      if (!STATE) return;
-      for (const m of dynamicMeshes) boardGroup.remove(m);
-      dynamicMeshes.length = 0;
-      tapTargets.length = 0;
-
-      const activeTargets = getTargetsForSelected();
-      const targetMap = new Map();
-      for (const [dr, dc, cap] of activeTargets) {
-        targetMap.set(`${dr},${dc}`, cap);
-      }
-
-      for (let r = 0; r < 8; r++) {
-        for (let c = 0; c < 8; c++) {
-          const { x, z } = coordToWorld(r, c);
-          const isDark = (r + c) % 2 === 1;
-          const key = `${r},${c}`;
-          let mat = isDark ? darkSqMat : lightSqMat;
-          if (targetMap.has(key)) {
-            mat = targetMap.get(key) ? jumpSqMat : moveSqMat;
-          }
-
-          const sq = new THREE.Mesh(sqGeo, mat);
-          sq.position.set(x, 0.05, z);
-          sq.userData = { kind: "square", r, c, isTarget: targetMap.has(key) };
-          boardGroup.add(sq);
-          dynamicMeshes.push(sq);
-          if (targetMap.has(key)) tapTargets.push(sq);
-
-          const val = STATE.board[r][c];
-          if (val !== 0) {
-            const isP1 = val > 0;
-            const isKing = Math.abs(val) === 2;
-            const isSelected = selectedSrc && selectedSrc[0] === r && selectedSrc[1] === c;
-            const canSelect = STATE.turn === 1 && isP1 && Boolean(STATE.legalMoves[key]);
-
-            const disc = new THREE.Mesh(discGeo, isSelected ? selPieceMat : (isP1 ? p1Mat : p2Mat));
-            disc.position.set(x, isSelected ? 0.34 : 0.23, z);
-            disc.userData = { kind: "piece", r, c, canSelect };
-            boardGroup.add(disc);
-            dynamicMeshes.push(disc);
-            if (canSelect) tapTargets.push(disc);
-
-            if (isKing) {
-              const crown = new THREE.Mesh(crownGeo, crownMat);
-              crown.rotation.x = Math.PI / 2;
-              crown.position.set(x, disc.position.y + 0.13, z);
-              boardGroup.add(crown);
-              dynamicMeshes.push(crown);
-            }
-          }
-        }
-      }
-
-      if (STATE.turn !== 1) {
-        promptEl.textContent = "Computer is moving...";
-      } else if (selectedSrc) {
-        promptEl.textContent = `Selected (${selectedSrc[0]}, ${selectedSrc[1]}) • Tap a highlighted square`;
-      } else {
-        promptEl.textContent = "Tap a green piece to select • Tap highlighted square to move";
-      }
-    }
-
-    let isPointerDown = false, wasDragged = false;
-    let downX = 0, downY = 0, lastX = 0, lastY = 0;
-    let yaw = 0, pitch = 0.72, dist = 12.6;
-
-    function updateCamera() {
-      const clampedPitch = Math.max(0.2, Math.min(1.48, pitch));
-      camera.position.x = dist * Math.sin(yaw) * Math.cos(clampedPitch);
-      camera.position.y = dist * Math.sin(clampedPitch);
-      camera.position.z = dist * Math.cos(yaw) * Math.cos(clampedPitch);
-      camera.lookAt(0, 0, 0);
-    }
-
-    window.setCam = function(mode) {
-      if (mode === "p1") { yaw = 0; pitch = 0.62; dist = 11.4; }
-      else if (mode === "top") { yaw = 0; pitch = 1.47; dist = 13.0; }
-      else { yaw = 0.25; pitch = 0.72; dist = 12.6; }
-      updateCamera();
-    };
-
-    const raycaster = new THREE.Raycaster();
-    const pointer = new THREE.Vector2();
-
-    function pickHit(clientX, clientY) {
-      const rect = renderer.domElement.getBoundingClientRect();
-      pointer.x = ((clientX - rect.left) / rect.width) * 2 - 1;
-      pointer.y = -((clientY - rect.top) / rect.height) * 2 + 1;
-      raycaster.setFromCamera(pointer, camera);
-      const hits = raycaster.intersectObjects(tapTargets, false);
-      return hits.length > 0 ? hits[0].object.userData : null;
-    }
-
-    renderer.domElement.addEventListener("pointerdown", (e) => {
-      isPointerDown = true;
-      wasDragged = false;
-      downX = lastX = e.clientX;
-      downY = lastY = e.clientY;
-    });
-
-    window.addEventListener("pointermove", (e) => {
-      if (!isPointerDown) return;
-      const dx = e.clientX - lastX;
-      const dy = e.clientY - lastY;
-      if (Math.hypot(e.clientX - downX, e.clientY - downY) > 6) wasDragged = true;
-      lastX = e.clientX;
-      lastY = e.clientY;
-      if (wasDragged) {
-        yaw -= dx * 0.008;
-        pitch += dy * 0.008;
-        updateCamera();
-      }
-    });
-
-    window.addEventListener("pointerup", (e) => {
-      if (!isPointerDown) return;
-      isPointerDown = false;
-      if (wasDragged) return;
-
-      const hit = pickHit(e.clientX, e.clientY);
-      if (!hit) return;
-
-      if (hit.kind === "piece" && hit.canSelect) {
-        selectedSrc = [hit.r, hit.c];
-        rebuildBoardVisuals();
-      } else if (hit.kind === "square" && hit.isTarget && selectedSrc) {
-        const movePayload = {
-          src: [selectedSrc[0], selectedSrc[1]],
-          dst: [hit.r, hit.c],
-          nonce: `${Date.now()}_${Math.random()}`
-        };
-        selectedSrc = null;
-        promptEl.textContent = "Sending move & waiting for Computer reply...";
-        setComponentValue(movePayload);
-      }
-    });
-
-    window.addEventListener("message", (event) => {
-      if (!event.data || event.data.type !== "streamlit:render") return;
-      STATE = event.data.args.state;
-      diffEl.textContent = STATE.difficulty || "";
-      logEl.textContent = STATE.lastLog || "";
-      if (STATE.mustJumpFrom && STATE.legalMoves[STATE.mustJumpFrom.join(",")]) {
-        selectedSrc = STATE.mustJumpFrom;
-      } else {
-        const keys = Object.keys(STATE.legalMoves);
-        selectedSrc = keys.length === 1 ? keys[0].split(",").map(Number) : null;
-      }
-      rebuildBoardVisuals();
-      setFrameHeight(552);
-    });
-
-    updateCamera();
-    sendToStreamlit("streamlit:componentReady", { apiVersion: 1 });
-    setFrameHeight(552);
-
-    function animate() {
-      requestAnimationFrame(animate);
-      renderer.render(scene, camera);
-    }
-    animate();
-  </script>
-</body>
-</html>
-"""
-    with open(index_path, "w", encoding="utf-8") as f:
-        f.write(html_template)
-
-    return components.declare_component("ilearn_pool_checkers_3d", path=comp_dir)
-
-
 # ==============================================================================
 # 6. LEADERBOARD & BADGES HELPERS
 # ==============================================================================
@@ -2060,7 +1720,7 @@ def init_state() -> None:
     st.session_state.setdefault("active_tab", "Take Quiz")
     st.session_state.setdefault("checkers_game", PoolCheckersGame())
     st.session_state.setdefault("checkers_difficulty", "Medium")
-    st.session_state.setdefault("last_ck_nonce", None)
+    st.session_state.setdefault("ck_selected_src", None)
     st.session_state.setdefault("pupil_info", {"name": "", "school": "", "district": "Kampala"})
     st.session_state.setdefault("attempt_records", [])
     st.session_state.setdefault("last_checked_feedback", {})
@@ -2227,7 +1887,7 @@ def main() -> None:
                         <span class="ug-brand-black">iLearn</span><span class="ug-brand-yellow">-</span><span class="ug-brand-red">Uganda</span>: NCDC Primary Mathematics (P1 – P7)
                     </h1>
                     <div class="ug-subtitle">
-                        Growing bright minds from the roots up • Interactive Practice, Syllabus &amp; Pool Checkers 3D AI Lab
+                        Growing bright minds from the roots up • Interactive Practice, Syllabus &amp; Pool Checkers AI Lab
                     </div>
                 </div>
             </div>
@@ -2554,7 +2214,7 @@ def main() -> None:
                 )
 
         elif active_tab == "Checkers Lab":
-            st.subheader("Pool Checkers 3D AI Lab (8×8 Tap-to-Move Board)")
+            st.subheader("Pool Checkers AI Lab (8×8 Board)")
             game: PoolCheckersGame = st.session_state["checkers_game"]
 
             ctrl_col1, ctrl_col2 = st.columns([2.2, 1.0])
@@ -2572,7 +2232,7 @@ def main() -> None:
                 st.markdown("<div style='height: 1.72rem;'></div>", unsafe_allow_html=True)
                 if st.button("Reset Board", use_container_width=True, key="btn_checkers_reset"):
                     st.session_state["checkers_game"] = PoolCheckersGame()
-                    st.session_state["last_ck_nonce"] = None
+                    st.session_state["ck_selected_src"] = None
                     st.rerun()
 
             if game.turn == -1 and game.get_all_player_moves(-1):
@@ -2584,45 +2244,76 @@ def main() -> None:
             m2.metric(f"Computer ({selected_difficulty}) 🔴", p2_left)
             m3.metric("Current Turn", "Pupil Turn (🟢)" if game.turn == 1 else "Computer (🔴)")
 
-            legal_p1_for_ui = game.get_all_player_moves(1) if game.turn == 1 else {}
-            serialized_moves = {
-                f"{sr},{sc}": [
-                    [dr, dc, list(cap) if cap is not None else None]
-                    for (dr, dc, cap) in moves
-                ]
-                for (sr, sc), moves in legal_p1_for_ui.items()
-            }
-            board_state_payload = {
-                "board": game.board,
-                "turn": game.turn,
-                "difficulty": selected_difficulty,
-                "mustJumpFrom": list(game.must_jump_from) if game.must_jump_from else None,
-                "legalMoves": serialized_moves,
-                "lastLog": game.log[-1] if game.log else "",
-            }
-
-            checkers_3d_widget = _get_checkers_component()
-            move_event = checkers_3d_widget(state=board_state_payload, key="pool_checkers_3d_widget")
-
-            if isinstance(move_event, dict) and move_event.get("nonce") != st.session_state.get("last_ck_nonce"):
-                st.session_state["last_ck_nonce"] = move_event.get("nonce")
-                src_raw = move_event.get("src")
-                dst_raw = move_event.get("dst")
-                if isinstance(src_raw, (list, tuple)) and len(src_raw) == 2 and isinstance(dst_raw, (list, tuple)) and len(dst_raw) == 2:
-                    src = (int(src_raw[0]), int(src_raw[1]))
-                    dst = (int(dst_raw[0]), int(dst_raw[1]))
-                    if game.make_move(src, dst):
-                        if game.turn == -1:
-                            execute_computer_turns(game, difficulty=selected_difficulty)
-                        st.rerun()
-
-            legal_p1 = game.get_all_player_moves(1)
+            legal_p1 = game.get_all_player_moves(1) if game.turn == 1 else {}
             legal_comp = game.get_all_player_moves(-1)
 
             if p1_left == 0 or (game.turn == 1 and not legal_p1):
                 st.error(f"Computer ({selected_difficulty}) wins! Click Reset Board to play again.")
             elif p2_left == 0 or (game.turn == -1 and not legal_comp):
                 st.success(f"Pupil wins against {selected_difficulty} Computer! Click Reset Board to play again.")
+
+            selected_src = st.session_state.get("ck_selected_src")
+            if game.must_jump_from and game.must_jump_from in legal_p1:
+                selected_src = game.must_jump_from
+                st.session_state["ck_selected_src"] = selected_src
+            elif selected_src not in legal_p1:
+                selected_src = next(iter(legal_p1.keys()), None) if len(legal_p1) == 1 else None
+                st.session_state["ck_selected_src"] = selected_src
+
+            target_coords = (
+                {(m[0], m[1]): m[2] for m in legal_p1.get(selected_src, [])}
+                if selected_src
+                else {}
+            )
+
+            if game.turn == 1 and legal_p1:
+                if selected_src:
+                    st.caption(
+                        f"Selected piece at **({selected_src[0]}, {selected_src[1]})** — "
+                        f"click a **🟡** (capture) or **🟩** (move) square to move."
+                    )
+                else:
+                    st.caption("Click a **🟢** piece to select it, then click a highlighted target square.")
+
+            for r in range(8):
+                row_cols = st.columns(8, gap="small")
+                for c in range(8):
+                    val = game.board[r][c]
+                    is_target = (r, c) in target_coords
+                    is_selected = selected_src == (r, c)
+                    can_select = (game.turn == 1) and ((r, c) in legal_p1)
+
+                    if is_target:
+                        cap_sq = target_coords[(r, c)]
+                        label = "🟡" if cap_sq is not None else "🟩"
+                    elif val == 1:
+                        label = "🟢"
+                    elif val == 2:
+                        label = "🟢👑"
+                    elif val == -1:
+                        label = "🔴"
+                    elif val == -2:
+                        label = "🔴👑"
+                    else:
+                        label = "⬛" if (r + c) % 2 == 1 else "⬜"
+
+                    btn_type = "primary" if (is_selected or is_target) else "secondary"
+                    clicked = row_cols[c].button(
+                        label,
+                        key=f"ck_sq_{r}_{c}",
+                        use_container_width=True,
+                        type=btn_type,
+                    )
+                    if clicked:
+                        if is_target and selected_src is not None:
+                            moved = game.make_move(selected_src, (r, c))
+                            st.session_state["ck_selected_src"] = None
+                            if moved and game.turn == -1:
+                                execute_computer_turns(game, difficulty=selected_difficulty)
+                            st.rerun()
+                        elif can_select:
+                            st.session_state["ck_selected_src"] = (r, c)
+                            st.rerun()
 
             if legal_p1:
                 with st.expander("Quick Move Controls (Optional Selector)", expanded=False):
@@ -2647,6 +2338,7 @@ def main() -> None:
                         )
                         if st.button("Move Piece", type="primary", key="btn_checkers_move"):
                             moved = game.make_move(src_choice, (dst_choice[0], dst_choice[1]))
+                            st.session_state["ck_selected_src"] = None
                             if moved and game.turn == -1:
                                 execute_computer_turns(game, difficulty=selected_difficulty)
                             st.rerun()
