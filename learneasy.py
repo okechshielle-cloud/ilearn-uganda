@@ -82,7 +82,7 @@ TAB_MARGIN_STYLES: Dict[str, Dict[str, str]] = {
         "border_tint": "rgba(180, 83, 9, 0.22)",
         "pill_bg": "rgba(254, 249, 195, 0.80)",
         "pill_text": "#854d0e",
-        "note": "Standings & Analytics Margin",
+        "note": "Standings, Lesson Plan & Analytics Margin",
     },
 }
 
@@ -1602,6 +1602,69 @@ def _apply_syllabus_preset_to_lesson_plan(cls_code: str) -> None:
     st.session_state["lp_skill_c"] = skills[2] if len(skills) > 2 else "Problem solving"
 
 
+def _collect_lesson_plan_data() -> Dict[str, Any]:
+    steps_payload: List[Dict[str, str]] = []
+    step_defs = [
+        ("I", "lp_step1_time", "lp_step1_teacher", "lp_step1_learner"),
+        ("II", "lp_step2_time", "lp_step2_teacher", "lp_step2_learner"),
+        ("III", "lp_step3_time", "lp_step3_teacher", "lp_step3_learner"),
+        ("IV", "lp_step4_time", "lp_step4_teacher", "lp_step4_learner"),
+    ]
+    for step_roman, k_time, k_teach, k_learn in step_defs:
+        steps_payload.append({
+            "step": step_roman,
+            "time": str(st.session_state.get(k_time, "") or ""),
+            "teacher": str(st.session_state.get(k_teach, "") or ""),
+            "learner": str(st.session_state.get(k_learn, "") or ""),
+        })
+
+    return {
+        "school_name": str(st.session_state.get("lp_school_name", "") or ""),
+        "address_location": str(st.session_state.get("lp_address_location", "") or ""),
+        "date": str(st.session_state.get("lp_date", "") or ""),
+        "class_name": str(st.session_state.get("lp_class", "P5") or "P5"),
+        "subject_la": str(st.session_state.get("lp_subject_la", "MATHEMATICS") or "MATHEMATICS"),
+        "time": str(st.session_state.get("lp_time", "") or ""),
+        "num_learners": str(st.session_state.get("lp_num_learners", "") or ""),
+        "theme": str(st.session_state.get("lp_theme", "") or ""),
+        "topic": str(st.session_state.get("lp_topic", "") or ""),
+        "sub_topic": str(st.session_state.get("lp_sub_topic", "") or ""),
+        "subject_comp": str(st.session_state.get("lp_subject_comp", "") or ""),
+        "language_comp": str(st.session_state.get("lp_language_comp", "") or ""),
+        "alt_subject_comp": str(st.session_state.get("lp_alt_subject_comp", "") or ""),
+        "alt_language_comp": str(st.session_state.get("lp_alt_language_comp", "") or ""),
+        "method_1": str(st.session_state.get("lp_method_1", "") or ""),
+        "method_2": str(st.session_state.get("lp_method_2", "") or ""),
+        "material_1": str(st.session_state.get("lp_material_1", "") or ""),
+        "material_2": str(st.session_state.get("lp_material_2", "") or ""),
+        "skill_a": str(st.session_state.get("lp_skill_a", "") or ""),
+        "skill_b": str(st.session_state.get("lp_skill_b", "") or ""),
+        "skill_c": str(st.session_state.get("lp_skill_c", "") or ""),
+        "steps": steps_payload,
+        "strength": str(st.session_state.get("lp_strength", "") or ""),
+        "area_to_improve": str(st.session_state.get("lp_area_improve", "") or ""),
+        "strategies": str(st.session_state.get("lp_strategies", "") or ""),
+        "teacher_name": str(st.session_state.get("lp_teacher_name", "") or ""),
+        "signature": str(st.session_state.get("lp_signature", "") or ""),
+    }
+
+
+def _has_lesson_plan_content(data: Dict[str, Any]) -> bool:
+    tracked_keys = [
+        "school_name", "address_location", "time", "num_learners",
+        "theme", "topic", "sub_topic", "subject_comp", "language_comp",
+        "alt_subject_comp", "alt_language_comp", "method_1", "method_2",
+        "material_1", "material_2", "skill_a", "skill_b", "skill_c",
+        "strength", "area_to_improve", "strategies", "teacher_name", "signature",
+    ]
+    if any(str(data.get(k, "") or "").strip() for k in tracked_keys):
+        return True
+    for stp in data.get("steps", []):
+        if any(str(stp.get(f, "") or "").strip() for f in ("time", "teacher", "learner")):
+            return True
+    return False
+
+
 def _format_competence_block(main_text: str, alt_text: str) -> str:
     main_clean = (main_text or "").strip()
     alt_clean = (alt_text or "").strip()
@@ -1621,6 +1684,57 @@ def _format_competence_html(main_text: str, alt_text: str) -> str:
     if alt_clean:
         parts.append(f"<div style='margin-top:6px;'><em>Alternative Competence:</em><br>{alt_clean}</div>")
     return "".join(parts)
+
+
+def _render_lesson_plan_sheet_html(data: Dict[str, Any]) -> str:
+    steps = data["steps"]
+    subj_preview_html = _format_competence_html(data["subject_comp"], data["alt_subject_comp"])
+    lang_preview_html = _format_competence_html(data["language_comp"], data["alt_language_comp"])
+    return f"""
+    <div class="lp-clean-sheet">
+        <div><strong>SCHOOL NAME:</strong> {data['school_name']}</div>
+        <div><strong>ADDRESS/LOCATION:</strong> {data['address_location']}</div>
+        <h4 style="text-align:center; margin:0.9rem 0 0.6rem 0;">LESSON PLAN FOR MATHEMATICS</h4>
+        <table>
+            <tr>
+                <th>DATE</th><th>CLASS</th><th>SUBJECT/LA</th><th>TIME</th><th>NUMBER OF LEARNERS</th>
+            </tr>
+            <tr>
+                <td>{data['date']}</td><td>{data['class_name']}</td><td>{data['subject_la']}</td>
+                <td>{data['time']}</td><td>{data['num_learners']}</td>
+            </tr>
+        </table>
+        <div><strong>THEME:</strong> {data['theme']}</div>
+        <div><strong>TOPIC:</strong> {data['topic']}</div>
+        <div><strong>SUB-TOPIC (THEME):</strong> {data['sub_topic']}</div>
+        <div style="margin-top:0.75rem;"><strong>COMPETENCES:</strong></div>
+        <table>
+            <tr><th style="width:50%;">SUBJECT</th><th style="width:50%;">LANGUAGE</th></tr>
+            <tr><td>The learner;<br>{subj_preview_html}</td><td>The learner;<br>{lang_preview_html}</td></tr>
+        </table>
+        <div><strong>METHODS AND APPROACHES</strong> &nbsp;&nbsp; i. {data['method_1']} &nbsp;&nbsp;&nbsp;&nbsp; ii. {data['method_2']}</div>
+        <div style="margin-top:0.5rem;"><strong>INSTRUCTIONAL MATERIALS</strong> &nbsp;&nbsp; i) {data['material_1']} &nbsp;&nbsp;&nbsp;&nbsp; ii) {data['material_2']}</div>
+        <div style="margin-top:0.5rem;"><strong>LIFE SKILLS AND VALUES</strong> &nbsp;&nbsp; a) {data['skill_a']} &nbsp;&nbsp; b) {data['skill_b']} &nbsp;&nbsp; c) {data['skill_c']}</div>
+        <h4 style="margin:1.1rem 0 0.4rem 0;">LESSON DEVELOPMENT</h4>
+        <table>
+            <tr>
+                <th style="width:8%;">Steps</th>
+                <th style="width:14%;">Time</th>
+                <th style="width:39%;">Teacher's activities</th>
+                <th style="width:39%;">Learner's activity</th>
+            </tr>
+            <tr><td><strong>I</strong></td><td>{steps[0]['time']}</td><td>{steps[0]['teacher']}</td><td>{steps[0]['learner']}</td></tr>
+            <tr><td><strong>II</strong></td><td>{steps[1]['time']}</td><td>{steps[1]['teacher']}</td><td>{steps[1]['learner']}</td></tr>
+            <tr><td><strong>III</strong></td><td>{steps[2]['time']}</td><td>{steps[2]['teacher']}</td><td>{steps[2]['learner']}</td></tr>
+            <tr><td><strong>IV</strong></td><td>{steps[3]['time']}</td><td>{steps[3]['teacher']}</td><td>{steps[3]['learner']}</td></tr>
+        </table>
+        <h4 style="margin:0.9rem 0 0.35rem 0;">LESSON EVALUATION</h4>
+        <div><strong>STRENGTH:</strong> {data['strength']}</div>
+        <div><strong>AREA TO IMPROVE:</strong> {data['area_to_improve']}</div>
+        <div><strong>STRATEGIES:</strong> {data['strategies']}</div>
+        <div style="margin-top:0.6rem;"><strong>NAME:</strong> {data['teacher_name']} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <strong>SIGNATURE:</strong> {data['signature']}</div>
+    </div>
+    """
 
 
 def _build_lesson_plan_markdown(data: Dict[str, Any]) -> str:
@@ -2264,17 +2378,15 @@ def main() -> None:
             st.markdown("#### 1. School & Lesson Header")
             h_col1, h_col2 = st.columns(2)
             with h_col1:
-                lp_school_name = st.text_input("SCHOOL NAME", key="lp_school_name", placeholder="Enter school name")
+                st.text_input("SCHOOL NAME", key="lp_school_name", placeholder="Enter school name")
             with h_col2:
-                lp_address_location = st.text_input(
-                    "ADDRESS/LOCATION", key="lp_address_location", placeholder="Enter address / location"
-                )
+                st.text_input("ADDRESS/LOCATION", key="lp_address_location", placeholder="Enter address / location")
 
             g_col1, g_col2, g_col3, g_col4, g_col5 = st.columns(5)
             with g_col1:
-                lp_date = st.text_input("DATE", key="lp_date", placeholder="DD/MM/YYYY")
+                st.text_input("DATE", key="lp_date", placeholder="DD/MM/YYYY")
             with g_col2:
-                lp_class = st.selectbox(
+                st.selectbox(
                     "CLASS",
                     class_list,
                     index=class_list.index(st.session_state.get("lp_class", "P5"))
@@ -2283,11 +2395,11 @@ def main() -> None:
                     key="lp_class",
                 )
             with g_col3:
-                lp_subject_la = st.text_input("SUBJECT/LA", key="lp_subject_la")
+                st.text_input("SUBJECT/LA", key="lp_subject_la")
             with g_col4:
-                lp_time = st.text_input("TIME", key="lp_time", placeholder="Enter lesson duration")
+                st.text_input("TIME", key="lp_time", placeholder="Enter lesson duration")
             with g_col5:
-                lp_num_learners = st.text_input("NUMBER OF LEARNERS", key="lp_num_learners", placeholder="e.g. 36")
+                st.text_input("NUMBER OF LEARNERS", key="lp_num_learners", placeholder="e.g. 36")
 
             st.text_input("THEME", key="lp_theme")
             st.text_input("TOPIC", key="lp_topic")
@@ -2297,13 +2409,13 @@ def main() -> None:
             c_comp1, c_comp2 = st.columns(2)
             with c_comp1:
                 st.markdown("**SUBJECT** — *The learner;*")
-                lp_subject_comp = st.text_area(
+                st.text_area(
                     "Subject competence details",
                     key="lp_subject_comp",
                     height=85,
                     label_visibility="collapsed",
                 )
-                lp_alt_subject_comp = st.text_area(
+                st.text_area(
                     "Alternative Subject Competence (optional)",
                     key="lp_alt_subject_comp",
                     height=75,
@@ -2311,13 +2423,13 @@ def main() -> None:
                 )
             with c_comp2:
                 st.markdown("**LANGUAGE** — *The learner;*")
-                lp_language_comp = st.text_area(
+                st.text_area(
                     "Language competence details",
                     key="lp_language_comp",
                     height=85,
                     label_visibility="collapsed",
                 )
-                lp_alt_language_comp = st.text_area(
+                st.text_area(
                     "Alternative Language Competence (optional)",
                     key="lp_alt_language_comp",
                     height=75,
@@ -2327,23 +2439,23 @@ def main() -> None:
             st.markdown("#### 3. Methods, Materials & Life Skills")
             m_col1, m_col2 = st.columns(2)
             with m_col1:
-                lp_method_1 = st.text_input("METHODS AND APPROACHES — i.", key="lp_method_1")
+                st.text_input("METHODS AND APPROACHES — i.", key="lp_method_1")
             with m_col2:
-                lp_method_2 = st.text_input("METHODS AND APPROACHES — ii.", key="lp_method_2")
+                st.text_input("METHODS AND APPROACHES — ii.", key="lp_method_2")
 
             mat_col1, mat_col2 = st.columns(2)
             with mat_col1:
-                lp_material_1 = st.text_input("INSTRUCTIONAL MATERIALS — i)", key="lp_material_1")
+                st.text_input("INSTRUCTIONAL MATERIALS — i)", key="lp_material_1")
             with mat_col2:
-                lp_material_2 = st.text_input("INSTRUCTIONAL MATERIALS — ii)", key="lp_material_2")
+                st.text_input("INSTRUCTIONAL MATERIALS — ii)", key="lp_material_2")
 
             s_col1, s_col2, s_col3 = st.columns(3)
             with s_col1:
-                lp_skill_a = st.text_input("LIFE SKILLS AND VALUES — a)", key="lp_skill_a")
+                st.text_input("LIFE SKILLS AND VALUES — a)", key="lp_skill_a")
             with s_col2:
-                lp_skill_b = st.text_input("LIFE SKILLS AND VALUES — b)", key="lp_skill_b")
+                st.text_input("LIFE SKILLS AND VALUES — b)", key="lp_skill_b")
             with s_col3:
-                lp_skill_c = st.text_input("LIFE SKILLS AND VALUES — c)", key="lp_skill_c")
+                st.text_input("LIFE SKILLS AND VALUES — c)", key="lp_skill_c")
 
             st.markdown("#### 4. Lesson Development (Steps I – IV)")
             step_defs = [
@@ -2352,23 +2464,16 @@ def main() -> None:
                 ("III", "lp_step3_time", "lp_step3_teacher", "lp_step3_learner"),
                 ("IV", "lp_step4_time", "lp_step4_teacher", "lp_step4_learner"),
             ]
-            steps_payload: List[Dict[str, str]] = []
             for step_roman, k_time, k_teach, k_learn in step_defs:
                 sc1, sc2, sc3, sc4 = st.columns([0.6, 1.1, 3.2, 3.2])
                 with sc1:
                     st.markdown(f"<div style='padding-top:1.7rem; font-weight:700;'>{step_roman}</div>", unsafe_allow_html=True)
                 with sc2:
-                    t_val = st.text_input("Time", key=k_time, placeholder="")
+                    st.text_input("Time", key=k_time, placeholder="")
                 with sc3:
-                    te_val = st.text_input("Teacher's activities", key=k_teach)
+                    st.text_input("Teacher's activities", key=k_teach)
                 with sc4:
-                    le_val = st.text_input("Learner's activity", key=k_learn)
-                steps_payload.append({
-                    "step": step_roman,
-                    "time": t_val,
-                    "teacher": te_val,
-                    "learner": le_val,
-                })
+                    st.text_input("Learner's activity", key=k_learn)
 
             st.markdown("#### 5. Lesson Evaluation")
             st.text_input("STRENGTH", key="lp_strength")
@@ -2376,91 +2481,16 @@ def main() -> None:
             st.text_input("STRATEGIES", key="lp_strategies")
             ev_col1, ev_col2 = st.columns(2)
             with ev_col1:
-                lp_teacher_name = st.text_input("NAME", key="lp_teacher_name")
+                st.text_input("NAME", key="lp_teacher_name")
             with ev_col2:
-                lp_signature = st.text_input("SIGNATURE", key="lp_signature")
+                st.text_input("SIGNATURE", key="lp_signature")
 
-            plan_data = {
-                "school_name": lp_school_name,
-                "address_location": lp_address_location,
-                "date": lp_date,
-                "class_name": lp_class,
-                "subject_la": lp_subject_la,
-                "time": lp_time,
-                "num_learners": lp_num_learners,
-                "theme": st.session_state.get("lp_theme", ""),
-                "topic": st.session_state.get("lp_topic", ""),
-                "sub_topic": st.session_state.get("lp_sub_topic", ""),
-                "subject_comp": lp_subject_comp,
-                "language_comp": lp_language_comp,
-                "alt_subject_comp": lp_alt_subject_comp,
-                "alt_language_comp": lp_alt_language_comp,
-                "method_1": lp_method_1,
-                "method_2": lp_method_2,
-                "material_1": lp_material_1,
-                "material_2": lp_material_2,
-                "skill_a": lp_skill_a,
-                "skill_b": lp_skill_b,
-                "skill_c": lp_skill_c,
-                "steps": steps_payload,
-                "strength": st.session_state.get("lp_strength", ""),
-                "area_to_improve": st.session_state.get("lp_area_improve", ""),
-                "strategies": st.session_state.get("lp_strategies", ""),
-                "teacher_name": lp_teacher_name,
-                "signature": lp_signature,
-            }
+            plan_data = _collect_lesson_plan_data()
+            lp_class = plan_data["class_name"]
 
             st.divider()
             st.markdown("#### 6. Clean Sheet Preview & Export")
-
-            subj_preview_html = _format_competence_html(plan_data["subject_comp"], plan_data["alt_subject_comp"])
-            lang_preview_html = _format_competence_html(plan_data["language_comp"], plan_data["alt_language_comp"])
-            preview_html = f"""
-            <div class="lp-clean-sheet">
-                <div><strong>SCHOOL NAME:</strong> {plan_data['school_name']}</div>
-                <div><strong>ADDRESS/LOCATION:</strong> {plan_data['address_location']}</div>
-                <h4 style="text-align:center; margin:0.9rem 0 0.6rem 0;">LESSON PLAN FOR MATHEMATICS</h4>
-                <table>
-                    <tr>
-                        <th>DATE</th><th>CLASS</th><th>SUBJECT/LA</th><th>TIME</th><th>NUMBER OF LEARNERS</th>
-                    </tr>
-                    <tr>
-                        <td>{plan_data['date']}</td><td>{plan_data['class_name']}</td><td>{plan_data['subject_la']}</td>
-                        <td>{plan_data['time']}</td><td>{plan_data['num_learners']}</td>
-                    </tr>
-                </table>
-                <div><strong>THEME:</strong> {plan_data['theme']}</div>
-                <div><strong>TOPIC:</strong> {plan_data['topic']}</div>
-                <div><strong>SUB-TOPIC (THEME):</strong> {plan_data['sub_topic']}</div>
-                <div style="margin-top:0.75rem;"><strong>COMPETENCES:</strong></div>
-                <table>
-                    <tr><th style="width:50%;">SUBJECT</th><th style="width:50%;">LANGUAGE</th></tr>
-                    <tr><td>The learner;<br>{subj_preview_html}</td><td>The learner;<br>{lang_preview_html}</td></tr>
-                </table>
-                <div><strong>METHODS AND APPROACHES</strong> &nbsp;&nbsp; i. {plan_data['method_1']} &nbsp;&nbsp;&nbsp;&nbsp; ii. {plan_data['method_2']}</div>
-                <div style="margin-top:0.5rem;"><strong>INSTRUCTIONAL MATERIALS</strong> &nbsp;&nbsp; i) {plan_data['material_1']} &nbsp;&nbsp;&nbsp;&nbsp; ii) {plan_data['material_2']}</div>
-                <div style="margin-top:0.5rem;"><strong>LIFE SKILLS AND VALUES</strong> &nbsp;&nbsp; a) {plan_data['skill_a']} &nbsp;&nbsp; b) {plan_data['skill_b']} &nbsp;&nbsp; c) {plan_data['skill_c']}</div>
-                <h4 style="margin:1.1rem 0 0.4rem 0;">LESSON DEVELOPMENT</h4>
-                <table>
-                    <tr>
-                        <th style="width:8%;">Steps</th>
-                        <th style="width:14%;">Time</th>
-                        <th style="width:39%;">Teacher's activities</th>
-                        <th style="width:39%;">Learner's activity</th>
-                    </tr>
-                    <tr><td><strong>I</strong></td><td>{steps_payload[0]['time']}</td><td>{steps_payload[0]['teacher']}</td><td>{steps_payload[0]['learner']}</td></tr>
-                    <tr><td><strong>II</strong></td><td>{steps_payload[1]['time']}</td><td>{steps_payload[1]['teacher']}</td><td>{steps_payload[1]['learner']}</td></tr>
-                    <tr><td><strong>III</strong></td><td>{steps_payload[2]['time']}</td><td>{steps_payload[2]['teacher']}</td><td>{steps_payload[2]['learner']}</td></tr>
-                    <tr><td><strong>IV</strong></td><td>{steps_payload[3]['time']}</td><td>{steps_payload[3]['teacher']}</td><td>{steps_payload[3]['learner']}</td></tr>
-                </table>
-                <h4 style="margin:0.9rem 0 0.35rem 0;">LESSON EVALUATION</h4>
-                <div><strong>STRENGTH:</strong> {plan_data['strength']}</div>
-                <div><strong>AREA TO IMPROVE:</strong> {plan_data['area_to_improve']}</div>
-                <div><strong>STRATEGIES:</strong> {plan_data['strategies']}</div>
-                <div style="margin-top:0.6rem;"><strong>NAME:</strong> {plan_data['teacher_name']} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <strong>SIGNATURE:</strong> {plan_data['signature']}</div>
-            </div>
-            """
-            st.markdown(preview_html, unsafe_allow_html=True)
+            st.markdown(_render_lesson_plan_sheet_html(plan_data), unsafe_allow_html=True)
 
             dl_col1, dl_col2 = st.columns(2)
             with dl_col1:
@@ -2481,7 +2511,7 @@ def main() -> None:
                 )
 
         elif active_tab == "Dashboard":
-            st.subheader("Progress & Coverage Dashboard (P1 – P7)")
+            st.subheader("Progress, Lesson Plan & Coverage Dashboard (P1 – P7)")
             if st.session_state.get("sync_status"):
                 st.caption(f"Persistence Status: {st.session_state['sync_status']}")
 
@@ -2512,6 +2542,50 @@ def main() -> None:
             c1.metric("Questions Attempted", stats.get("attempted", 0))
             c2.metric("Correct Answers", stats.get("correct", 0))
             c3.metric("Marks Earned (P1–P7 Bank)", f"{stats.get('marks', 0)} / {all_classes_max_marks}")
+
+            st.markdown("### Lesson Plan Sheet")
+            dash_plan_data = _collect_lesson_plan_data()
+            lp_head_col1, lp_head_col2 = st.columns([3.0, 1.2])
+            with lp_head_col1:
+                if _has_lesson_plan_content(dash_plan_data):
+                    st.caption(
+                        f"Class: **{dash_plan_data['class_name']}** | "
+                        f"Topic: **{dash_plan_data['topic'] or '—'}** | "
+                        f"Date: **{dash_plan_data['date'] or '—'}**"
+                    )
+                else:
+                    st.caption(
+                        "Showing current Lesson Plan sheet. Fill or apply a preset in the **Lesson Plan** tab to populate details."
+                    )
+            with lp_head_col2:
+                if st.button("Edit in Lesson Plan Tab", use_container_width=True, key="btn_dash_edit_lp"):
+                    st.query_params["tab"] = "Lesson Plan"
+                    st.rerun()
+
+            st.markdown(_render_lesson_plan_sheet_html(dash_plan_data), unsafe_allow_html=True)
+
+            dash_lp_class = dash_plan_data["class_name"]
+            lp_dl1, lp_dl2 = st.columns(2)
+            with lp_dl1:
+                st.download_button(
+                    label="Download Lesson Plan (Markdown)",
+                    data=_build_lesson_plan_markdown(dash_plan_data).encode("utf-8"),
+                    file_name=f"lesson_plan_{dash_lp_class.lower()}_mathematics.md",
+                    mime="text/markdown",
+                    use_container_width=True,
+                    key="dl_dash_lp_md",
+                )
+            with lp_dl2:
+                st.download_button(
+                    label="Download Printable Sheet (HTML)",
+                    data=_build_lesson_plan_printable_html(dash_plan_data).encode("utf-8"),
+                    file_name=f"lesson_plan_{dash_lp_class.lower()}_mathematics.html",
+                    mime="text/html",
+                    use_container_width=True,
+                    key="dl_dash_lp_html",
+                )
+
+            st.divider()
 
             available_classes = ["All"] + class_list
             available_districts = (
