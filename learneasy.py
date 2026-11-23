@@ -461,7 +461,7 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
             "topic": "Counting",
             "marks": 1,
             "question": "1– Add: 5 + 3 = ?",
-            "options": ["7", "9", "8", "6"],  # C
+            "options": ["7", "9", "8", "6"],
             "ans": "8",
             "explanation": "5 + 3 = 8.",
             "step_by_step": [
@@ -477,7 +477,7 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
             "topic": "Number Recognition",
             "marks": 1,
             "question": "2– Which number comes right after 14?",
-            "options": ["15", "16", "13", "12"],  # A
+            "options": ["15", "16", "13", "12"],
             "ans": "15",
             "explanation": "Counting in ones: 13, 14, 15.",
             "step_by_step": [
@@ -495,7 +495,7 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
             "topic": "Place Value",
             "marks": 1,
             "question": "1– What is the place value of 4 in 428?",
-            "options": ["Ones", "Tens", "Thousands", "Hundreds"],  # D
+            "options": ["Ones", "Tens", "Thousands", "Hundreds"],
             "ans": "Hundreds",
             "explanation": "In 428, 4 is in the Hundreds position.",
             "step_by_step": [
@@ -511,7 +511,7 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
             "topic": "Addition",
             "marks": 1,
             "question": "2– Work out: 145 + 32.",
-            "options": ["167", "177", "187", "157"],  # B
+            "options": ["167", "177", "187", "157"],
             "ans": "177",
             "explanation": "145 + 32 = 177.",
             "step_by_step": [
@@ -530,7 +530,7 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
             "topic": "Division",
             "marks": 1,
             "question": "1– 24 mangoes shared equally among 4 pupils gives how many each?",
-            "options": ["5", "8", "4", "6"],  # D
+            "options": ["5", "8", "4", "6"],
             "ans": "6",
             "explanation": "24 ÷ 4 = 6 mangoes each.",
             "step_by_step": [
@@ -546,7 +546,7 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
             "topic": "Fractions",
             "marks": 1,
             "question": "2– Which fraction represents one quarter?",
-            "options": ["1/2", "3/4", "1/4", "1/3"],  # C
+            "options": ["1/2", "3/4", "1/4", "1/3"],
             "ans": "1/4",
             "explanation": "One quarter means 1 out of 4 equal parts, written as 1/4.",
             "step_by_step": [
@@ -564,7 +564,7 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
             "topic": "Sets",
             "marks": 1,
             "question": "1– Given A = {1, 2, 3} and B = {2, 3, 4}, find A ∩ B.",
-            "options": ["{1}", "{4}", "{2, 3}", "{1, 2, 3, 4}"],  # C
+            "options": ["{1}", "{4}", "{2, 3}", "{1, 2, 3, 4}"],
             "ans": "{2, 3}",
             "explanation": "The elements common to both sets A and B are 2 and 3.",
             "step_by_step": [
@@ -580,7 +580,7 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
             "topic": "Roman Numerals",
             "marks": 1,
             "question": "2– Write XXIV in Hindu-Arabic numerals.",
-            "options": ["24", "16", "34", "26"],  # A
+            "options": ["24", "16", "34", "26"],
             "ans": "24",
             "explanation": "XX = 20 and IV = 4, so XXIV = 24.",
             "step_by_step": [
@@ -598,7 +598,7 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
             "topic": "Factors & Multiples",
             "marks": 1,
             "question": "1– Find the Lowest Common Multiple (LCM) of 6 and 8.",
-            "options": ["12", "48", "24", "2"],  # C
+            "options": ["12", "48", "24", "2"],
             "ans": "24",
             "explanation": "Multiples of 6: 6, 12, 18, 24... Multiples of 8: 8, 16, 24... Smallest common is 24.",
             "step_by_step": [
@@ -614,7 +614,7 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
             "topic": "Measurement",
             "marks": 2,
             "question": "2– Find the area of a rectangle measuring 9 cm by 4 cm.",
-            "options": ["26 sq cm", "13 sq cm", "18 sq cm", "36 sq cm"],  # D
+            "options": ["26 sq cm", "13 sq cm", "18 sq cm", "36 sq cm"],
             "ans": "36 sq cm",
             "explanation": "Area = length × width = 9 cm × 4 cm = 36 sq cm.",
             "step_by_step": [
@@ -632,7 +632,7 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
             "topic": "Set Concepts",
             "marks": 2,
             "question": "1– Given that the Venn diagram below, list elements of set (B–A)'.",
-            "options": ["{b, c}", "{a, i}", "{e, f, a, i, g}", "{e, f, g}"],  # C
+            "options": ["{b, c}", "{a, i}", "{e, f, a, i, g}", "{e, f, g}"],
             "ans": "{e, f, a, i, g}",
             "explanation": "B - A = {b, c}, so (B - A)' includes all elements in universal set E outside {b, c}.",
             "step_by_step": [
@@ -648,7 +648,7 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
             "topic": "Whole Numbers & Numerals",
             "marks": 2,
             "question": "2– Write CIX in Hindu Arabic numeral.",
-            "options": ["109", "99", "111", "119"],  # A
+            "options": ["109", "99", "111", "119"],
             "ans": "109",
             "explanation": "C = 100 and IX = 9, so CIX = 100 + 9 = 109.",
             "step_by_step": [
@@ -664,7 +664,7 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
             "topic": "Number Bases",
             "marks": 2,
             "question": "3– Given that 21_n = 11_ten. find the base represented by n.",
-            "options": ["Base six", "Base four", "Base eight", "Base five"],  # D
+            "options": ["Base six", "Base four", "Base eight", "Base five"],
             "ans": "Base five",
             "explanation": "2n + 1 = 11 -> 2n = 10 -> n = 5 (base five).",
             "step_by_step": [
@@ -681,7 +681,7 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
             "topic": "Factors & Multiples",
             "marks": 2,
             "question": "4– If Q = 2² × 3² and P = 2 × 3 × 5. find the Greatest Common Factor (G.C.F) of Q and P.",
-            "options": ["18", "6", "180", "30"],  # B
+            "options": ["18", "6", "180", "30"],
             "ans": "6",
             "explanation": "Common prime factors with the lowest powers give 2¹ × 3¹ = 6.",
             "step_by_step": [
@@ -700,7 +700,7 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
                 "5– In a class of 48 pupils who attended a birthday party, 50% of the pupils ate "
                 "Matooke, 3/8 ate Rice and the rest ate Posho. (i) Find the fraction of pupils who ate Posho."
             ),
-            "options": ["3/8", "1/2", "7/8", "1/8"],  # D
+            "options": ["3/8", "1/2", "7/8", "1/8"],
             "ans": "1/8",
             "explanation": "50% = 4/8; 4/8 + 3/8 = 7/8; remaining fraction for Posho = 1 - 7/8 = 1/8.",
             "step_by_step": [
@@ -719,7 +719,7 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
                 "5– In a class of 48 pupils who attended a birthday party, 50% of the pupils ate "
                 "Matooke, 3/8 ate Rice and the rest ate Posho. (ii) How many more pupils ate Matooke than Posho?"
             ),
-            "options": ["6", "24", "18", "42"],  # C
+            "options": ["6", "24", "18", "42"],
             "ans": "18",
             "explanation": "Matooke = 50% of 48 = 24 pupils; Posho = 1/8 of 48 = 6 pupils; difference = 24 - 6 = 18.",
             "step_by_step": [
@@ -735,7 +735,7 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
             "topic": "Data Handling & Statistics",
             "marks": 2,
             "question": "6– Given that Paul scored the marks given below in the mid-term examination. Find Paul's modal mark.",
-            "options": ["70 and 50", "50", "80", "70"],  # A
+            "options": ["70 and 50", "50", "80", "70"],
             "ans": "70 and 50",
             "explanation": "Both 70 and 50 appear twice, making the distribution bimodal with modal marks 70 and 50.",
             "step_by_step": [
@@ -751,7 +751,7 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
             "topic": "Fractions & Decimals",
             "marks": 2,
             "question": "7– Work out: 3/4 + 1/6.",
-            "options": ["4/10", "11/12", "5/6", "7/12"],  # B
+            "options": ["4/10", "11/12", "5/6", "7/12"],
             "ans": "11/12",
             "explanation": "The LCD of 4 and 6 is 12: 9/12 + 2/12 = 11/12.",
             "step_by_step": [
@@ -767,7 +767,7 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
             "topic": "Money & Financial Arithmetic",
             "marks": 2,
             "question": "8– A trader bought 3 books at sh 4,500 each. How much did she pay altogether?",
-            "options": ["sh 12,500", "sh 14,500", "sh 7,500", "sh 13,500"],  # D
+            "options": ["sh 12,500", "sh 14,500", "sh 7,500", "sh 13,500"],
             "ans": "sh 13,500",
             "explanation": "Total cost = 3 × sh 4,500 = sh 13,500.",
             "step_by_step": [
@@ -784,7 +784,7 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
             "topic": "Time & Duration",
             "marks": 2,
             "question": "9– A mathematics lesson started at 8:40 a.m. and lasted 45 minutes. At what time did it end?",
-            "options": ["9:15 a.m.", "9:35 a.m.", "9:25 a.m.", "8:85 a.m."],  # C
+            "options": ["9:15 a.m.", "9:35 a.m.", "9:25 a.m.", "8:85 a.m."],
             "ans": "9:25 a.m.",
             "explanation": "8:40 + 20 minutes = 9:00 a.m., plus 25 minutes = 9:25 a.m.",
             "step_by_step": [
@@ -801,7 +801,7 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
             "topic": "Lines, Angles & Geometric Figures",
             "marks": 2,
             "question": "10– Two angles on a straight line are 65° and x. Find the value of x.",
-            "options": ["115°", "125°", "295°", "25°"],  # A
+            "options": ["115°", "125°", "295°", "25°"],
             "ans": "115°",
             "explanation": "Angles on a straight line add up to 180°: x = 180° - 65° = 115°.",
             "step_by_step": [
@@ -817,7 +817,7 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
             "topic": "Algebra & Equations",
             "marks": 4,
             "question": "11– Simplify: 4k + 3m + 2k - m.",
-            "options": ["6k + 4m", "6k + 2m", "2k + 2m", "8km"],  # B
+            "options": ["6k + 4m", "6k + 2m", "2k + 2m", "8km"],
             "ans": "6k + 2m",
             "explanation": "Collect like terms: (4k + 2k) + (3m - m) = 6k + 2m.",
             "step_by_step": [
@@ -837,7 +837,7 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
                 "12– The diagram below shows how Mr. Okello used his land. He used plot P to keep goats, "
                 "plot Q to keep pigs and R to keep cattle. (i) Work out the total distance round the plot he used to keep pigs."
             ),
-            "options": ["14 m", "20 m", "9 m", "18 m"],  # D
+            "options": ["14 m", "20 m", "9 m", "18 m"],
             "ans": "18 m",
             "explanation": "Plot Q width = 10 m - 4 m = 6 m and height = 3 m, so perimeter = 2 × (6 + 3) = 18 m.",
             "step_by_step": [
@@ -856,7 +856,7 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
                 "12– (ii) Find the size of the land area he has altogether which keeps all his goats, "
                 "pigs and cattle in square metres."
             ),
-            "options": ["50 sq m", "36 sq m", "80 sq m", "68 sq m"],  # C
+            "options": ["50 sq m", "36 sq m", "80 sq m", "68 sq m"],
             "ans": "80 sq m",
             "explanation": "Total width = 10 m and total height = 3 m + 5 m = 8 m, giving 10 m × 8 m = 80 sq m.",
             "step_by_step": [
@@ -875,7 +875,7 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
                 "13– A boy said that they served with some cups of tea such that if a half of their "
                 "total joins them, their sum could be 45. How many boys were they?"
             ),
-            "options": ["30", "90", "15", "22.5"],  # A
+            "options": ["30", "90", "15", "22.5"],
             "ans": "30",
             "explanation": "x + 0.5x = 45 -> 1.5x = 45 -> x = 30 boys.",
             "step_by_step": [
@@ -897,7 +897,7 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
                 "hands whereby if she distributes them in the 7 pits equally, 5 seeds remain and if she "
                 "distributes them in the one of 6 pits, 2 seeds remain. How many seeds was she having?"
             ),
-            "options": ["12", "26", "19", "47"],  # B
+            "options": ["12", "26", "19", "47"],
             "ans": "26",
             "explanation": "26 ÷ 7 = 3 remainder 5, and 26 ÷ 6 = 4 remainder 2.",
             "step_by_step": [
@@ -917,7 +917,7 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
                 "15– The mean mass of 5 boys is 30 kg. When their teacher joins them, the mean mass "
                 "changes to 34 kg. Find the mass of the teacher."
             ),
-            "options": ["48 kg", "204 kg", "150 kg", "54 kg"],  # D
+            "options": ["48 kg", "204 kg", "150 kg", "54 kg"],
             "ans": "54 kg",
             "explanation": "5 boys sum = 5 × 30 = 150 kg; 6 people sum = 6 × 34 = 204 kg; teacher's mass = 204 - 150 = 54 kg.",
             "step_by_step": [
@@ -933,7 +933,7 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
             "topic": "Factors & Multiples",
             "marks": 2,
             "question": "16– (a) List all the factors of 12.",
-            "options": ["12, 24, 36, 48", "2, 3, 4, 6", "1, 2, 3, 4, 6, 12", "1, 3, 4, 12"],  # C
+            "options": ["12, 24, 36, 48", "2, 3, 4, 6", "1, 2, 3, 4, 6, 12", "1, 3, 4, 12"],
             "ans": "1, 2, 3, 4, 6, 12",
             "explanation": "The factors of 12 are 1, 2, 3, 4, 6, and 12.",
             "step_by_step": [
@@ -951,7 +951,7 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
                 "16– (b) What is the least number of sweets that can be shared by either "
                 "6 or 8 boys equally without a remainder?"
             ),
-            "options": ["24", "12", "2", "48"],  # A
+            "options": ["24", "12", "2", "48"],
             "ans": "24",
             "explanation": "The least number divisible by both 6 and 8 is LCM(6, 8) = 24.",
             "step_by_step": [
@@ -969,7 +969,7 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
             "topic": "Whole Numbers & Operations",
             "marks": 1,
             "question": "1– Simplify: 3 × 5.",
-            "options": ["8", "15", "35", "12"],  # B
+            "options": ["8", "15", "35", "12"],
             "ans": "15",
             "explanation": "3 × 5 = 15.",
             "step_by_step": [
@@ -985,7 +985,7 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
             "topic": "Standard Form (Scientific Notation)",
             "marks": 2,
             "question": "2– Write 3.45 in standard form.",
-            "options": ["3.45 × 10¹", "34.5 × 10⁻¹", "3.45 × 10⁻²", "3.45 × 10⁰"],  # D
+            "options": ["3.45 × 10¹", "34.5 × 10⁻¹", "3.45 × 10⁻²", "3.45 × 10⁰"],
             "ans": "3.45 × 10⁰",
             "explanation": "Since 3.45 is already between 1 and 10, moving the decimal point 0 places gives 3.45 × 10⁰.",
             "step_by_step": [
@@ -1001,7 +1001,7 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
             "topic": "Fractions & Direct Proportion",
             "marks": 3,
             "question": "3– Given that 2½ bars of soap cost sh 10,000, find the cost of 8 similar bars of soap.",
-            "options": ["sh 25,000", "sh 20,000", "sh 32,000", "sh 80,000"],  # C
+            "options": ["sh 25,000", "sh 20,000", "sh 32,000", "sh 80,000"],
             "ans": "sh 32,000",
             "explanation": "2½ = 5/2 bars cost sh 10,000 -> 1 bar = sh 10,000 × 2/5 = sh 4,000 -> 8 bars = 8 × sh 4,000 = sh 32,000.",
             "step_by_step": [
@@ -1018,7 +1018,7 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
             "topic": "Lines, Angles & Parallel Lines",
             "marks": 3,
             "question": "4– Given the diagram below, find the value of k.",
-            "options": ["15°", "30°", "50°", "65°"],  # A
+            "options": ["15°", "30°", "50°", "65°"],
             "ans": "15°",
             "explanation": "Isosceles base angles = (180° - 50°)/2 = 65°; alternate interior angle on top parallel line = 65°; adjacent angle to 80° = 100°; so k = 180° - (65° + 100°) = 15°.",
             "step_by_step": [
@@ -1038,7 +1038,7 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
                 "5– In P.6 class, the ratio of boys to girls is 2:3. If there are 600 pupils in the class "
                 "and 2/3 of the boys are in boarding section, find the number of boys in day section."
             ),
-            "options": ["240 boys", "80 boys", "160 boys", "360 boys"],  # B
+            "options": ["240 boys", "80 boys", "160 boys", "360 boys"],
             "ans": "80 boys",
             "explanation": "Total boys = (2/5) × 600 = 240; boarding boys = (2/3) × 240 = 160; day boys = 240 - 160 = 80.",
             "step_by_step": [
@@ -1056,7 +1056,7 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
             "topic": "Integers & Number Lines",
             "marks": 2,
             "question": "6– Work out the additive inverse of the integer which is 3 steps to the left of +1.",
-            "options": ["-2", "-4", "+4", "+2"],  # D
+            "options": ["-2", "-4", "+4", "+2"],
             "ans": "+2",
             "explanation": "Moving 3 steps left from +1 lands on -2; the additive inverse of -2 is +2 since (-2) + (+2) = 0.",
             "step_by_step": [
@@ -1077,7 +1077,7 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
                 "in a maximum same number of fruits in a group without left over. If he had 240 mangoes "
                 "and 180 guava, what is the maximum group size (GCF)?"
             ),
-            "options": ["12", "720", "60", "30"],  # C
+            "options": ["12", "720", "60", "30"],
             "ans": "60",
             "explanation": "GCF(240, 180) = 2 × 2 × 3 × 5 = 60.",
             "step_by_step": [
@@ -1101,7 +1101,7 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
                 "4 mangoes and 3 guavas",
                 "3 mangoes and 4 guavas",
                 "24 mangoes and 18 guavas",
-            ],  # B
+            ],
             "ans": "4 mangoes and 3 guavas",
             "explanation": "240 ÷ 60 = 4 mangoes and 180 ÷ 60 = 3 guavas in each group.",
             "step_by_step": [
@@ -1117,7 +1117,7 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
             "topic": "Statistics & Mean",
             "marks": 3,
             "question": "8– Given that the mean of 2m + 10, 30, 40, 40, and 10 is 30, find the value of m.",
-            "options": ["10", "5", "20", "15"],  # A
+            "options": ["10", "5", "20", "15"],
             "ans": "10",
             "explanation": "Total sum = 5 × 30 = 150; 2m + 130 = 150 -> 2m = 20 -> m = 10.",
             "step_by_step": [
@@ -1137,7 +1137,7 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
                 "9– Use the Venn diagram below to find the number of subsets in set (A ∪ B)' "
                 "if values represented in the Venn diagram show number of elements."
             ),
-            "options": ["8 subsets", "4,096 subsets", "256 subsets", "16 subsets"],  # D
+            "options": ["8 subsets", "4,096 subsets", "256 subsets", "16 subsets"],
             "ans": "16 subsets",
             "explanation": "Correction note: n(A ∪ B) = 4 + 3 + 5 = 12 (not 4), while n((A ∪ B)') = 4, giving 2⁴ = 16 subsets.",
             "step_by_step": [
@@ -1157,7 +1157,7 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
                 "10– Work out in base five: (131_five) + (2□3_five) = (□2□_five). "
                 "Find the missing digits in order: (middle addend □, leftmost answer □, rightmost answer □)."
             ),
-            "options": ["1, 3, 4", "4, 3, 4", "4, 4, 4", "2, 4, 4"],  # C
+            "options": ["1, 3, 4", "4, 3, 4", "4, 4, 4", "2, 4, 4"],
             "ans": "4, 4, 4",
             "explanation": "In base five: 1 + 3 = 4; 3 + 4 = 7_ten = 12_five (write 2, carry 1); 1 + 2 + 1 = 4 -> digits are 4, 4, 4.",
             "step_by_step": [
@@ -1362,755 +1362,4 @@ def load_records_from_google_sheet() -> Tuple[List[Dict[str, Any]], str]:
 
     webhook_url = _get_webhook_url()
     if webhook_url:
-        try:
-            req_url = f"{webhook_url}{'&' if '?' in webhook_url else '?'}sheet={QUIZ_LOG_SHEET_NAME}"
-            with urlrequest.urlopen(req_url, timeout=8) as resp:
-                payload = json.loads(resp.read().decode("utf-8"))
-                rows = payload.get("rows", []) if isinstance(payload, dict) else []
-                recs = _rows_to_records(rows)
-                return recs, f"Webhook Sync Connected ({len(recs)} saved attempts loaded)"
-        except Exception as exc:
-            return [], f"Webhook read error: {exc}"
-
-    return [], f"Session Memory Only — {conn_msg}"
-
-
-def append_attempt_to_google_sheet(record: Dict[str, Any]) -> Tuple[bool, str]:
-    """Appends a single pupil quiz attempt row across any class (P1–P7) to Quiz_Marks_Log."""
-    row_values = [
-        record["Timestamp"],
-        record["Pupil Name"],
-        record["School"],
-        record["District"],
-        record["Class"],
-        record["Question ID"],
-        record["Question"],
-        record["Selected"],
-        "TRUE" if record["Correct"] else "FALSE",
-        int(record["Marks"]),
-        int(record["Max Marks"]),
-    ]
-
-    ws, conn_msg = _connect_gspread_worksheet()
-    if ws is not None:
-        try:
-            existing = ws.get_all_values()
-            if not existing:
-                ws.append_row(QUIZ_LOG_HEADERS, value_input_option="USER_ENTERED")
-            ws.append_row(row_values, value_input_option="USER_ENTERED")
-            load_records_from_google_sheet.clear()
-            return True, "Saved to Google Sheet (Quiz_Marks_Log)"
-        except Exception as exc:
-            return False, f"Could not write to Google Sheet: {exc}"
-
-    webhook_url = _get_webhook_url()
-    if webhook_url:
-        try:
-            payload = json.dumps({"sheet": QUIZ_LOG_SHEET_NAME, "row": row_values}).encode("utf-8")
-            req = urlrequest.Request(
-                webhook_url,
-                data=payload,
-                headers={"Content-Type": "application/json"},
-                method="POST",
-            )
-            with urlrequest.urlopen(req, timeout=8) as resp:
-                if 200 <= resp.status < 300:
-                    load_records_from_google_sheet.clear()
-                    return True, "Saved to Google Sheet via webhook"
-                return False, f"Webhook returned HTTP {resp.status}"
-        except (urlerror.URLError, TimeoutError, Exception) as exc:
-            return False, f"Webhook write failed: {exc}"
-
-    return False, f"Not synced to Google Sheet — {conn_msg}"
-
-
-def _sync_state_from_records(records: List[Dict[str, Any]]) -> None:
-    answered_keys = {
-        r.get("attempt_key") or _make_attempt_key(
-            r.get("Pupil Name", ""), r.get("School", ""), r.get("Class", ""), r.get("Question ID", "") or r.get("Question", "")
-        )
-        for r in records
-    }
-    total_attempted = len(records)
-    total_correct = sum(1 for r in records if r.get("Correct"))
-    total_marks = sum(int(r.get("Marks", 0)) for r in records)
-    st.session_state["attempt_records"] = records
-    st.session_state["answered_ids"] = answered_keys
-    st.session_state["quiz_score"] = {
-        "attempted": total_attempted,
-        "correct": total_correct,
-        "marks": total_marks,
-    }
-
-
-def record_single_answer(
-    q: Dict[str, Any],
-    idx: int,
-    selected_class: str,
-    pick: Any,
-    pupil_name: str,
-    school_name: str,
-    district_name: str,
-) -> Dict[str, Any]:
-    q_id = str(q.get("id", f"{selected_class}_q{idx + 1}"))
-    q_uid = f"{selected_class}:{q_id}"
-    attempt_key = _make_attempt_key(pupil_name, school_name, selected_class, q_id)
-    ok = pick == q.get("ans")
-    max_marks = int(q.get("marks", 1))
-    earned = max_marks if ok else 0
-
-    record = {
-        "Timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-        "Pupil Name": (pupil_name or "").strip(),
-        "School": (school_name or "").strip(),
-        "District": district_name,
-        "Class": selected_class,
-        "Question ID": q_id,
-        "q_uid": q_uid,
-        "attempt_key": attempt_key,
-        "Question": q["question"],
-        "Selected": pick,
-        "Correct": ok,
-        "Marks": earned,
-        "Max Marks": max_marks,
-    }
-
-    is_new = attempt_key not in st.session_state["answered_ids"]
-    if is_new:
-        st.session_state["answered_ids"].add(attempt_key)
-        st.session_state["quiz_score"]["attempted"] += 1
-        if ok:
-            st.session_state["quiz_score"]["correct"] += 1
-            st.session_state["quiz_score"]["marks"] += earned
-        st.session_state["attempt_records"].append(record)
-
-        _, sync_msg = append_attempt_to_google_sheet(record)
-        st.session_state["sync_status"] = sync_msg
-    else:
-        sync_msg = "Attempt already recorded for this pupil and question."
-
-    feedback_item = {
-        "ok": ok,
-        "ans": q.get("ans"),
-        "record": record,
-        "sync_msg": sync_msg,
-    }
-    st.session_state["last_checked_feedback"][q_uid] = feedback_item
-    return feedback_item
-
-
-# ==============================================================================
-# 5. LEADERBOARD & BADGES HELPERS
-# ==============================================================================
-
-BADGE_TIERS = [
-    ("Gold Badge (1st)", "🥇"),
-    ("Silver Badge (2nd)", "🥈"),
-    ("Bronze Badge (3rd)", "🥉"),
-]
-
-
-def build_leaderboard(
-    records: List[Dict[str, Any]],
-    limit: int = 25,
-    class_filter: str = "All",
-    district_filter: str = "All",
-) -> pd.DataFrame:
-    """Aggregates pupil quiz attempt records across P1–P7 into a ranked leaderboard up to `limit`."""
-    cols = ["Rank", "Badge", "Pupil Name", "School", "District", "Class", "Correct", "Attempted", "Marks"]
-    if not records:
-        return pd.DataFrame(columns=cols)
-
-    df = pd.DataFrame(records)
-    if df.empty:
-        return pd.DataFrame(columns=cols)
-
-    if class_filter != "All":
-        df = df[df["Class"] == class_filter]
-    if district_filter != "All":
-        df = df[df["District"] == district_filter]
-
-    if df.empty:
-        return pd.DataFrame(columns=cols)
-
-    grouped = (
-        df.groupby(["Pupil Name", "School", "District", "Class"], as_index=False)
-        .agg(
-            Correct=("Correct", "sum"),
-            Attempted=("Question", "count"),
-            Marks=("Marks", "sum"),
-        )
-        .sort_values(by=["Marks", "Correct", "Attempted"], ascending=[False, False, True])
-        .head(limit)
-        .reset_index(drop=True)
-    )
-
-    ranks: List[int] = []
-    badges: List[str] = []
-    for idx in range(len(grouped)):
-        rank = idx + 1
-        ranks.append(rank)
-        if rank == 1:
-            badges.append("🥇 Gold (1st)")
-        elif rank == 2:
-            badges.append("🥈 Silver (2nd)")
-        elif rank == 3:
-            badges.append("🥉 Bronze (3rd)")
-        else:
-            badges.append("—")
-
-    grouped.insert(0, "Rank", ranks)
-    grouped.insert(1, "Badge", badges)
-    return grouped
-
-
-# ==============================================================================
-# 6. MAIN STREAMLIT BLOCK
-# ==============================================================================
-
-
-def init_state() -> None:
-    st.session_state.setdefault("quiz_score", {"attempted": 0, "correct": 0, "marks": 0})
-    st.session_state.setdefault("answered_ids", set())
-    st.session_state.setdefault("selected_class", "P7")
-    st.session_state.setdefault("active_tab", "Take Quiz")
-    st.session_state.setdefault("pupil_info", {"name": "", "school": "", "district": "Kampala"})
-    st.session_state.setdefault("attempt_records", [])
-    st.session_state.setdefault("last_checked_feedback", {})
-    st.session_state.setdefault("submitted_quiz_summary", None)
-    st.session_state.setdefault("sync_status", "")
-
-    if not st.session_state.get("sheet_hydrated", False):
-        persisted_records, status_msg = load_records_from_google_sheet()
-        st.session_state["sync_status"] = status_msg
-        if persisted_records:
-            _sync_state_from_records(persisted_records)
-        st.session_state["sheet_hydrated"] = True
-
-
-def main() -> None:
-    init_state()
-
-    requested_tab = st.query_params.get("tab", None)
-    if requested_tab in TABS:
-        st.session_state["active_tab"] = requested_tab
-        del st.query_params["tab"]
-
-    active_tab = st.session_state.get("active_tab", "Take Quiz")
-    if active_tab not in TABS:
-        active_tab = "Take Quiz"
-        st.session_state["active_tab"] = active_tab
-
-    margin_theme = TAB_MARGIN_STYLES.get(active_tab, TAB_MARGIN_STYLES["Take Quiz"])
-    accent = margin_theme["accent"]
-    border_tint = margin_theme["border_tint"]
-    pill_bg = margin_theme["pill_bg"]
-    pill_text = margin_theme["pill_text"]
-
-    st.markdown(
-        f"""
-        <style>
-        .stApp {{
-            background: radial-gradient(circle at 12% 10%, rgba(11, 110, 63, 0.11), transparent 39%),
-                        radial-gradient(circle at 88% 14%, rgba(252, 220, 4, 0.06), transparent 35%),
-                        radial-gradient(circle at 75% 88%, rgba(6, 78, 44, 0.10), transparent 44%),
-                        linear-gradient(180deg, #E3EFE8 0%, #D6E7DD 55%, #C9DFD2 100%);
-            background-attachment: fixed;
-        }}
-        .ug-margin-rail {{
-            border-left: 6px solid {accent};
-            background: rgba(255, 255, 255, 0.90);
-            border-radius: 12px;
-            padding: 0.75rem 0.85rem;
-            box-shadow: 0 3px 12px rgba(6, 45, 25, 0.06);
-            transition: border-color 0.2s ease;
-        }}
-        .ug-margin-badge {{
-            display: inline-block;
-            background: {pill_bg};
-            color: {pill_text};
-            font-size: 0.75rem;
-            font-weight: 700;
-            padding: 0.2rem 0.55rem;
-            border-radius: 999px;
-            margin-top: 0.35rem;
-        }}
-        .top-left-tab-label {{
-            font-size: 0.78rem;
-            font-weight: 700;
-            color: #064e2c;
-            margin-bottom: 0.25rem;
-        }}
-        .ug-title-banner {{
-            display: flex;
-            align-items: center;
-            gap: 0.9rem;
-            padding: 0.8rem 1.1rem;
-            background: rgba(255, 255, 255, 0.94);
-            border: 1px solid rgba(6, 78, 44, 0.14);
-            border-left: 6px solid {accent};
-            border-radius: 14px;
-            box-shadow: 0 5px 16px rgba(6, 45, 25, 0.08);
-        }}
-        .ug-flag-stripes {{
-            display: inline-flex;
-            flex-direction: column;
-            width: 15px;
-            height: 46px;
-            border-radius: 3px;
-            overflow: hidden;
-            border: 1px solid #cbd5e1;
-            flex-shrink: 0;
-        }}
-        .ug-stripe-black {{ flex: 1; background-color: #000000; }}
-        .ug-stripe-yellow {{ flex: 1; background-color: #FCDC04; }}
-        .ug-stripe-red {{ flex: 1; background-color: #D90000; }}
-        .ug-main-heading {{ font-size: 2rem; font-weight: 700; line-height: 1.2; margin: 0; }}
-        .ug-subtitle {{ font-size: 0.88rem; color: #374151; margin-top: 0.2rem; }}
-        .ug-brand-black {{ color: #000000; }}
-        .ug-brand-yellow {{ color: #C9A800; }}
-        .ug-brand-red {{ color: #D90000; }}
-        .badge-card {{
-            border: 1px solid rgba(6, 78, 44, 0.14);
-            border-radius: 12px;
-            padding: 0.8rem 0.95rem;
-            background: rgba(255, 255, 255, 0.95);
-            margin-bottom: 0.5rem;
-            box-shadow: 0 3px 10px rgba(6, 45, 25, 0.06);
-        }}
-        .ug-workspace-card {{
-            background: rgba(255, 255, 255, 0.92);
-            border: 1.5px solid {border_tint};
-            border-left: 6px solid {accent};
-            border-radius: 16px;
-            padding: 1.35rem 1.55rem;
-            box-shadow: 0 6px 20px rgba(6, 45, 25, 0.08);
-        }}
-        </style>
-        """,
-        unsafe_allow_html=True,
-    )
-
-    class_list = list(QUIZ_BANK.keys())
-    if st.session_state.get("selected_class") not in class_list:
-        st.session_state["selected_class"] = "P7"
-
-    logo_kind, logo_val = get_logo_source()
-    left_bar_col, header_col = st.columns([1.6, 5.4])
-
-    with left_bar_col:
-        st.markdown('<div class="ug-margin-rail">', unsafe_allow_html=True)
-        if logo_kind == "file":
-            st.image(logo_val, width=116)
-        else:
-            st.markdown(
-                f'<img src="{logo_val}" alt="iLearn-Uganda Logo" width="116" style="border-radius:18px;"/>',
-                unsafe_allow_html=True,
-            )
-        st.caption("NCDC Primary Maths Hub (P1–P7)")
-        st.markdown('<div class="top-left-tab-label">Tab Selector</div>', unsafe_allow_html=True)
-
-        active_tab = st.selectbox(
-            "Tab Selector",
-            TABS,
-            index=TABS.index(active_tab),
-            label_visibility="collapsed",
-            key="active_tab",
-        )
-
-        margin_theme = TAB_MARGIN_STYLES.get(active_tab, TAB_MARGIN_STYLES["Take Quiz"])
-        st.markdown(
-            f'<div class="ug-margin-badge">● {active_tab}</div>'
-            f'<div style="font-size:0.74rem; color:#374151; margin-top:0.3rem;">{margin_theme["note"]}</div>'
-            "</div>",
-            unsafe_allow_html=True,
-        )
-
-    with header_col:
-        st.markdown(
-            f"""
-            <div class="ug-title-banner">
-                <div class="ug-flag-stripes" title="Uganda Flag Colors: Black, Yellow, Red">
-                    <div class="ug-stripe-black"></div>
-                    <div class="ug-stripe-yellow"></div>
-                    <div class="ug-stripe-red"></div>
-                </div>
-                <div>
-                    <h1 class="ug-main-heading">
-                        <span class="ug-brand-black">iLearn</span><span class="ug-brand-yellow">-</span><span class="ug-brand-red">Uganda</span>: NCDC Primary Mathematics (P1 – P7)
-                    </h1>
-                    <div class="ug-subtitle">
-                        Growing bright minds from the roots up • Interactive Practice, NCDC Syllabus &amp; Progress Analytics
-                    </div>
-                </div>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-
-    st.divider()
-
-    _, tab_content_col = st.columns([0.4, 9.6])
-
-    with tab_content_col:
-        st.markdown('<div class="ug-workspace-card">', unsafe_allow_html=True)
-
-        if active_tab == "Take Quiz":
-            st.markdown("### Pupil Details")
-            p_col1, p_col2, p_col3 = st.columns(3)
-            with p_col1:
-                pupil_name = st.text_input(
-                    "Pupil Name",
-                    value=st.session_state["pupil_info"].get("name", ""),
-                    placeholder="Enter full name",
-                    key="input_pupil_name",
-                )
-            with p_col2:
-                school_name = st.text_input(
-                    "School Name",
-                    value=st.session_state["pupil_info"].get("school", ""),
-                    placeholder="Enter school name",
-                    key="input_school_name",
-                )
-            with p_col3:
-                saved_district = st.session_state["pupil_info"].get("district", "Kampala")
-                default_idx = UGANDA_DISTRICTS.index(saved_district) if saved_district in UGANDA_DISTRICTS else 0
-                district_name = st.selectbox(
-                    "District",
-                    UGANDA_DISTRICTS,
-                    index=default_idx,
-                    key="select_district_name",
-                )
-
-            clean_name = (pupil_name or "").strip()
-            clean_school = (school_name or "").strip()
-            st.session_state["pupil_info"] = {
-                "name": clean_name,
-                "school": clean_school,
-                "district": district_name,
-            }
-
-            selected_class = st.selectbox(
-                "Select Class",
-                class_list,
-                index=class_list.index(st.session_state.get("selected_class", "P7")),
-                key="selected_class",
-                help="Choose P1 through P7 to load that class's mathematics quiz.",
-            )
-            st.subheader(f"{selected_class} Mathematics Quiz")
-
-            if clean_name or clean_school or district_name:
-                st.caption(
-                    f"Candidate: **{clean_name or 'Not provided'}** | "
-                    f"School: **{clean_school or 'Not provided'}** | "
-                    f"District: **{district_name}**"
-                )
-
-            questions = QUIZ_BANK.get(selected_class, [])
-            selected_picks: Dict[int, Any] = {}
-
-            for idx, q in enumerate(questions):
-                st.markdown(f"**{q['question']}** *({q.get('marks', 1)} mark(s))*")
-
-                png = get_diagram_png(q.get("diagram_type"))
-                if png:
-                    st.image(png, caption="Diagram")
-
-                pick = st.radio(
-                    "Select answer:",
-                    q["options"],
-                    index=None,
-                    key=f"q_{selected_class}_{idx}",
-                )
-                selected_picks[idx] = pick
-                q_id = str(q.get("id", f"{selected_class}_q{idx + 1}"))
-                q_uid = f"{selected_class}:{q_id}"
-
-                if st.button("Check Answer", key=f"btn_{selected_class}_{idx}"):
-                    if not clean_name or not clean_school or not district_name:
-                        st.warning("Please enter your name, school name, and select a district before checking your answer.")
-                    elif pick is None:
-                        st.warning("Please select an option before checking your answer.")
-                    else:
-                        fb_item = record_single_answer(
-                            q=q,
-                            idx=idx,
-                            selected_class=selected_class,
-                            pick=pick,
-                            pupil_name=clean_name,
-                            school_name=clean_school,
-                            district_name=district_name,
-                        )
-                        st.session_state["last_checked_feedback"][q_uid] = fb_item
-
-                fb = st.session_state["last_checked_feedback"].get(q_uid)
-                if fb:
-                    if fb["ok"]:
-                        st.success(f"Correct! Selected: **{fb['record']['Selected']}**")
-                    else:
-                        st.error(f"Incorrect. Selected: **{fb['record']['Selected']}** | Answer: **{fb['ans']}**")
-                    render_line_by_line_explanation(
-                        fb["record"],
-                        correct_ans=fb["ans"],
-                        show_explanation_diagram=True,
-                    )
-                    if fb.get("sync_msg"):
-                        st.caption(fb["sync_msg"])
-                st.divider()
-
-            st.markdown("### Submit Quiz")
-            sub_col1, sub_col2 = st.columns([1.4, 1.6])
-            with sub_col1:
-                submit_clicked = st.button("Submit Quiz", type="primary", use_container_width=True, key="btn_submit_quiz")
-            with sub_col2:
-                open_dash_clicked = st.button("Open Dashboard & Leaderboard", use_container_width=True, key="btn_go_dashboard")
-
-            if submit_clicked:
-                if not clean_name or not clean_school or not district_name:
-                    st.warning("Please enter your name, school name, and select a district before submitting the quiz.")
-                else:
-                    review_items: List[Dict[str, Any]] = []
-                    answered_count = 0
-                    for idx, q in enumerate(questions):
-                        chosen = selected_picks.get(idx)
-                        q_id = str(q.get("id", f"{selected_class}_q{idx + 1}"))
-                        q_uid = f"{selected_class}:{q_id}"
-                        if chosen is not None:
-                            answered_count += 1
-                            fb_item = record_single_answer(
-                                q=q,
-                                idx=idx,
-                                selected_class=selected_class,
-                                pick=chosen,
-                                pupil_name=clean_name,
-                                school_name=clean_school,
-                                district_name=district_name,
-                            )
-                            review_items.append({
-                                "answered": True,
-                                "ok": fb_item["ok"],
-                                "ans": q.get("ans"),
-                                "record": fb_item["record"],
-                            })
-                        else:
-                            unanswered_record = {
-                                "Timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                                "Pupil Name": clean_name,
-                                "School": clean_school,
-                                "District": district_name,
-                                "Class": selected_class,
-                                "Question ID": q_id,
-                                "q_uid": q_uid,
-                                "Question": q["question"],
-                                "Selected": "Not answered",
-                                "Correct": False,
-                                "Marks": 0,
-                                "Max Marks": int(q.get("marks", 1)),
-                            }
-                            review_items.append({
-                                "answered": False,
-                                "ok": False,
-                                "ans": q.get("ans"),
-                                "record": unanswered_record,
-                            })
-
-                    total_earned = sum(int(item["record"]["Marks"]) for item in review_items if item["answered"])
-                    total_possible = sum(int(item["record"]["Max Marks"]) for item in review_items)
-                    total_right = sum(1 for item in review_items if item["answered"] and item["ok"])
-                    st.session_state["submitted_quiz_summary"] = {
-                        "class": selected_class,
-                        "pupil_name": clean_name,
-                        "school_name": clean_school,
-                        "district_name": district_name,
-                        "submitted_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                        "earned": total_earned,
-                        "possible": total_possible,
-                        "right": total_right,
-                        "answered_count": answered_count,
-                        "total_questions": len(questions),
-                        "unanswered": len(questions) - answered_count,
-                        "items": review_items,
-                    }
-
-            if open_dash_clicked:
-                st.query_params["tab"] = "Dashboard"
-                st.rerun()
-
-            summary = st.session_state.get("submitted_quiz_summary")
-            if isinstance(summary, dict):
-                st.success(
-                    f"Quiz submitted for **{summary['pupil_name']}** ({summary['class']}) — "
-                    f"Score: **{summary['earned']} / {summary['possible']} marks** "
-                    f"({summary['right']}/{summary['answered_count']} answered correctly; "
-                    f"{summary['answered_count']}/{summary['total_questions']} questions attempted)"
-                )
-                st.markdown("### Quiz Submission Explanations")
-                for item in summary.get("items", []):
-                    rec = item["record"]
-                    if not item.get("answered", True):
-                        status_label = f"Unanswered (0/{rec['Max Marks']} marks)"
-                    elif item["ok"]:
-                        status_label = f"Correct ({rec['Marks']}/{rec['Max Marks']} marks)"
-                    else:
-                        status_label = f"Incorrect ({rec['Marks']}/{rec['Max Marks']} marks)"
-
-                    with st.expander(f"{rec['Question']} — {status_label}", expanded=True):
-                        st.markdown(f"- **Your Answer:** `{rec['Selected']}` | **Correct Answer:** `{item['ans']}`")
-                        render_line_by_line_explanation(
-                            rec,
-                            correct_ans=item["ans"],
-                            show_explanation_diagram=True,
-                        )
-
-        elif active_tab == "NCDC Syllabus":
-            active_cls = st.session_state.get("selected_class", "P7")
-            st.subheader(f"{active_cls} Syllabus Overview")
-            for topic_row in NCDC_MATH_CURRICULUM.get(active_cls, []):
-                with st.expander(f"{topic_row['topic']} ({topic_row['periods']} periods)", expanded=True):
-                    st.caption(topic_row["curriculum_type"])
-                    st.write(topic_row["learning_outcomes"])
-                    st.markdown("**Sub-topics:** " + ", ".join(topic_row["sub_topics"]))
-                    st.markdown("**Learning Aids:** " + ", ".join(topic_row["learning_aids"]))
-                    st.markdown("**Life Skills & Values:** " + ", ".join(topic_row["life_skills_values"]))
-
-        elif active_tab == "Dashboard":
-            st.subheader("Progress & Coverage Dashboard (P1 – P7)")
-            if st.session_state.get("sync_status"):
-                st.caption(f"Persistence Status: {st.session_state['sync_status']}")
-
-            if st.button("Reload Marks from Google Sheet", key="btn_reload_sheet"):
-                load_records_from_google_sheet.clear()
-                refreshed_records, status_msg = load_records_from_google_sheet()
-                st.session_state["sync_status"] = status_msg
-                if refreshed_records:
-                    _sync_state_from_records(refreshed_records)
-                st.rerun()
-
-            p_info = st.session_state.get("pupil_info", {})
-            if any(p_info.values()):
-                st.info(
-                    f"**Pupil:** {p_info.get('name') or '—'} | "
-                    f"**School:** {p_info.get('school') or '—'} | "
-                    f"**District:** {p_info.get('district') or '—'}"
-                )
-
-            all_records = st.session_state.get("attempt_records", [])
-            stats = st.session_state.get("quiz_score", {"attempted": 0, "correct": 0, "marks": 0})
-            all_classes_max_marks = sum(
-                int(item.get("marks", 1))
-                for cls_items in QUIZ_BANK.values()
-                for item in cls_items
-            )
-            c1, c2, c3 = st.columns(3)
-            c1.metric("Questions Attempted", stats.get("attempted", 0))
-            c2.metric("Correct Answers", stats.get("correct", 0))
-            c3.metric("Marks Earned (P1–P7 Bank)", f"{stats.get('marks', 0)} / {all_classes_max_marks}")
-
-            available_classes = ["All"] + class_list
-            available_districts = (
-                ["All"] + sorted({r["District"] for r in all_records if r.get("District")})
-                if all_records
-                else ["All"] + UGANDA_DISTRICTS
-            )
-
-            f_col1, f_col2 = st.columns(2)
-            with f_col1:
-                class_filter = st.selectbox("Filter Leaderboard by Class", available_classes, key="lb_class_filter")
-            with f_col2:
-                district_filter = st.selectbox("Filter Leaderboard by District", available_districts, key="lb_district_filter")
-
-            leaderboard_df = build_leaderboard(
-                all_records,
-                limit=25,
-                class_filter=class_filter,
-                district_filter=district_filter,
-            )
-
-            st.markdown("### Top Three Badges")
-            b_cols = st.columns(3)
-            for i, (badge_title, icon) in enumerate(BADGE_TIERS):
-                with b_cols[i]:
-                    if i < len(leaderboard_df):
-                        row = leaderboard_df.iloc[i]
-                        st.markdown(
-                            '<div class="badge-card">'
-                            f'<div style="font-size:1.25rem;">{icon} <strong>{badge_title}</strong></div>'
-                            f'<div style="font-size:1rem; margin-top:0.25rem;"><strong>{row["Pupil Name"]}</strong></div>'
-                            f'<div style="font-size:0.85rem; color:#4b5563;">{row["School"]} ({row["District"]}) • {row["Class"]}</div>'
-                            f'<div style="font-size:0.9rem; margin-top:0.35rem;"><strong>Marks: {row["Marks"]}</strong> ({row["Correct"]}/{row["Attempted"]} correct)</div>'
-                            "</div>",
-                            unsafe_allow_html=True,
-                        )
-                    else:
-                        st.markdown(
-                            '<div class="badge-card">'
-                            f'<div style="font-size:1.25rem;">{icon} <strong>{badge_title}</strong></div>'
-                            '<div style="font-size:0.9rem; color:#6b7280; margin-top:0.35rem;">Awaiting pupil score</div>'
-                            "</div>",
-                            unsafe_allow_html=True,
-                        )
-
-            st.markdown("### Top 25 Performers (P1 – P7)")
-            if not leaderboard_df.empty:
-                st.dataframe(leaderboard_df, use_container_width=True, hide_index=True)
-                lb_csv_bytes = leaderboard_df.to_csv(index=False).encode("utf-8")
-                st.download_button(
-                    label="Download Top 25 Performers (CSV)",
-                    data=lb_csv_bytes,
-                    file_name="ilearn_uganda_top_25_performers.csv",
-                    mime="text/csv",
-                )
-            else:
-                st.caption("No matching pupil quiz attempts yet for the selected filters.")
-
-            rows = [
-                {
-                    "Class": cls,
-                    "Model": items[0]["curriculum_type"],
-                    "Periods": sum(x["periods"] for x in items),
-                    "Quiz Questions": len(QUIZ_BANK.get(cls, [])),
-                    "Recorded Attempts": sum(1 for r in all_records if r.get("Class") == cls),
-                    "Recorded Marks": sum(int(r.get("Marks", 0)) for r in all_records if r.get("Class") == cls),
-                }
-                for cls, items in NCDC_MATH_CURRICULUM.items()
-            ]
-            st.markdown("### NCDC Syllabus & Marks Coverage (P1 – P7)")
-            st.dataframe(pd.DataFrame(rows), use_container_width=True, hide_index=True)
-
-            if all_records:
-                st.markdown("### Line-by-Line Detailed Explanations for Attempted Questions")
-                for idx_rec, rec in enumerate(reversed(all_records)):
-                    status_tag = "Correct" if rec.get("Correct") else "Incorrect"
-                    title_label = (
-                        f"{rec.get('Class', '')} • {rec.get('Pupil Name', 'Pupil')} — "
-                        f"{rec.get('Question', '')} [{status_tag}]"
-                    )
-                    with st.expander(title_label, expanded=(idx_rec == 0)):
-                        st.caption(
-                            f"School: {rec.get('School', '—')} | District: {rec.get('District', '—')} | "
-                            f"Selected Answer: {rec.get('Selected', '—')} | Timestamp: {rec.get('Timestamp', '—')}"
-                        )
-                        matched_q = _find_question_meta(rec)
-                        correct_val = matched_q.get("ans") if matched_q else None
-                        render_line_by_line_explanation(
-                            rec,
-                            correct_ans=correct_val,
-                            show_explanation_diagram=True,
-                        )
-
-                st.markdown("### Recorded Quiz Attempts")
-                records_df = pd.DataFrame(all_records)
-                st.dataframe(records_df, use_container_width=True, hide_index=True)
-                csv_bytes = records_df.to_csv(index=False).encode("utf-8")
-                st.download_button(
-                    label="Download Quiz Results (CSV)",
-                    data=csv_bytes,
-                    file_name="ilearn_uganda_quiz_results.csv",
-                    mime="text/csv",
-                )
-
-        st.markdown("</div>", unsafe_allow_html=True)
-
-
-if __name__ == "__main__":
-    main()
+        try
