@@ -767,4 +767,855 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
             "topic": "Money & Financial Arithmetic",
             "marks": 2,
             "question": "8– A trader bought 3 books at sh 4,500 each. How much did she pay altogether?",
-            "options": ["sh 12,500", "sh 13,500", "
+            "options": ["sh 12,500", "sh 13,500", "sh 14,500", "sh 7,500"],
+            "ans": "sh 13,500",
+            "explanation": "Total cost = 3 × sh 4,500 = sh 13,500.",
+            "step_by_step": [
+                "Line 1 — Note the cost of 1 book = sh 4,500 and number of books = 3.",
+                "Line 2 — Multiply: 3 × sh 4,000 = sh 12,000.",
+                "Line 3 — Multiply the remaining sh 500: 3 × sh 500 = sh 1,500.",
+                "Line 4 — Add both parts: sh 12,000 + sh 1,500 = sh 13,500.",
+            ],
+            "diagram_type": None,
+            "explanation_diagram_type": None,
+        },
+        {
+            "id": "p6_q09_time",
+            "topic": "Time & Duration",
+            "marks": 2,
+            "question": "9– A mathematics lesson started at 8:40 a.m. and lasted 45 minutes. At what time did it end?",
+            "options": ["9:15 a.m.", "9:35 a.m.", "9:25 a.m.", "8:85 a.m."],
+            "ans": "9:25 a.m.",
+            "explanation": "8:40 + 20 minutes = 9:00 a.m., plus 25 minutes = 9:25 a.m.",
+            "step_by_step": [
+                "Line 1 — Start time is 8:40 a.m. and duration is 45 minutes.",
+                "Line 2 — Add 20 minutes to reach the next full hour: 8:40 a.m. + 20 min = 9:00 a.m.",
+                "Line 3 — Subtract 20 from 45 to find remaining minutes: 45 - 20 = 25 minutes.",
+                "Line 4 — Add the remaining 25 minutes to 9:00 a.m. to get 9:25 a.m.",
+            ],
+            "diagram_type": None,
+            "explanation_diagram_type": None,
+        },
+        {
+            "id": "p6_q10_angles",
+            "topic": "Lines, Angles & Geometric Figures",
+            "marks": 2,
+            "question": "10– Two angles on a straight line are 65° and x. Find the value of x.",
+            "options": ["25°", "125°", "295°", "115°"],
+            "ans": "115°",
+            "explanation": "Angles on a straight line add up to 180°: x = 180° - 65° = 115°.",
+            "step_by_step": [
+                "Line 1 — Recall that adjacent angles on a straight line sum to 180°.",
+                "Line 2 — Set up the equation: 65° + x = 180°.",
+                "Line 3 — Subtract 65° from 180°: x = 180° - 65° = 115°.",
+            ],
+            "diagram_type": None,
+            "explanation_diagram_type": None,
+        },
+        {
+            "id": "p6_q11_algebra_simplify",
+            "topic": "Algebra & Equations",
+            "marks": 4,
+            "question": "11– Simplify: 4k + 3m + 2k - m.",
+            "options": ["6k + 2m", "6k + 4m", "2k + 2m", "8km"],
+            "ans": "6k + 2m",
+            "explanation": "Collect like terms: (4k + 2k) + (3m - m) = 6k + 2m.",
+            "step_by_step": [
+                "Line 1 — Group like terms with variable k: 4k + 2k.",
+                "Line 2 — Group like terms with variable m: 3m - m.",
+                "Line 3 — Simplify k terms: 4k + 2k = 6k.",
+                "Line 4 — Simplify m terms: 3m - 1m = 2m, giving 6k + 2m.",
+            ],
+            "diagram_type": None,
+            "explanation_diagram_type": None,
+        },
+        {
+            "id": "p6_q12i_perimeter",
+            "topic": "Measurement & Geometry",
+            "marks": 2,
+            "question": (
+                "12– The diagram below shows how Mr. Okello used his land. He used plot P to keep goats, "
+                "plot Q to keep pigs and R to keep cattle. (i) Work out the total distance round the plot he used to keep pigs."
+            ),
+            "options": ["14 m", "18 m", "20 m", "9 m"],
+            "ans": "18 m",
+            "explanation": "Plot Q width = 10 m - 4 m = 6 m and height = 3 m, so perimeter = 2 × (6 + 3) = 18 m.",
+            "step_by_step": [
+                "Line 1 — Find the horizontal length (width) of plot Q: total top span is 10 m and plot P takes 4 m, so 10 m - 4 m = 6 m.",
+                "Line 2 — Find the vertical height of plot Q, which matches plot P at 3 m.",
+                "Line 3 — Calculate perimeter of rectangular plot Q: 2 × (Length + Width) = 2 × (6 m + 3 m) = 2 × 9 m = 18 m.",
+            ],
+            "diagram_type": "okello_land",
+            "explanation_diagram_type": "okello_land",
+        },
+        {
+            "id": "p6_q12ii_area",
+            "topic": "Measurement & Geometry",
+            "marks": 4,
+            "question": (
+                "12– (ii) Find the size of the land area he has altogether which keeps all his goats, "
+                "pigs and cattle in square metres."
+            ),
+            "options": ["50 sq m", "36 sq m", "80 sq m", "68 sq m"],
+            "ans": "80 sq m",
+            "explanation": "Total width = 10 m and total height = 3 m + 5 m = 8 m, giving 10 m × 8 m = 80 sq m.",
+            "step_by_step": [
+                "Line 1 — Find total horizontal width across the whole land: 10 m.",
+                "Line 2 — Find total vertical height: upper section (P/Q) is 3 m + lower section (R) is 5 m = 8 m.",
+                "Line 3 — Multiply total width by total height: 10 m × 8 m = 80 sq m.",
+            ],
+            "diagram_type": None,
+            "explanation_diagram_type": "okello_land",
+        },
+        {
+            "id": "p6_q13_algebra",
+            "topic": "Algebra & Equations",
+            "marks": 5,
+            "question": (
+                "13– A boy said that they served with some cups of tea such that if a half of their "
+                "total joins them, their sum could be 45. How many boys were they?"
+            ),
+            "options": ["22.5", "90", "15", "30"],
+            "ans": "30",
+            "explanation": "x + 0.5x = 45 -> 1.5x = 45 -> x = 30 boys.",
+            "step_by_step": [
+                "Line 1 — Let the number of boys be x.",
+                "Line 2 — Write the equation from the statement: x + (1/2)x = 45.",
+                "Line 3 — Combine like terms: (3/2)x = 45.",
+                "Line 4 — Multiply both sides by 2: 3x = 90.",
+                "Line 5 — Divide by 3: x = 90 ÷ 3 = 30 boys.",
+            ],
+            "diagram_type": None,
+            "explanation_diagram_type": None,
+        },
+        {
+            "id": "p6_q14_remainders",
+            "topic": "Number Patterns & Remainders",
+            "marks": 5,
+            "question": (
+                "14– Sarah dug two lines of 7 pits and 6 pits respectively. She had some bean seeds in her "
+                "hands whereby if she distributes them in the 7 pits equally, 5 seeds remain and if she "
+                "distributes them in the one of 6 pits, 2 seeds remain. How many seeds was she having?"
+            ),
+            "options": ["26", "12", "19", "47"],
+            "ans": "26",
+            "explanation": "26 ÷ 7 = 3 remainder 5, and 26 ÷ 6 = 4 remainder 2.",
+            "step_by_step": [
+                "Line 1 — List numbers leaving remainder 5 when divided by 7: 5, 12, 19, 26, 33...",
+                "Line 2 — List numbers leaving remainder 2 when divided by 6: 2, 8, 14, 20, 26, 32...",
+                "Line 3 — Find the common number in both sequences: 26.",
+                "Line 4 — Verify: 26 ÷ 7 = 3 rem 5, and 26 ÷ 6 = 4 rem 2.",
+            ],
+            "diagram_type": None,
+            "explanation_diagram_type": None,
+        },
+        {
+            "id": "p6_q15_mean",
+            "topic": "Statistics & Mean",
+            "marks": 5,
+            "question": (
+                "15– The mean mass of 5 boys is 30 kg. When their teacher joins them, the mean mass "
+                "changes to 34 kg. Find the mass of the teacher."
+            ),
+            "options": ["48 kg", "54 kg", "204 kg", "150 kg"],
+            "ans": "54 kg",
+            "explanation": "5 boys sum = 5 × 30 = 150 kg; 6 people sum = 6 × 34 = 204 kg; teacher's mass = 204 - 150 = 54 kg.",
+            "step_by_step": [
+                "Line 1 — Calculate total mass of the 5 boys: 5 × 30 kg = 150 kg.",
+                "Line 2 — Calculate total mass of all 6 people (5 boys + 1 teacher): 6 × 34 kg = 204 kg.",
+                "Line 3 — Subtract total mass of the 5 boys from total mass of the 6 people: 204 kg - 150 kg = 54 kg.",
+            ],
+            "diagram_type": None,
+            "explanation_diagram_type": None,
+        },
+        {
+            "id": "p6_q16a_factors",
+            "topic": "Factors & Multiples",
+            "marks": 2,
+            "question": "16– (a) List all the factors of 12.",
+            "options": ["12, 24, 36, 48", "2, 3, 4, 6", "1, 2, 3, 4, 6, 12", "1, 3, 4, 12"],
+            "ans": "1, 2, 3, 4, 6, 12",
+            "explanation": "The factors of 12 are 1, 2, 3, 4, 6, and 12.",
+            "step_by_step": [
+                "Line 1 — Find pairs of whole numbers that multiply to 12: 1 × 12, 2 × 6, and 3 × 4.",
+                "Line 2 — Arrange all distinct factors in ascending order: 1, 2, 3, 4, 6, 12.",
+            ],
+            "diagram_type": None,
+            "explanation_diagram_type": None,
+        },
+        {
+            "id": "p6_q16b_lcm",
+            "topic": "Factors & Multiples (LCM)",
+            "marks": 3,
+            "question": (
+                "16– (b) What is the least number of sweets that can be shared by either "
+                "6 or 8 boys equally without a remainder?"
+            ),
+            "options": ["48", "12", "2", "24"],
+            "ans": "24",
+            "explanation": "The least number divisible by both 6 and 8 is LCM(6, 8) = 24.",
+            "step_by_step": [
+                "Line 1 — 'Least number shared equally by either 6 or 8 without remainder' means LCM(6, 8).",
+                "Line 2 — Multiples of 6: 6, 12, 18, 24...; Multiples of 8: 8, 16, 24...",
+                "Line 3 — The smallest common multiple is 24 sweets.",
+            ],
+            "diagram_type": None,
+            "explanation_diagram_type": None,
+        },
+    ],
+    "P7": [
+        {
+            "id": "p7_q01_simplify",
+            "topic": "Whole Numbers & Operations",
+            "marks": 1,
+            "question": "1– Simplify: 3 × 5.",
+            "options": ["8", "15", "35", "12"],
+            "ans": "15",
+            "explanation": "3 × 5 = 15.",
+            "step_by_step": [
+                "Line 1 — Identify the multiplication operation: 3 × 5.",
+                "Line 2 — Add 5 three times (or count by 5s three steps): 5 + 5 + 5 = 15.",
+                "Line 3 — The simplified product is 15.",
+            ],
+            "diagram_type": None,
+            "explanation_diagram_type": None,
+        },
+        {
+            "id": "p7_q02_standard_form",
+            "topic": "Standard Form (Scientific Notation)",
+            "marks": 2,
+            "question": "2– Write 3.45 in standard form.",
+            "options": ["3.45 × 10¹", "3.45 × 10⁰", "34.5 × 10⁻¹", "3.45 × 10⁻²"],
+            "ans": "3.45 × 10⁰",
+            "explanation": "Since 3.45 is already between 1 and 10, moving the decimal point 0 places gives 3.45 × 10⁰.",
+            "step_by_step": [
+                "Line 1 — Standard form requires a number A × 10^n where 1 ≤ A < 10 and n is an integer.",
+                "Line 2 — Check 3.45: it already lies between 1 and 10 (1 ≤ 3.45 < 10).",
+                "Line 3 — Since 0 decimal shifts are needed, n = 0, giving 3.45 × 10⁰ (and 10⁰ = 1).",
+            ],
+            "diagram_type": None,
+            "explanation_diagram_type": None,
+        },
+        {
+            "id": "p7_q03_soap_cost",
+            "topic": "Fractions & Direct Proportion",
+            "marks": 3,
+            "question": "3– Given that 2½ bars of soap cost sh 10,000, find the cost of 8 similar bars of soap.",
+            "options": ["sh 25,000", "sh 32,000", "sh 80,000", "sh 20,000"],
+            "ans": "sh 32,000",
+            "explanation": "2½ = 5/2 bars cost sh 10,000 -> 1 bar = sh 10,000 × 2/5 = sh 4,000 -> 8 bars = 8 × sh 4,000 = sh 32,000.",
+            "step_by_step": [
+                "Line 1 — Convert the mixed fraction 2½ into an improper fraction: 2½ = (2 × 2 + 1)/2 = 5/2 bars.",
+                "Line 2 — Find the unit cost of 1 bar of soap: sh 10,000 ÷ (5/2) = sh 10,000 × (2/5).",
+                "Line 3 — Simplify: sh 10,000 ÷ 5 = sh 2,000; then sh 2,000 × 2 = sh 4,000 per bar.",
+                "Line 4 — Multiply unit cost by 8 bars: 8 × sh 4,000 = sh 32,000.",
+            ],
+            "diagram_type": None,
+            "explanation_diagram_type": None,
+        },
+        {
+            "id": "p7_q04_angles_k",
+            "topic": "Lines, Angles & Parallel Lines",
+            "marks": 3,
+            "question": "4– Given the diagram below, find the value of k.",
+            "options": ["15°", "30°", "50°", "65°"],
+            "ans": "15°",
+            "explanation": "Isosceles base angles = (180° - 50°)/2 = 65°; alternate interior angle on top parallel line = 65°; adjacent angle to 80° = 100°; so k = 180° - (65° + 100°) = 15°.",
+            "step_by_step": [
+                "Line 1 — The double tick marks (||) show an isosceles triangle with apex angle 50°, so each base angle on the bottom line is (180° - 50°) ÷ 2 = 65°.",
+                "Line 2 — Because the top and bottom lines are parallel, the top-left interior angle inside the upper triangle is alternate interior to the 65° base angle, so it equals 65°.",
+                "Line 3 — On the straight right side of the triangle, the interior angle adjacent to 80° is 180° - 80° = 100°.",
+                "Line 4 — Sum of angles in the upper triangle is 180°: k = 180° - (65° + 100°) = 180° - 165° = 15°.",
+            ],
+            "diagram_type": "p7_q04_angles",
+            "explanation_diagram_type": "p7_q04_angles",
+        },
+        {
+            "id": "p7_q05_ratio_day_boys",
+            "topic": "Ratios & Fractions",
+            "marks": 4,
+            "question": (
+                "5– In P.6 class, the ratio of boys to girls is 2:3. If there are 600 pupils in the class "
+                "and 2/3 of the boys are in boarding section, find the number of boys in day section."
+            ),
+            "options": ["240 boys", "160 boys", "80 boys", "360 boys"],
+            "ans": "80 boys",
+            "explanation": "Total boys = (2/5) × 600 = 240; boarding boys = (2/3) × 240 = 160; day boys = 240 - 160 = 80.",
+            "step_by_step": [
+                "Line 1 — Find the total ratio parts for boys : girls = 2 : 3 -> 2 + 3 = 5 parts.",
+                "Line 2 — Find the fraction of boys in the class: 2/5.",
+                "Line 3 — Calculate total boys: (2/5) × 600 = 2 × 120 = 240 boys.",
+                "Line 4 — Calculate boys in the boarding section: (2/3) × 240 = 2 × 80 = 160 boys.",
+                "Line 5 — Subtract boarding boys from total boys to get day boys: 240 - 160 = 80 boys.",
+            ],
+            "diagram_type": None,
+            "explanation_diagram_type": None,
+        },
+        {
+            "id": "p7_q06_additive_inverse",
+            "topic": "Integers & Number Lines",
+            "marks": 2,
+            "question": "6– Work out the additive inverse of the integer which is 3 steps to the left of +1.",
+            "options": ["-2", "+2", "-4", "+4"],
+            "ans": "+2",
+            "explanation": "Moving 3 steps left from +1 lands on -2; the additive inverse of -2 is +2 since (-2) + (+2) = 0.",
+            "step_by_step": [
+                "Line 1 — Start at +1 on the number line and move 3 steps to the left: +1 -> 0 -> -1 -> -2.",
+                "Line 2 — Identify the integer reached: -2.",
+                "Line 3 — Let n be the additive inverse of -2 such that n + (-2) = 0 -> n - 2 = 0.",
+                "Line 4 — Add 2 to both sides: n = +2.",
+            ],
+            "diagram_type": None,
+            "explanation_diagram_type": "p7_q06_number_line",
+        },
+        {
+            "id": "p7_q07a_gcf_group",
+            "topic": "Factors & Multiples (GCF)",
+            "marks": 2,
+            "question": (
+                "7– (a) Andrew sells fruits from his farm in groups. One Monday, he sold Mango and Guava "
+                "in a maximum same number of fruits in a group without left over. If he had 240 mangoes "
+                "and 180 guava, what is the maximum group size (GCF)?"
+            ),
+            "options": ["12", "60", "720", "30"],
+            "ans": "60",
+            "explanation": "GCF(240, 180) = 2 × 2 × 3 × 5 = 60.",
+            "step_by_step": [
+                "Line 1 — Find common prime factors of 240 and 180 by repeated division: divide by 2 -> (120, 90); by 2 -> (60, 45); by 3 -> (20, 15); by 5 -> (4, 3).",
+                "Line 2 — Multiply the common prime divisors: 2 × 2 × 3 × 5 = 60.",
+                "Line 3 — Correction note: 60 is the GCF (maximum equal group size); once divided by 60, each group has 4 mangoes and 3 guavas.",
+            ],
+            "diagram_type": None,
+            "explanation_diagram_type": None,
+        },
+        {
+            "id": "p7_q07b_each_type_in_group",
+            "topic": "Factors & Multiples (GCF)",
+            "marks": 2,
+            "question": (
+                "7– (b) Using the maximum group size of 60 from 240 mangoes and 180 guavas, how many "
+                "mangoes and guavas respectively are in each group?"
+            ),
+            "options": [
+                "60 mangoes and 60 guavas",
+                "4 mangoes and 3 guavas",
+                "3 mangoes and 4 guavas",
+                "24 mangoes and 18 guavas",
+            ],
+            "ans": "4 mangoes and 3 guavas",
+            "explanation": "240 ÷ 60 = 4 mangoes and 180 ÷ 60 = 3 guavas in each group.",
+            "step_by_step": [
+                "Line 1 — Correction note: GCF = 60 gives the maximum equal group factor, while dividing each fruit count by 60 gives how many of each type are in a group.",
+                "Line 2 — Mangoes per group: 240 ÷ 60 = 4 mangoes (also the remaining quotient 4 in the GCF table).",
+                "Line 3 — Guavas per group: 180 ÷ 60 = 3 guavas (also the remaining quotient 3 in the GCF table).",
+            ],
+            "diagram_type": None,
+            "explanation_diagram_type": None,
+        },
+        {
+            "id": "p7_q08_mean_m",
+            "topic": "Statistics & Mean",
+            "marks": 3,
+            "question": "8– Given that the mean of 2m + 10, 30, 40, 40, and 10 is 30, find the value of m.",
+            "options": ["5", "10", "20", "15"],
+            "ans": "10",
+            "explanation": "Total sum = 5 × 30 = 150; 2m + 130 = 150 -> 2m = 20 -> m = 10.",
+            "step_by_step": [
+                "Line 1 — Count the 5 values and find their total sum using Mean = Sum ÷ Count: Sum = 5 × 30 = 150.",
+                "Line 2 — Add the constant terms: 10 + 30 + 40 + 40 + 10 = 130.",
+                "Line 3 — Form the equation: 2m + 130 = 150.",
+                "Line 4 — Subtract 130 from both sides: 2m = 20, then divide by 2 to get m = 10.",
+            ],
+            "diagram_type": None,
+            "explanation_diagram_type": None,
+        },
+        {
+            "id": "p7_q09_venn_subsets",
+            "topic": "Set Concepts & Subsets",
+            "marks": 3,
+            "question": (
+                "9– Use the Venn diagram below to find the number of subsets in set (A ∪ B)' "
+                "if values represented in the Venn diagram show number of elements."
+            ),
+            "options": ["8 subsets", "16 subsets", "4,096 subsets", "256 subsets"],
+            "ans": "16 subsets",
+            "explanation": "Correction note: n(A ∪ B) = 4 + 3 + 5 = 12 (not 4), while n((A ∪ B)') = 4, giving 2⁴ = 16 subsets.",
+            "step_by_step": [
+                "Line 1 — Read region counts from the Venn diagram: only A = 4, A ∩ B = 3, only B = 5, and outside (A ∪ B)' = 4.",
+                "Line 2 — Correction note: n(A ∪ B) = 4 + 3 + 5 = 12 elements (writing n(A ∪ B) = 4 in the working is a mislabeling).",
+                "Line 3 — The number of elements in (A ∪ B)' is n((A ∪ B)') = 4.",
+                "Line 4 — Apply Number of subsets = 2^n: 2⁴ = 2 × 2 × 2 × 2 = 16 subsets.",
+            ],
+            "diagram_type": "p7_q09_venn",
+            "explanation_diagram_type": "p7_q09_venn",
+        },
+        {
+            "id": "p7_q10_base_five_addition",
+            "topic": "Number Bases (Base Five)",
+            "marks": 3,
+            "question": (
+                "10– Work out in base five: (131_five) + (2□3_five) = (□2□_five). "
+                "Find the missing digits in order: (middle addend □, leftmost answer □, rightmost answer □)."
+            ),
+            "options": ["4, 4, 4", "1, 3, 4", "4, 3, 4", "2, 4, 4"],
+            "ans": "4, 4, 4",
+            "explanation": "In base five: 1 + 3 = 4; 3 + 4 = 7_ten = 12_five (write 2, carry 1); 1 + 2 + 1 = 4 -> digits are 4, 4, 4.",
+            "step_by_step": [
+                "Line 1 — Ones place (rightmost): 1 + 3 = 4_five (< 5), so the rightmost missing digit is 4 with 0 carried.",
+                "Line 2 — Fives place (middle): 3 + □ gives middle digit 2, meaning 3 + □ = 7_ten (12_five), so middle addend digit is 4 and 1 is carried.",
+                "Line 3 — Twenty-fives place (leftmost): 1 + 2 + 1 (carried) = 4_five, so leftmost answer digit is 4.",
+                "Line 4 — Completed sum: 131_five + 243_five = 424_five; missing digits are 4, 4, 4.",
+            ],
+            "diagram_type": None,
+            "explanation_diagram_type": None,
+        },
+    ],
+}
+
+
+def build_question_lookup() -> Dict[str, Dict[str, Any]]:
+    lookup: Dict[str, Dict[str, Any]] = {}
+    for cls_code, q_list in QUIZ_BANK.items():
+        for q_item in q_list:
+            q_id = str(q_item.get("id", ""))
+            lookup[f"{cls_code}:{q_id}"] = {**q_item, "class": cls_code}
+            lookup[q_item["question"]] = {**q_item, "class": cls_code}
+    return lookup
+
+
+QUESTION_LOOKUP = build_question_lookup()
+
+
+def _find_question_meta(record: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    q_uid = str(record.get("q_uid", "") or "")
+    q_id = str(record.get("Question ID", "") or "")
+    cls_code = str(record.get("Class", "") or "")
+    q_text = str(record.get("Question", "") or "")
+    return (
+        QUESTION_LOOKUP.get(q_uid)
+        or QUESTION_LOOKUP.get(f"{cls_code}:{q_id}")
+        or QUESTION_LOOKUP.get(q_text)
+    )
+
+
+def get_detailed_lines_for_record(record: Dict[str, Any]) -> List[str]:
+    matched = _find_question_meta(record)
+    if matched and matched.get("step_by_step"):
+        return list(matched["step_by_step"])
+    if matched and matched.get("explanation"):
+        return [f"Line 1 — {matched['explanation']}"]
+    return [f"Line 1 — Evaluated answer '{record.get('Selected', '')}' for {record.get('Question', '')}."]
+
+
+def render_line_by_line_explanation(
+    record: Dict[str, Any],
+    correct_ans: Optional[str] = None,
+    show_explanation_diagram: bool = True,
+) -> None:
+    matched = _find_question_meta(record)
+    resolved_ans = correct_ans if correct_ans is not None else (matched.get("ans") if matched else None)
+    lines = get_detailed_lines_for_record(record)
+    st.markdown("**Explanation:**")
+    if matched and matched.get("explanation"):
+        st.markdown(f"- **Summary:** {matched['explanation']}")
+    for line in lines:
+        st.markdown(f"- {line}")
+    if resolved_ans is not None:
+        st.markdown(f"- **Correct Answer:** `{resolved_ans}` | **Marks Earned:** `{record.get('Marks', 0)}/{record.get('Max Marks', 1)}`")
+
+    if show_explanation_diagram and matched:
+        exp_diag_type = matched.get("explanation_diagram_type")
+        exp_png = get_diagram_png(exp_diag_type)
+        if exp_png:
+            st.image(exp_png, caption="Explanation Diagram")
+
+
+# ==============================================================================
+# 4. GOOGLE SHEETS PERSISTENCE LAYER (ALL CLASSES P1–P7)
+# ==============================================================================
+
+
+def _make_attempt_key(pupil_name: str, school_name: str, cls_code: str, q_id: str) -> str:
+    return f"{pupil_name.strip().lower()}|{school_name.strip().lower()}|{cls_code.strip()}|{q_id.strip()}"
+
+
+def _get_secret_or_env(key: str, default: Any = None) -> Any:
+    try:
+        if key in st.secrets:
+            return st.secrets[key]
+    except Exception:
+        pass
+    return os.environ.get(key, default)
+
+
+def _get_webhook_url() -> Optional[str]:
+    url = _get_secret_or_env("GSHEET_WEBHOOK_URL") or _get_secret_or_env("GOOGLE_SHEETS_WEBHOOK_URL")
+    return str(url).strip() if url else None
+
+
+def _get_service_account_dict() -> Optional[Dict[str, Any]]:
+    raw = _get_secret_or_env("GCP_SERVICE_ACCOUNT") or _get_secret_or_env("GOOGLE_SERVICE_ACCOUNT_JSON")
+    if not raw:
+        return None
+    if hasattr(raw, "to_dict"):
+        sa = raw.to_dict()
+    elif isinstance(raw, dict):
+        sa = dict(raw)
+    else:
+        try:
+            sa = json.loads(str(raw))
+        except Exception:
+            return None
+    if isinstance(sa, dict) and isinstance(sa.get("private_key"), str):
+        sa["private_key"] = sa["private_key"].replace("\\n", "\n")
+    return sa
+
+
+def _connect_gspread_worksheet() -> Tuple[Any, str]:
+    """Connects to Google Sheets and returns (worksheet_or_None, diagnostic_status)."""
+    sa_info = _get_service_account_dict()
+    if not sa_info:
+        return None, "No GCP_SERVICE_ACCOUNT found in secrets"
+    try:
+        import gspread  # type: ignore
+        from google.oauth2.service_account import Credentials  # type: ignore
+
+        scopes = ["https://www.googleapis.com/auth/spreadsheets"]
+        creds = Credentials.from_service_account_info(sa_info, scopes=scopes)
+        client = gspread.authorize(creds)
+        sheet_id = str(_get_secret_or_env("GSHEET_SPREADSHEET_ID", SPREADSHEET_ID)).strip()
+        spreadsheet = client.open_by_key(sheet_id)
+        try:
+            ws = spreadsheet.worksheet(QUIZ_LOG_SHEET_NAME)
+        except Exception:
+            ws = spreadsheet.add_worksheet(title=QUIZ_LOG_SHEET_NAME, rows=1000, cols=len(QUIZ_LOG_HEADERS))
+            ws.append_row(QUIZ_LOG_HEADERS, value_input_option="USER_ENTERED")
+        return ws, "Connected"
+    except Exception as exc:
+        client_email = sa_info.get("client_email", "service-account")
+        return None, f"Google Sheet error ({type(exc).__name__}: {exc}) — verify {client_email} is Editor on the Sheet"
+
+
+def _parse_bool(val: Any) -> bool:
+    if isinstance(val, bool):
+        return val
+    return str(val).strip().upper() in {"TRUE", "1", "YES", "Y"}
+
+
+def _parse_int(val: Any, fallback: int = 0) -> int:
+    try:
+        return int(float(str(val).strip()))
+    except Exception:
+        return fallback
+
+
+def _rows_to_records(rows: List[List[Any]]) -> List[Dict[str, Any]]:
+    if not rows:
+        return []
+    start_idx = 1 if rows[0] and str(rows[0][0]).strip().lower() == "timestamp" else 0
+    records: List[Dict[str, Any]] = []
+    seen_keys = set()
+    for r in rows[start_idx:]:
+        if not isinstance(r, list) or len(r) < 10:
+            continue
+        pupil_val = str(r[1] or "").strip()
+        school_val = str(r[2] or "").strip()
+        cls_val = str(r[4] or "").strip()
+        if not pupil_val or cls_val not in QUIZ_BANK:
+            continue
+        q_id = str(r[5] or "").strip()
+        q_text = str(r[6] or "").strip()
+        q_uid = f"{cls_val}:{q_id}" if q_id else f"{cls_val}:{q_text}"
+        attempt_key = _make_attempt_key(pupil_val, school_val, cls_val, q_id or q_text)
+        if attempt_key in seen_keys:
+            continue
+        seen_keys.add(attempt_key)
+        records.append({
+            "Timestamp": str(r[0] or "").strip(),
+            "Pupil Name": pupil_val,
+            "School": school_val,
+            "District": str(r[3] or "").strip(),
+            "Class": cls_val,
+            "Question ID": q_id,
+            "q_uid": q_uid,
+            "attempt_key": attempt_key,
+            "Question": q_text,
+            "Selected": str(r[7] or "").strip(),
+            "Correct": _parse_bool(r[8]),
+            "Marks": _parse_int(r[9], 0),
+            "Max Marks": _parse_int(r[10] if len(r) > 10 else 1, 1),
+        })
+    return records
+
+
+@st.cache_data(ttl=15, show_spinner=False)
+def load_records_from_google_sheet() -> Tuple[List[Dict[str, Any]], str]:
+    """Reads Quiz_Marks_Log from Google Sheets so marks survive Streamlit app reboots."""
+    ws, conn_msg = _connect_gspread_worksheet()
+    if ws is not None:
+        try:
+            values = ws.get_all_values()
+            recs = _rows_to_records(values)
+            return recs, f"Google Sheets Connected ({len(recs)} saved attempts loaded)"
+        except Exception as exc:
+            return [], f"Google Sheets read error: {exc}"
+
+    webhook_url = _get_webhook_url()
+    if webhook_url:
+        try:
+            req_url = f"{webhook_url}{'&' if '?' in webhook_url else '?'}sheet={QUIZ_LOG_SHEET_NAME}"
+            with urlrequest.urlopen(req_url, timeout=8) as resp:
+                payload = json.loads(resp.read().decode("utf-8"))
+                rows = payload.get("rows", []) if isinstance(payload, dict) else []
+                recs = _rows_to_records(rows)
+                return recs, f"Webhook Sync Connected ({len(recs)} saved attempts loaded)"
+        except Exception as exc:
+            return [], f"Webhook read error: {exc}"
+
+    return [], f"Session Memory Only — {conn_msg}"
+
+
+def append_attempt_to_google_sheet(record: Dict[str, Any]) -> Tuple[bool, str]:
+    """Appends a single pupil quiz attempt row across any class (P1–P7) to Quiz_Marks_Log."""
+    row_values = [
+        record["Timestamp"],
+        record["Pupil Name"],
+        record["School"],
+        record["District"],
+        record["Class"],
+        record["Question ID"],
+        record["Question"],
+        record["Selected"],
+        "TRUE" if record["Correct"] else "FALSE",
+        int(record["Marks"]),
+        int(record["Max Marks"]),
+    ]
+
+    ws, conn_msg = _connect_gspread_worksheet()
+    if ws is not None:
+        try:
+            existing = ws.get_all_values()
+            if not existing:
+                ws.append_row(QUIZ_LOG_HEADERS, value_input_option="USER_ENTERED")
+            ws.append_row(row_values, value_input_option="USER_ENTERED")
+            load_records_from_google_sheet.clear()
+            return True, "Saved to Google Sheet (Quiz_Marks_Log)"
+        except Exception as exc:
+            return False, f"Could not write to Google Sheet: {exc}"
+
+    webhook_url = _get_webhook_url()
+    if webhook_url:
+        try:
+            payload = json.dumps({"sheet": QUIZ_LOG_SHEET_NAME, "row": row_values}).encode("utf-8")
+            req = urlrequest.Request(
+                webhook_url,
+                data=payload,
+                headers={"Content-Type": "application/json"},
+                method="POST",
+            )
+            with urlrequest.urlopen(req, timeout=8) as resp:
+                if 200 <= resp.status < 300:
+                    load_records_from_google_sheet.clear()
+                    return True, "Saved to Google Sheet via webhook"
+                return False, f"Webhook returned HTTP {resp.status}"
+        except (urlerror.URLError, TimeoutError, Exception) as exc:
+            return False, f"Webhook write failed: {exc}"
+
+    return False, f"Not synced to Google Sheet — {conn_msg}"
+
+
+def _sync_state_from_records(records: List[Dict[str, Any]]) -> None:
+    answered_keys = {
+        r.get("attempt_key") or _make_attempt_key(
+            r.get("Pupil Name", ""), r.get("School", ""), r.get("Class", ""), r.get("Question ID", "") or r.get("Question", "")
+        )
+        for r in records
+    }
+    total_attempted = len(records)
+    total_correct = sum(1 for r in records if r.get("Correct"))
+    total_marks = sum(int(r.get("Marks", 0)) for r in records)
+    st.session_state["attempt_records"] = records
+    st.session_state["answered_ids"] = answered_keys
+    st.session_state["quiz_score"] = {
+        "attempted": total_attempted,
+        "correct": total_correct,
+        "marks": total_marks,
+    }
+
+
+def record_single_answer(
+    q: Dict[str, Any],
+    idx: int,
+    selected_class: str,
+    pick: Any,
+    pupil_name: str,
+    school_name: str,
+    district_name: str,
+) -> Dict[str, Any]:
+    q_id = str(q.get("id", f"{selected_class}_q{idx + 1}"))
+    q_uid = f"{selected_class}:{q_id}"
+    attempt_key = _make_attempt_key(pupil_name, school_name, selected_class, q_id)
+    ok = pick == q.get("ans")
+    max_marks = int(q.get("marks", 1))
+    earned = max_marks if ok else 0
+
+    record = {
+        "Timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "Pupil Name": (pupil_name or "").strip(),
+        "School": (school_name or "").strip(),
+        "District": district_name,
+        "Class": selected_class,
+        "Question ID": q_id,
+        "q_uid": q_uid,
+        "attempt_key": attempt_key,
+        "Question": q["question"],
+        "Selected": pick,
+        "Correct": ok,
+        "Marks": earned,
+        "Max Marks": max_marks,
+    }
+
+    is_new = attempt_key not in st.session_state["answered_ids"]
+    if is_new:
+        st.session_state["answered_ids"].add(attempt_key)
+        st.session_state["quiz_score"]["attempted"] += 1
+        if ok:
+            st.session_state["quiz_score"]["correct"] += 1
+            st.session_state["quiz_score"]["marks"] += earned
+        st.session_state["attempt_records"].append(record)
+
+        _, sync_msg = append_attempt_to_google_sheet(record)
+        st.session_state["sync_status"] = sync_msg
+    else:
+        sync_msg = "Attempt already recorded for this pupil and question."
+
+    feedback_item = {
+        "ok": ok,
+        "ans": q.get("ans"),
+        "record": record,
+        "sync_msg": sync_msg,
+    }
+    st.session_state["last_checked_feedback"][q_uid] = feedback_item
+    return feedback_item
+
+
+# ==============================================================================
+# 5. LEADERBOARD & BADGES HELPERS
+# ==============================================================================
+
+BADGE_TIERS = [
+    ("Gold Badge (1st)", "🥇"),
+    ("Silver Badge (2nd)", "🥈"),
+    ("Bronze Badge (3rd)", "🥉"),
+]
+
+
+def build_leaderboard(
+    records: List[Dict[str, Any]],
+    limit: int = 25,
+    class_filter: str = "All",
+    district_filter: str = "All",
+) -> pd.DataFrame:
+    """Aggregates pupil quiz attempt records across P1–P7 into a ranked leaderboard up to `limit`."""
+    cols = ["Rank", "Badge", "Pupil Name", "School", "District", "Class", "Correct", "Attempted", "Marks"]
+    if not records:
+        return pd.DataFrame(columns=cols)
+
+    df = pd.DataFrame(records)
+    if df.empty:
+        return pd.DataFrame(columns=cols)
+
+    if class_filter != "All":
+        df = df[df["Class"] == class_filter]
+    if district_filter != "All":
+        df = df[df["District"] == district_filter]
+
+    if df.empty:
+        return pd.DataFrame(columns=cols)
+
+    grouped = (
+        df.groupby(["Pupil Name", "School", "District", "Class"], as_index=False)
+        .agg(
+            Correct=("Correct", "sum"),
+            Attempted=("Question", "count"),
+            Marks=("Marks", "sum"),
+        )
+        .sort_values(by=["Marks", "Correct", "Attempted"], ascending=[False, False, True])
+        .head(limit)
+        .reset_index(drop=True)
+    )
+
+    ranks: List[int] = []
+    badges: List[str] = []
+    for idx in range(len(grouped)):
+        rank = idx + 1
+        ranks.append(rank)
+        if rank == 1:
+            badges.append("🥇 Gold (1st)")
+        elif rank == 2:
+            badges.append("🥈 Silver (2nd)")
+        elif rank == 3:
+            badges.append("🥉 Bronze (3rd)")
+        else:
+            badges.append("—")
+
+    grouped.insert(0, "Rank", ranks)
+    grouped.insert(1, "Badge", badges)
+    return grouped
+
+
+# ==============================================================================
+# 6. MAIN STREAMLIT BLOCK
+# ==============================================================================
+
+
+def init_state() -> None:
+    st.session_state.setdefault("quiz_score", {"attempted": 0, "correct": 0, "marks": 0})
+    st.session_state.setdefault("answered_ids", set())
+    st.session_state.setdefault("selected_class", "P7")
+    st.session_state.setdefault("active_tab", "Take Quiz")
+    st.session_state.setdefault("pupil_info", {"name": "", "school": "", "district": "Kampala"})
+    st.session_state.setdefault("attempt_records", [])
+    st.session_state.setdefault("last_checked_feedback", {})
+    st.session_state.setdefault("submitted_quiz_summary", None)
+    st.session_state.setdefault("sync_status", "")
+
+    if not st.session_state.get("sheet_hydrated", False):
+        persisted_records, status_msg = load_records_from_google_sheet()
+        st.session_state["sync_status"] = status_msg
+        if persisted_records:
+            _sync_state_from_records(persisted_records)
+        st.session_state["sheet_hydrated"] = True
+
+
+def main() -> None:
+    init_state()
+
+    requested_tab = st.query_params.get("tab", None)
+    if requested_tab in TABS:
+        st.session_state["active_tab"] = requested_tab
+        del st.query_params["tab"]
+
+    active_tab = st.session_state.get("active_tab", "Take Quiz")
+    if active_tab not in TABS:
+        active_tab = "Take Quiz"
+        st.session_state["active_tab"] = active_tab
+
+    margin_theme = TAB_MARGIN_STYLES.get(active_tab, TAB_MARGIN_STYLES["Take Quiz"])
+    accent = margin_theme["accent"]
+    border_tint = margin_theme["border_tint"]
+    pill_bg = margin_theme["pill_bg"]
+    pill_text = margin_theme["pill_text"]
+
+    st.markdown(
+        f"""
+        <style>
+        .stApp {{
+            background: radial-gradient(circle at 12% 10%, rgba(11, 110, 63, 0.11), transparent 39%),
+                        radial-gradient(circle at 88% 14%, rgba(252, 220, 4, 0.06), transparent 35%),
+                        radial-gradient(circle at 75% 88%, rgba(6, 78, 44, 0.10), transparent 44%),
+                        linear-gradient(180deg, #E3EFE8 0%, #D6E7DD 55%, #C9DFD2 100%);
+            background-attachment: fixed;
+        }}
+        .ug-margin-rail {{
+            border
