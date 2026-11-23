@@ -1979,8 +1979,10 @@ def main() -> None:
             background: rgba(255, 255, 255, 0.90);
             border-radius: 12px;
             padding: 0.75rem 0.85rem;
+            margin-left: -1.5rem;
+            width: calc(100% + 1.5rem);
             box-shadow: 0 3px 12px rgba(6, 45, 25, 0.06);
-            transition: border-color 0.2s ease;
+            transition: border-color 0.2s ease, margin-left 0.2s ease;
         }}
         .ug-margin-badge {{
             display: inline-block;
@@ -2076,7 +2078,7 @@ def main() -> None:
         st.session_state["selected_class"] = "P7"
 
     logo_kind, logo_val = get_logo_source()
-    left_bar_col, header_col = st.columns([1.6, 5.4])
+    left_bar_col, header_col = st.columns([0.85, 6.15])
 
     with left_bar_col:
         st.markdown('<div class="ug-margin-rail">', unsafe_allow_html=True)
@@ -2130,7 +2132,7 @@ def main() -> None:
 
     st.divider()
 
-    _, tab_content_col = st.columns([0.4, 9.6])
+    _, tab_content_col = st.columns([0.1, 9.9])
 
     with tab_content_col:
         st.markdown('<div class="ug-workspace-card">', unsafe_allow_html=True)
