@@ -2,6 +2,7 @@ import base64
 from datetime import datetime
 import io
 import json
+import math
 import os
 from typing import Any, Dict, List, Optional, Tuple
 from urllib import error as urlerror
@@ -12,6 +13,7 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.patches as patches
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 import streamlit as st
 
@@ -90,6 +92,54 @@ def get_logo_source() -> Tuple[str, Any]:
             return ("file", fname)
     encoded = base64.b64encode(FALLBACK_LOGO_SVG.encode("utf-8")).decode("utf-8")
     return ("svg_uri", f"data:image/svg+xml;base64,{encoded}")
+
+
+def _draw_angle_arc(
+    ax: Any,
+    vertex: Tuple[float, float],
+    p1: Tuple[float, float],
+    p2: Tuple[float, float],
+    radius: float = 0.55,
+    color: str = "#1d4ed8",
+) -> None:
+    """Draws a clean angle arc at `vertex` between rays toward `p1` and `p2`."""
+    ang1 = math.degrees(math.atan2(p1[1] - vertex[1], p1[0] - vertex[0]))
+    ang2 = math.degrees(math.atan2(p2[1] - vertex[1], p2[0] - vertex[0]))
+    diff = (ang2 - ang1) % 360.0
+    if diff > 180.0:
+        ang1, ang2 = ang2, ang1
+        diff = 360.0 - diff
+    theta = np.linspace(math.radians(ang1), math.radians(ang1 + diff), 40)
+    xs = vertex[0] + radius * np.cos(theta)
+    ys = vertex[1] + radius * np.sin(theta)
+    ax.plot(xs, ys, color=color, linewidth=1.8)
+
+
+def _draw_double_tick(
+    ax: Any,
+    a: Tuple[float, float],
+    b: Tuple[float, float],
+    frac: float = 0.48,
+    tick_len: float = 0.28,
+    sep: float = 0.14,
+) -> None:
+    """Draws double equality tick marks (`||`) perpendicular to segment AB."""
+    dx = b[0] - a[0]
+    dy = b[1] - a[1]
+    length = math.hypot(dx, dy)
+    ux, uy = dx / length, dy / length
+    nx, ny = -uy, ux
+    mx = a[0] + frac * dx
+    my = a[1] + frac * dy
+    for offset in (-sep / 2.0, sep / 2.0):
+        cx = mx + offset * ux
+        cy = my + offset * uy
+        ax.plot(
+            [cx - (tick_len / 2.0) * nx, cx + (tick_len / 2.0) * nx],
+            [cy - (tick_len / 2.0) * ny, cy + (tick_len / 2.0) * ny],
+            color="#1d4ed8",
+            linewidth=1.8,
+        )
 
 
 @st.cache_data(show_spinner=False)
@@ -172,24 +222,45 @@ def get_diagram_png(diagram_type: Optional[str]) -> Optional[bytes]:
         return buf.getvalue()
 
     if diagram_type == "p7_q04_angles":
-        fig, ax = plt.subplots(figsize=(6.2, 3.8))
-        ax.set_xlim(-1.5, 10.5)
-        ax.set_ylim(-1.2, 5.2)
+        fig, ax = plt.subplots(figsize=(6.8, 3.6))
+        ax.set_xlim(-0.8, 11.2)
+        ax.set_ylim(-0.7, 4.7)
+        ax.set_aspect("equal")
         ax.axis("off")
 
-        ax.plot([-1.0, 10.0], [4.0, 4.0], color="black", linewidth=2)
-        ax.plot([-1.0, 10.0], [0.0, 0.0], color="black", linewidth=2)
+        y_top = 3.8
+        y_bot = 0.2
 
-        ax.plot([0.2, 3.6], [0.0, 4.0], color="black", linewidth=2)
-        ax.plot([3.6, 5.4], [4.0, 0.0], color="black", linewidth=2)
-        ax.plot([2.2, 7.6], [0.0, 4.0], color="black", linewidth=2)
+        # Top and bottom parallel horizontal lines
+        ax.plot([0.2, 10.6], [y_top, y_top], color="black", linewidth=2.2)
+        ax.plot([-0.4, 10.4], [y_bot, y_bot], color="black", linewidth=2.2)
 
-        ax.plot([1.75, 2.05], [1.85, 2.10], color="black", linewidth=1.5)
-        ax.plot([4.35, 4.65], [2.10, 1.85], color="black", linewidth=1.5)
+        # Isosceles triangle: apex A on top line, base BC on bottom line
+        A = (3.4, y_top)
+        B = (0.7, y_bot)
+        C = (5.4, y_bot)
+        ax.plot([B[0], A[0]], [B[1], A[1]], color="black", linewidth=2.2)
+        ax.plot([A[0], C[0]], [A[1], C[1]], color="black", linewidth=2.2)
 
-        ax.text(1.45, 0.55, "50°", fontsize=12, fontweight="bold")
-        ax.text(4.75, 0.55, "80°", fontsize=12, fontweight="bold")
-        ax.text(6.65, 3.35, "k", fontsize=13, fontweight="bold")
+        # Point D partway down AC, and ray DE going up-right to E on the top line
+        t_d = 0.65
+        D = (A[0] + t_d * (C[0] - A[0]), A[1] + t_d * (C[1] - A[1]))
+        E = (9.1, y_top)
+        ax.plot([D[0], E[0]], [D[1], E[1]], color="black", linewidth=2.2)
+
+        # Double tick marks on equal sides AB and AC
+        _draw_double_tick(ax, B, A, frac=0.50)
+        _draw_double_tick(ax, A, C, frac=0.36)
+
+        # Blue angle arcs matching notebook sketch
+        _draw_angle_arc(ax, A, B, C, radius=0.45, color="#1d4ed8")
+        _draw_angle_arc(ax, D, C, E, radius=0.48, color="#1d4ed8")
+        _draw_angle_arc(ax, E, A, D, radius=0.65, color="#1d4ed8")
+
+        # Angle labels: 50° at apex A, 80° at D, k at E
+        ax.text(3.38, 2.92, "50°", fontsize=12, fontweight="bold", ha="center", color="#111827")
+        ax.text(5.28, 1.38, "80°", fontsize=12, fontweight="bold", ha="left", color="#111827")
+        ax.text(7.55, 3.22, "k", fontsize=13, fontweight="bold", ha="center", color="#111827")
 
         fig.savefig(buf, format="png", dpi=150, bbox_inches="tight")
         plt.close(fig)
@@ -916,14 +987,14 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
             "topic": "Lines, Angles & Parallel Lines",
             "marks": 3,
             "question": "4– Given the diagram below, find the value of k.",
-            "options": ["50°", "100°", "80°", "130°"],
-            "ans": "80°",
-            "explanation": "The triangle has base angles 50° and 50°, giving apex angle 180° - 100° = 80°; alternate interior angles on parallel lines give k = 80°.",
+            "options": ["15°", "30°", "50°", "65°"],
+            "ans": "15°",
+            "explanation": "Isosceles base angles = (180° - 50°)/2 = 65°; alternate interior angle on top parallel line = 65°; adjacent angle to 80° = 100°; so k = 180° - (65° + 100°) = 15°.",
             "step_by_step": [
-                "Line 1 — Notice the two equal sides (marked with dashes) form an isosceles triangle with base angles of 50° each.",
-                "Line 2 — Find the top angle of the triangle: 180° - (50° + 50°) = 80°.",
-                "Line 3 — Along the straight line/transversal, the angle adjacent to 80° is 180° - 80° = 100°.",
-                "Line 4 — Between the top and bottom parallel lines, angle k is alternate to the 80° angle on the slanted line, so k = 80°.",
+                "Line 1 — The double tick marks (||) show an isosceles triangle with apex angle 50°, so each base angle on the bottom line is (180° - 50°) ÷ 2 = 65°.",
+                "Line 2 — Because the top and bottom lines are parallel, the top-left interior angle inside the upper triangle is alternate interior to the 65° base angle, so it equals 65°.",
+                "Line 3 — On the straight right side of the triangle, the interior angle adjacent to 80° is 180° - 80° = 100°.",
+                "Line 4 — Sum of angles in the upper triangle is 180°: k = 180° - (65° + 100°) = 180° - 165° = 15°.",
             ],
             "diagram_type": "p7_q04_angles",
         },
@@ -1933,14 +2004,4 @@ def main() -> None:
                 st.dataframe(records_df, use_container_width=True, hide_index=True)
                 csv_bytes = records_df.to_csv(index=False).encode("utf-8")
                 st.download_button(
-                    label="Download Quiz Results (CSV)",
-                    data=csv_bytes,
-                    file_name="ilearn_uganda_quiz_results.csv",
-                    mime="text/csv",
-                )
-
-        st.markdown("</div>", unsafe_allow_html=True)
-
-
-if __name__ == "__main__":
-    main()
+                    label="Download Quiz Results (
