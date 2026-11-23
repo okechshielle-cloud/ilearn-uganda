@@ -1591,6 +1591,8 @@ def _apply_syllabus_preset_to_lesson_plan(cls_code: str) -> None:
     st.session_state["lp_sub_topic"] = sub_topics[0] if sub_topics else ""
     st.session_state["lp_subject_comp"] = f"• {item.get('learning_outcomes', '')}"
     st.session_state["lp_language_comp"] = "• Uses key mathematical terms accurately in oral discussion, explanations, and written work."
+    st.session_state["lp_alt_subject_comp"] = ""
+    st.session_state["lp_alt_language_comp"] = ""
     st.session_state["lp_method_1"] = "Guided discovery"
     st.session_state["lp_method_2"] = "Brainstorming"
     st.session_state["lp_material_1"] = aids[0] if len(aids) > 0 else "Chalkboard illustration"
@@ -1600,8 +1602,31 @@ def _apply_syllabus_preset_to_lesson_plan(cls_code: str) -> None:
     st.session_state["lp_skill_c"] = skills[2] if len(skills) > 2 else "Problem solving"
 
 
+def _format_competence_block(main_text: str, alt_text: str) -> str:
+    main_clean = (main_text or "").strip()
+    alt_clean = (alt_text or "").strip()
+    if main_clean and alt_clean:
+        return f"{main_clean}\n*Alternative Competence:* {alt_clean}"
+    if alt_clean:
+        return f"*Alternative Competence:* {alt_clean}"
+    return main_clean
+
+
+def _format_competence_html(main_text: str, alt_text: str) -> str:
+    main_clean = (main_text or "").strip().replace("\n", "<br>")
+    alt_clean = (alt_text or "").strip().replace("\n", "<br>")
+    parts: List[str] = []
+    if main_clean:
+        parts.append(main_clean)
+    if alt_clean:
+        parts.append(f"<div style='margin-top:6px;'><em>Alternative Competence:</em><br>{alt_clean}</div>")
+    return "".join(parts)
+
+
 def _build_lesson_plan_markdown(data: Dict[str, Any]) -> str:
     steps = data["steps"]
+    subj_md = _format_competence_block(data["subject_comp"], data["alt_subject_comp"]).replace("\n", "<br>")
+    lang_md = _format_competence_block(data["language_comp"], data["alt_language_comp"]).replace("\n", "<br>")
     return f"""**SCHOOL NAME:** {data['school_name']}
 **ADDRESS/LOCATION:** {data['address_location']}
 
@@ -1619,7 +1644,7 @@ def _build_lesson_plan_markdown(data: Dict[str, Any]) -> str:
 
 | SUBJECT | LANGUAGE |
 | :--- | :--- |
-| The learner;<br>{data['subject_comp'].replace(chr(10), '<br>')} | The learner;<br>{data['language_comp'].replace(chr(10), '<br>')} |
+| The learner;<br>{subj_md} | The learner;<br>{lang_md} |
 
 **METHODS AND APPROACHES**
 i. {data['method_1']} &nbsp;&nbsp;&nbsp;&nbsp; ii. {data['method_2']}
@@ -1655,8 +1680,8 @@ c) {data['skill_c']}
 
 def _build_lesson_plan_printable_html(data: Dict[str, Any]) -> str:
     steps = data["steps"]
-    subj_html = data["subject_comp"].replace("\n", "<br>")
-    lang_html = data["language_comp"].replace("\n", "<br>")
+    subj_html = _format_competence_html(data["subject_comp"], data["alt_subject_comp"])
+    lang_html = _format_competence_html(data["language_comp"], data["alt_language_comp"])
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1764,13 +1789,15 @@ def init_state() -> None:
     st.session_state.setdefault("lp_date", datetime.now().strftime("%d/%m/%Y"))
     st.session_state.setdefault("lp_class", "P5")
     st.session_state.setdefault("lp_subject_la", "MATHEMATICS")
-    st.session_state.setdefault("lp_time", "40 min")
+    st.session_state.setdefault("lp_time", "")
     st.session_state.setdefault("lp_num_learners", "")
     st.session_state.setdefault("lp_theme", "")
     st.session_state.setdefault("lp_topic", "")
     st.session_state.setdefault("lp_sub_topic", "")
     st.session_state.setdefault("lp_subject_comp", "")
     st.session_state.setdefault("lp_language_comp", "")
+    st.session_state.setdefault("lp_alt_subject_comp", "")
+    st.session_state.setdefault("lp_alt_language_comp", "")
     st.session_state.setdefault("lp_method_1", "")
     st.session_state.setdefault("lp_method_2", "")
     st.session_state.setdefault("lp_material_1", "")
@@ -2258,7 +2285,7 @@ def main() -> None:
             with g_col3:
                 lp_subject_la = st.text_input("SUBJECT/LA", key="lp_subject_la")
             with g_col4:
-                lp_time = st.text_input("TIME", key="lp_time", placeholder="e.g. 40 min / 1 hr")
+                lp_time = st.text_input("TIME", key="lp_time", placeholder="Enter lesson duration")
             with g_col5:
                 lp_num_learners = st.text_input("NUMBER OF LEARNERS", key="lp_num_learners", placeholder="e.g. 36")
 
@@ -2266,23 +2293,35 @@ def main() -> None:
             st.text_input("TOPIC", key="lp_topic")
             st.text_input("SUB-TOPIC (THEME)", key="lp_sub_topic")
 
-            st.markdown("#### 2. Competences")
+            st.markdown("#### 2. Competences & Alternative Competences")
             c_comp1, c_comp2 = st.columns(2)
             with c_comp1:
                 st.markdown("**SUBJECT** — *The learner;*")
                 lp_subject_comp = st.text_area(
                     "Subject competence details",
                     key="lp_subject_comp",
-                    height=95,
+                    height=85,
                     label_visibility="collapsed",
+                )
+                lp_alt_subject_comp = st.text_area(
+                    "Alternative Subject Competence (optional)",
+                    key="lp_alt_subject_comp",
+                    height=75,
+                    placeholder="Enter alternative subject competence if needed",
                 )
             with c_comp2:
                 st.markdown("**LANGUAGE** — *The learner;*")
                 lp_language_comp = st.text_area(
                     "Language competence details",
                     key="lp_language_comp",
-                    height=95,
+                    height=85,
                     label_visibility="collapsed",
+                )
+                lp_alt_language_comp = st.text_area(
+                    "Alternative Language Competence (optional)",
+                    key="lp_alt_language_comp",
+                    height=75,
+                    placeholder="Enter alternative language competence if needed",
                 )
 
             st.markdown("#### 3. Methods, Materials & Life Skills")
@@ -2319,7 +2358,7 @@ def main() -> None:
                 with sc1:
                     st.markdown(f"<div style='padding-top:1.7rem; font-weight:700;'>{step_roman}</div>", unsafe_allow_html=True)
                 with sc2:
-                    t_val = st.text_input("Time", key=k_time, placeholder="min")
+                    t_val = st.text_input("Time", key=k_time, placeholder="")
                 with sc3:
                     te_val = st.text_input("Teacher's activities", key=k_teach)
                 with sc4:
@@ -2354,6 +2393,8 @@ def main() -> None:
                 "sub_topic": st.session_state.get("lp_sub_topic", ""),
                 "subject_comp": lp_subject_comp,
                 "language_comp": lp_language_comp,
+                "alt_subject_comp": lp_alt_subject_comp,
+                "alt_language_comp": lp_alt_language_comp,
                 "method_1": lp_method_1,
                 "method_2": lp_method_2,
                 "material_1": lp_material_1,
@@ -2372,8 +2413,8 @@ def main() -> None:
             st.divider()
             st.markdown("#### 6. Clean Sheet Preview & Export")
 
-            subj_preview_html = plan_data["subject_comp"].replace("\n", "<br>")
-            lang_preview_html = plan_data["language_comp"].replace("\n", "<br>")
+            subj_preview_html = _format_competence_html(plan_data["subject_comp"], plan_data["alt_subject_comp"])
+            lang_preview_html = _format_competence_html(plan_data["language_comp"], plan_data["alt_language_comp"])
             preview_html = f"""
             <div class="lp-clean-sheet">
                 <div><strong>SCHOOL NAME:</strong> {plan_data['school_name']}</div>
