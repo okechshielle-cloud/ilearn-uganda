@@ -171,6 +171,79 @@ def get_diagram_png(diagram_type: Optional[str]) -> Optional[bytes]:
         plt.close(fig)
         return buf.getvalue()
 
+    if diagram_type == "p7_q04_angles":
+        fig, ax = plt.subplots(figsize=(6.2, 3.8))
+        ax.set_xlim(-1.5, 10.5)
+        ax.set_ylim(-1.2, 5.2)
+        ax.axis("off")
+
+        ax.plot([-1.0, 10.0], [4.0, 4.0], color="black", linewidth=2)
+        ax.plot([-1.0, 10.0], [0.0, 0.0], color="black", linewidth=2)
+
+        ax.plot([0.2, 3.6], [0.0, 4.0], color="black", linewidth=2)
+        ax.plot([3.6, 5.4], [4.0, 0.0], color="black", linewidth=2)
+        ax.plot([2.2, 7.6], [0.0, 4.0], color="black", linewidth=2)
+
+        ax.plot([1.75, 2.05], [1.85, 2.10], color="black", linewidth=1.5)
+        ax.plot([4.35, 4.65], [2.10, 1.85], color="black", linewidth=1.5)
+
+        ax.text(1.45, 0.55, "50°", fontsize=12, fontweight="bold")
+        ax.text(4.75, 0.55, "80°", fontsize=12, fontweight="bold")
+        ax.text(6.65, 3.35, "k", fontsize=13, fontweight="bold")
+
+        fig.savefig(buf, format="png", dpi=150, bbox_inches="tight")
+        plt.close(fig)
+        return buf.getvalue()
+
+    if diagram_type == "p7_q06_number_line":
+        fig, ax = plt.subplots(figsize=(6.8, 1.8))
+        ax.set_xlim(-5.0, 4.0)
+        ax.set_ylim(-0.8, 1.2)
+        ax.axis("off")
+
+        ax.annotate("", xy=(3.7, 0), xytext=(-4.7, 0), arrowprops=dict(arrowstyle="<->", lw=1.8, color="black"))
+        for x in range(-4, 4):
+            ax.plot([x, x], [-0.15, 0.15], color="black", lw=1.5)
+            lbl = f"+{x}" if x > 0 else str(x)
+            ax.text(x, -0.45, lbl, fontsize=11, ha="center", fontweight="bold")
+
+        circle_neg2 = patches.Circle((-2, 0), 0.26, linewidth=2, edgecolor="#b91c1c", facecolor="#fee2e2")
+        ax.add_patch(circle_neg2)
+        ax.annotate("", xy=(-2, 0.32), xytext=(1, 0.55), arrowprops=dict(arrowstyle="->", lw=1.5, color="#0b6e3f", connectionstyle="arc3,rad=-0.2"))
+        ax.text(-0.5, 0.72, "3 steps left (+1 → -2)", fontsize=10, ha="center", fontweight="bold", color="#0b6e3f")
+
+        fig.savefig(buf, format="png", dpi=150, bbox_inches="tight")
+        plt.close(fig)
+        return buf.getvalue()
+
+    if diagram_type == "p7_q09_venn":
+        fig, ax = plt.subplots(figsize=(5.8, 4.2))
+        ax.set_xlim(0, 10)
+        ax.set_ylim(0, 7.2)
+        ax.set_aspect("equal")
+        ax.axis("off")
+
+        univ = patches.Rectangle((0.8, 0.6), 8.4, 5.6, linewidth=2, edgecolor="black", facecolor="white")
+        ax.add_patch(univ)
+        ax.text(5.0, 6.45, "n(ε)", fontsize=13, fontweight="bold", ha="center")
+
+        circle_a = patches.Circle((4.0, 3.4), 1.9, linewidth=2, edgecolor="black", facecolor="none")
+        circle_b = patches.Circle((6.0, 3.4), 1.9, linewidth=2, edgecolor="black", facecolor="none")
+        ax.add_patch(circle_a)
+        ax.add_patch(circle_b)
+
+        ax.text(3.3, 5.45, "n(A)", fontsize=12, fontweight="bold", ha="center")
+        ax.text(6.7, 5.45, "n(B)", fontsize=12, fontweight="bold", ha="center")
+
+        ax.text(3.0, 3.4, "4", fontsize=13, fontweight="bold", ha="center", va="center")
+        ax.text(5.0, 3.4, "3", fontsize=13, fontweight="bold", ha="center", va="center")
+        ax.text(7.0, 3.4, "5", fontsize=13, fontweight="bold", ha="center", va="center")
+        ax.text(8.3, 1.15, "4", fontsize=13, fontweight="bold", ha="center", va="center")
+
+        fig.savefig(buf, format="png", dpi=150, bbox_inches="tight")
+        plt.close(fig)
+        return buf.getvalue()
+
     return None
 
 
@@ -289,13 +362,19 @@ NCDC_MATH_CURRICULUM: Dict[str, List[Dict[str, Any]]] = {
     "P7": [
         {
             "curriculum_type": "Subject-Based Syllabus (PLE Consolidation)",
-            "theme": "Geometry, Measurement & Algebra",
-            "topic": "Bearings, Speed-Distance-Time, Volume & Equations",
+            "theme": "Sets, Numeracy, Geometry & Data Handling",
+            "topic": "Standard Form, Direct Proportion, Ratios, Integers, GCF, Mean, Venn Subsets & Base Five",
             "periods": 30,
-            "sub_topics": ["Scale drawing and bearings", "Speed, distance, and time", "Volume and equations"],
-            "learning_outcomes": "Learner consolidates upper-primary mathematics for PLE readiness.",
-            "learning_aids": ["Mathematical set", "3D nets", "Past papers"],
-            "life_skills_values": ["Critical thinking", "Self-reliance"],
+            "sub_topics": [
+                "Simplification and standard (scientific) form",
+                "Direct proportion and unitary cost",
+                "Angles in triangles, straight lines, and parallel lines",
+                "Ratios, fractions of a group, and additive inverses on number lines",
+                "Greatest Common Factor (GCF), mean equations, Venn subsets, and base-five arithmetic",
+            ],
+            "learning_outcomes": "Learner consolidates upper-primary mathematics for PLE readiness with accurate set, base, integer, and proportional reasoning.",
+            "learning_aids": ["Mathematical set", "Number line cards", "Venn & base-five charts"],
+            "life_skills_values": ["Critical thinking", "Accuracy", "Self-reliance"],
         }
     ],
 }
@@ -787,32 +866,196 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
     ],
     "P7": [
         {
-            "id": "p7_1",
-            "topic": "Speed, Distance & Time",
-            "marks": 2,
-            "question": "1– A car travels 180 km in 3 hours. Find its average speed.",
-            "options": ["50 km/h", "90 km/h", "540 km/h", "60 km/h"],
-            "ans": "60 km/h",
-            "explanation": "Speed = Distance ÷ Time = 180 km ÷ 3 hr = 60 km/h.",
+            "id": "p7_q01_simplify",
+            "topic": "Whole Numbers & Operations",
+            "marks": 1,
+            "question": "1– Simplify: 3 × 5.",
+            "options": ["8", "15", "35", "12"],
+            "ans": "15",
+            "explanation": "3 × 5 = 15.",
             "step_by_step": [
-                "Line 1 — Identify Distance = 180 km and Time = 3 hours.",
-                "Line 2 — Apply the formula: Average Speed = Distance ÷ Time.",
-                "Line 3 — Divide: 180 ÷ 3 = 60 km/h.",
+                "Line 1 — Identify the multiplication operation: 3 × 5.",
+                "Line 2 — Add 5 three times (or count by 5s three steps): 5 + 5 + 5 = 15.",
+                "Line 3 — The simplified product is 15.",
             ],
             "diagram_type": None,
         },
         {
-            "id": "p7_2",
-            "topic": "Algebra",
+            "id": "p7_q02_standard_form",
+            "topic": "Standard Form (Scientific Notation)",
             "marks": 2,
-            "question": "2– Solve for x: 2x + 6 = 18.",
-            "options": ["12", "6", "9", "3"],
-            "ans": "6",
-            "explanation": "2x = 18 - 6 = 12 -> x = 6.",
+            "question": "2– Write 3.45 in standard form.",
+            "options": ["3.45 × 10¹", "3.45 × 10⁰", "34.5 × 10⁻¹", "3.45 × 10⁻²"],
+            "ans": "3.45 × 10⁰",
+            "explanation": "Since 3.45 is already between 1 and 10, moving the decimal point 0 places gives 3.45 × 10⁰.",
             "step_by_step": [
-                "Line 1 — Start with the equation: 2x + 6 = 18.",
-                "Line 2 — Subtract 6 from both sides: 2x = 18 - 6 = 12.",
-                "Line 3 — Divide both sides by 2: x = 12 ÷ 2 = 6.",
+                "Line 1 — Standard form requires a number A × 10^n where 1 ≤ A < 10 and n is an integer.",
+                "Line 2 — Check 3.45: it already lies between 1 and 10 (1 ≤ 3.45 < 10).",
+                "Line 3 — Since 0 decimal shifts are needed, n = 0, giving 3.45 × 10⁰ (and 10⁰ = 1).",
+            ],
+            "diagram_type": None,
+        },
+        {
+            "id": "p7_q03_soap_cost",
+            "topic": "Fractions & Direct Proportion",
+            "marks": 3,
+            "question": "3– Given that 2½ bars of soap cost sh 10,000, find the cost of 8 similar bars of soap.",
+            "options": ["sh 25,000", "sh 32,000", "sh 80,000", "sh 20,000"],
+            "ans": "sh 32,000",
+            "explanation": "2½ = 5/2 bars cost sh 10,000 -> 1 bar = sh 10,000 × 2/5 = sh 4,000 -> 8 bars = 8 × sh 4,000 = sh 32,000.",
+            "step_by_step": [
+                "Line 1 — Convert the mixed fraction 2½ into an improper fraction: 2½ = (2 × 2 + 1)/2 = 5/2 bars.",
+                "Line 2 — Find the unit cost of 1 bar of soap: sh 10,000 ÷ (5/2) = sh 10,000 × (2/5).",
+                "Line 3 — Simplify: sh 10,000 ÷ 5 = sh 2,000; then sh 2,000 × 2 = sh 4,000 per bar.",
+                "Line 4 — Multiply unit cost by 8 bars: 8 × sh 4,000 = sh 32,000.",
+            ],
+            "diagram_type": None,
+        },
+        {
+            "id": "p7_q04_angles_k",
+            "topic": "Lines, Angles & Parallel Lines",
+            "marks": 3,
+            "question": "4– Given the diagram below, find the value of k.",
+            "options": ["50°", "100°", "80°", "130°"],
+            "ans": "80°",
+            "explanation": "The triangle has base angles 50° and 50°, giving apex angle 180° - 100° = 80°; alternate interior angles on parallel lines give k = 80°.",
+            "step_by_step": [
+                "Line 1 — Notice the two equal sides (marked with dashes) form an isosceles triangle with base angles of 50° each.",
+                "Line 2 — Find the top angle of the triangle: 180° - (50° + 50°) = 80°.",
+                "Line 3 — Along the straight line/transversal, the angle adjacent to 80° is 180° - 80° = 100°.",
+                "Line 4 — Between the top and bottom parallel lines, angle k is alternate to the 80° angle on the slanted line, so k = 80°.",
+            ],
+            "diagram_type": "p7_q04_angles",
+        },
+        {
+            "id": "p7_q05_ratio_day_boys",
+            "topic": "Ratios & Fractions",
+            "marks": 4,
+            "question": (
+                "5– In P.6 class, the ratio of boys to girls is 2:3. If there are 600 pupils in the class "
+                "and 2/3 of the boys are in boarding section, find the number of boys in day section."
+            ),
+            "options": ["240 boys", "160 boys", "80 boys", "360 boys"],
+            "ans": "80 boys",
+            "explanation": "Total boys = (2/5) × 600 = 240; boarding boys = (2/3) × 240 = 160; day boys = 240 - 160 = 80.",
+            "step_by_step": [
+                "Line 1 — Find the total ratio parts for boys : girls = 2 : 3 -> 2 + 3 = 5 parts.",
+                "Line 2 — Find the fraction of boys in the class: 2/5.",
+                "Line 3 — Calculate total boys: (2/5) × 600 = 2 × 120 = 240 boys.",
+                "Line 4 — Calculate boys in the boarding section: (2/3) × 240 = 2 × 80 = 160 boys.",
+                "Line 5 — Subtract boarding boys from total boys to get day boys: 240 - 160 = 80 boys.",
+            ],
+            "diagram_type": None,
+        },
+        {
+            "id": "p7_q06_additive_inverse",
+            "topic": "Integers & Number Lines",
+            "marks": 2,
+            "question": "6– Work out the additive inverse of the integer which is 3 steps to the left of +1.",
+            "options": ["-2", "+2", "-4", "+4"],
+            "ans": "+2",
+            "explanation": "Moving 3 steps left from +1 lands on -2; the additive inverse of -2 is +2 since (-2) + (+2) = 0.",
+            "step_by_step": [
+                "Line 1 — Start at +1 on the number line and move 3 steps to the left: +1 -> 0 -> -1 -> -2.",
+                "Line 2 — Identify the integer reached: -2.",
+                "Line 3 — Let n be the additive inverse of -2 such that n + (-2) = 0 -> n - 2 = 0.",
+                "Line 4 — Add 2 to both sides: n = +2.",
+            ],
+            "diagram_type": "p7_q06_number_line",
+        },
+        {
+            "id": "p7_q07a_gcf_group",
+            "topic": "Factors & Multiples (GCF)",
+            "marks": 2,
+            "question": (
+                "7– (a) Andrew sells fruits from his farm in groups. One Monday, he sold Mango and Guava "
+                "in a maximum same number of fruits in a group without left over. If he had 240 mangoes "
+                "and 180 guava, what is the maximum group size (GCF)?"
+            ),
+            "options": ["12", "60", "720", "30"],
+            "ans": "60",
+            "explanation": "GCF(240, 180) = 2 × 2 × 3 × 5 = 60.",
+            "step_by_step": [
+                "Line 1 — Find common prime factors of 240 and 180 by repeated division: divide by 2 -> (120, 90); by 2 -> (60, 45); by 3 -> (20, 15); by 5 -> (4, 3).",
+                "Line 2 — Multiply the common prime divisors: 2 × 2 × 3 × 5 = 60.",
+                "Line 3 — Correction note: 60 is the GCF (maximum equal group size); once divided by 60, each group has 4 mangoes and 3 guavas.",
+            ],
+            "diagram_type": None,
+        },
+        {
+            "id": "p7_q07b_each_type_in_group",
+            "topic": "Factors & Multiples (GCF)",
+            "marks": 2,
+            "question": (
+                "7– (b) Using the maximum group size of 60 from 240 mangoes and 180 guavas, how many "
+                "mangoes and guavas respectively are in each group?"
+            ),
+            "options": [
+                "60 mangoes and 60 guavas",
+                "4 mangoes and 3 guavas",
+                "3 mangoes and 4 guavas",
+                "24 mangoes and 18 guavas",
+            ],
+            "ans": "4 mangoes and 3 guavas",
+            "explanation": "240 ÷ 60 = 4 mangoes and 180 ÷ 60 = 3 guavas in each group.",
+            "step_by_step": [
+                "Line 1 — Correction note: GCF = 60 gives the maximum equal group factor, while dividing each fruit count by 60 gives how many of each type are in a group.",
+                "Line 2 — Mangoes per group: 240 ÷ 60 = 4 mangoes (also the remaining quotient 4 in the GCF table).",
+                "Line 3 — Guavas per group: 180 ÷ 60 = 3 guavas (also the remaining quotient 3 in the GCF table).",
+            ],
+            "diagram_type": None,
+        },
+        {
+            "id": "p7_q08_mean_m",
+            "topic": "Statistics & Mean",
+            "marks": 3,
+            "question": "8– Given that the mean of 2m + 10, 30, 40, 40, and 10 is 30, find the value of m.",
+            "options": ["5", "10", "20", "15"],
+            "ans": "10",
+            "explanation": "Total sum = 5 × 30 = 150; 2m + 130 = 150 -> 2m = 20 -> m = 10.",
+            "step_by_step": [
+                "Line 1 — Count the 5 values and find their total sum using Mean = Sum ÷ Count: Sum = 5 × 30 = 150.",
+                "Line 2 — Add the constant terms: 10 + 30 + 40 + 40 + 10 = 130.",
+                "Line 3 — Form the equation: 2m + 130 = 150.",
+                "Line 4 — Subtract 130 from both sides: 2m = 20, then divide by 2 to get m = 10.",
+            ],
+            "diagram_type": None,
+        },
+        {
+            "id": "p7_q09_venn_subsets",
+            "topic": "Set Concepts & Subsets",
+            "marks": 3,
+            "question": (
+                "9– Use the Venn diagram below to find the number of subsets in set (A ∪ B)' "
+                "if values represented in the Venn diagram show number of elements."
+            ),
+            "options": ["8 subsets", "16 subsets", "4,096 subsets", "256 subsets"],
+            "ans": "16 subsets",
+            "explanation": "Correction note: n(A ∪ B) = 4 + 3 + 5 = 12 (not 4), while n((A ∪ B)') = 4, giving 2⁴ = 16 subsets.",
+            "step_by_step": [
+                "Line 1 — Read region counts from the Venn diagram: only A = 4, A ∩ B = 3, only B = 5, and outside (A ∪ B)' = 4.",
+                "Line 2 — Correction note: n(A ∪ B) = 4 + 3 + 5 = 12 elements (writing n(A ∪ B) = 4 in the working is a mislabeling).",
+                "Line 3 — The number of elements in (A ∪ B)' is n((A ∪ B)') = 4.",
+                "Line 4 — Apply Number of subsets = 2^n: 2⁴ = 2 × 2 × 2 × 2 = 16 subsets.",
+            ],
+            "diagram_type": "p7_q09_venn",
+        },
+        {
+            "id": "p7_q10_base_five_addition",
+            "topic": "Number Bases (Base Five)",
+            "marks": 3,
+            "question": (
+                "10– Work out in base five: (131_five) + (2□3_five) = (□2□_five). "
+                "Find the missing digits in order: (middle addend □, leftmost answer □, rightmost answer □)."
+            ),
+            "options": ["4, 4, 4", "1, 3, 4", "4, 3, 4", "2, 4, 4"],
+            "ans": "4, 4, 4",
+            "explanation": "In base five: 1 + 3 = 4; 3 + 4 = 7_ten = 12_five (write 2, carry 1); 1 + 2 + 1 = 4 -> digits are 4, 4, 4.",
+            "step_by_step": [
+                "Line 1 — Ones place (rightmost): 1 + 3 = 4_five (< 5), so the rightmost missing digit is 4 with 0 carried.",
+                "Line 2 — Fives place (middle): 3 + □ gives middle digit 2, meaning 3 + □ = 7_ten (12_five), so middle addend digit is 4 and 1 is carried.",
+                "Line 3 — Twenty-fives place (leftmost): 1 + 2 + 1 (carried) = 4_five, so leftmost answer digit is 4.",
+                "Line 4 — Completed sum: 131_five + 243_five = 424_five; missing digits are 4, 4, 4.",
             ],
             "diagram_type": None,
         },
@@ -1202,7 +1445,7 @@ def build_leaderboard(
 def init_state() -> None:
     st.session_state.setdefault("quiz_score", {"attempted": 0, "correct": 0, "marks": 0})
     st.session_state.setdefault("answered_ids", set())
-    st.session_state.setdefault("selected_class", "P6")
+    st.session_state.setdefault("selected_class", "P7")
     st.session_state.setdefault("active_tab", "Take Quiz")
     st.session_state.setdefault("pupil_info", {"name": "", "school": "", "district": "Kampala"})
     st.session_state.setdefault("attempt_records", [])
@@ -1323,7 +1566,7 @@ def main() -> None:
 
     class_list = list(QUIZ_BANK.keys())
     if st.session_state.get("selected_class") not in class_list:
-        st.session_state["selected_class"] = "P6"
+        st.session_state["selected_class"] = "P7"
 
     logo_kind, logo_val = get_logo_source()
     left_bar_col, header_col = st.columns([1.6, 5.4])
@@ -1423,7 +1666,7 @@ def main() -> None:
             selected_class = st.selectbox(
                 "Select Class",
                 class_list,
-                index=class_list.index(st.session_state.get("selected_class", "P6")),
+                index=class_list.index(st.session_state.get("selected_class", "P7")),
                 key="selected_class",
                 help="Choose P1 through P7 to load that class's mathematics quiz.",
             )
@@ -1554,7 +1797,7 @@ def main() -> None:
                         render_line_by_line_explanation(rec, correct_ans=item["ans"])
 
         elif active_tab == "NCDC Syllabus":
-            active_cls = st.session_state.get("selected_class", "P6")
+            active_cls = st.session_state.get("selected_class", "P7")
             st.subheader(f"{active_cls} Syllabus Overview")
             for topic_row in NCDC_MATH_CURRICULUM.get(active_cls, []):
                 with st.expander(f"{topic_row['topic']} ({topic_row['periods']} periods)", expanded=True):
