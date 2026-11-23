@@ -451,7 +451,7 @@ NCDC_MATH_CURRICULUM: Dict[str, List[Dict[str, Any]]] = {
 
 
 # ==============================================================================
-# 3. QUIZ BANK (ALL CLASSES P1–P7, WITH LINE-BY-LINE DETAILED EXPLANATIONS)
+# 3. QUIZ BANK (ALL CLASSES P1–P7, ANSWERS DISTRIBUTED ACROSS A, B, C, D)
 # ==============================================================================
 
 QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
@@ -461,7 +461,7 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
             "topic": "Counting",
             "marks": 1,
             "question": "1– Add: 5 + 3 = ?",
-            "options": ["7", "8", "9", "6"],
+            "options": ["7", "9", "8", "6"],  # C
             "ans": "8",
             "explanation": "5 + 3 = 8.",
             "step_by_step": [
@@ -477,7 +477,7 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
             "topic": "Number Recognition",
             "marks": 1,
             "question": "2– Which number comes right after 14?",
-            "options": ["13", "16", "15", "12"],
+            "options": ["15", "16", "13", "12"],  # A
             "ans": "15",
             "explanation": "Counting in ones: 13, 14, 15.",
             "step_by_step": [
@@ -495,7 +495,7 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
             "topic": "Place Value",
             "marks": 1,
             "question": "1– What is the place value of 4 in 428?",
-            "options": ["Ones", "Tens", "Hundreds", "Thousands"],
+            "options": ["Ones", "Tens", "Thousands", "Hundreds"],  # D
             "ans": "Hundreds",
             "explanation": "In 428, 4 is in the Hundreds position.",
             "step_by_step": [
@@ -511,7 +511,7 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
             "topic": "Addition",
             "marks": 1,
             "question": "2– Work out: 145 + 32.",
-            "options": ["167", "187", "177", "157"],
+            "options": ["167", "177", "187", "157"],  # B
             "ans": "177",
             "explanation": "145 + 32 = 177.",
             "step_by_step": [
@@ -530,7 +530,7 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
             "topic": "Division",
             "marks": 1,
             "question": "1– 24 mangoes shared equally among 4 pupils gives how many each?",
-            "options": ["5", "8", "4", "6"],
+            "options": ["5", "8", "4", "6"],  # D
             "ans": "6",
             "explanation": "24 ÷ 4 = 6 mangoes each.",
             "step_by_step": [
@@ -546,7 +546,7 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
             "topic": "Fractions",
             "marks": 1,
             "question": "2– Which fraction represents one quarter?",
-            "options": ["1/2", "1/4", "3/4", "1/3"],
+            "options": ["1/2", "3/4", "1/4", "1/3"],  # C
             "ans": "1/4",
             "explanation": "One quarter means 1 out of 4 equal parts, written as 1/4.",
             "step_by_step": [
@@ -564,7 +564,7 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
             "topic": "Sets",
             "marks": 1,
             "question": "1– Given A = {1, 2, 3} and B = {2, 3, 4}, find A ∩ B.",
-            "options": ["{1}", "{2, 3}", "{4}", "{1, 2, 3, 4}"],
+            "options": ["{1}", "{4}", "{2, 3}", "{1, 2, 3, 4}"],  # C
             "ans": "{2, 3}",
             "explanation": "The elements common to both sets A and B are 2 and 3.",
             "step_by_step": [
@@ -580,7 +580,7 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
             "topic": "Roman Numerals",
             "marks": 1,
             "question": "2– Write XXIV in Hindu-Arabic numerals.",
-            "options": ["26", "16", "24", "34"],
+            "options": ["24", "16", "34", "26"],  # A
             "ans": "24",
             "explanation": "XX = 20 and IV = 4, so XXIV = 24.",
             "step_by_step": [
@@ -598,7 +598,7 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
             "topic": "Factors & Multiples",
             "marks": 1,
             "question": "1– Find the Lowest Common Multiple (LCM) of 6 and 8.",
-            "options": ["12", "48", "24", "2"],
+            "options": ["12", "48", "24", "2"],  # C
             "ans": "24",
             "explanation": "Multiples of 6: 6, 12, 18, 24... Multiples of 8: 8, 16, 24... Smallest common is 24.",
             "step_by_step": [
@@ -614,7 +614,7 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
             "topic": "Measurement",
             "marks": 2,
             "question": "2– Find the area of a rectangle measuring 9 cm by 4 cm.",
-            "options": ["26 sq cm", "13 sq cm", "36 sq cm", "18 sq cm"],
+            "options": ["26 sq cm", "13 sq cm", "18 sq cm", "36 sq cm"],  # D
             "ans": "36 sq cm",
             "explanation": "Area = length × width = 9 cm × 4 cm = 36 sq cm.",
             "step_by_step": [
@@ -632,7 +632,7 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
             "topic": "Set Concepts",
             "marks": 2,
             "question": "1– Given that the Venn diagram below, list elements of set (B–A)'.",
-            "options": ["{b, c}", "{e, f, a, i, g}", "{a, i}", "{e, f, g}"],
+            "options": ["{b, c}", "{a, i}", "{e, f, a, i, g}", "{e, f, g}"],  # C
             "ans": "{e, f, a, i, g}",
             "explanation": "B - A = {b, c}, so (B - A)' includes all elements in universal set E outside {b, c}.",
             "step_by_step": [
@@ -648,7 +648,7 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
             "topic": "Whole Numbers & Numerals",
             "marks": 2,
             "question": "2– Write CIX in Hindu Arabic numeral.",
-            "options": ["111", "99", "109", "119"],
+            "options": ["109", "99", "111", "119"],  # A
             "ans": "109",
             "explanation": "C = 100 and IX = 9, so CIX = 100 + 9 = 109.",
             "step_by_step": [
@@ -664,7 +664,7 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
             "topic": "Number Bases",
             "marks": 2,
             "question": "3– Given that 21_n = 11_ten. find the base represented by n.",
-            "options": ["Base six", "Base four", "Base eight", "Base five"],
+            "options": ["Base six", "Base four", "Base eight", "Base five"],  # D
             "ans": "Base five",
             "explanation": "2n + 1 = 11 -> 2n = 10 -> n = 5 (base five).",
             "step_by_step": [
@@ -681,7 +681,7 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
             "topic": "Factors & Multiples",
             "marks": 2,
             "question": "4– If Q = 2² × 3² and P = 2 × 3 × 5. find the Greatest Common Factor (G.C.F) of Q and P.",
-            "options": ["6", "18", "180", "30"],
+            "options": ["18", "6", "180", "30"],  # B
             "ans": "6",
             "explanation": "Common prime factors with the lowest powers give 2¹ × 3¹ = 6.",
             "step_by_step": [
@@ -700,7 +700,7 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
                 "5– In a class of 48 pupils who attended a birthday party, 50% of the pupils ate "
                 "Matooke, 3/8 ate Rice and the rest ate Posho. (i) Find the fraction of pupils who ate Posho."
             ),
-            "options": ["3/8", "1/8", "1/2", "7/8"],
+            "options": ["3/8", "1/2", "7/8", "1/8"],  # D
             "ans": "1/8",
             "explanation": "50% = 4/8; 4/8 + 3/8 = 7/8; remaining fraction for Posho = 1 - 7/8 = 1/8.",
             "step_by_step": [
@@ -719,7 +719,7 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
                 "5– In a class of 48 pupils who attended a birthday party, 50% of the pupils ate "
                 "Matooke, 3/8 ate Rice and the rest ate Posho. (ii) How many more pupils ate Matooke than Posho?"
             ),
-            "options": ["6", "24", "18", "42"],
+            "options": ["6", "24", "18", "42"],  # C
             "ans": "18",
             "explanation": "Matooke = 50% of 48 = 24 pupils; Posho = 1/8 of 48 = 6 pupils; difference = 24 - 6 = 18.",
             "step_by_step": [
@@ -735,7 +735,7 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
             "topic": "Data Handling & Statistics",
             "marks": 2,
             "question": "6– Given that Paul scored the marks given below in the mid-term examination. Find Paul's modal mark.",
-            "options": ["70", "50", "80", "70 and 50"],
+            "options": ["70 and 50", "50", "80", "70"],  # A
             "ans": "70 and 50",
             "explanation": "Both 70 and 50 appear twice, making the distribution bimodal with modal marks 70 and 50.",
             "step_by_step": [
@@ -751,7 +751,7 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
             "topic": "Fractions & Decimals",
             "marks": 2,
             "question": "7– Work out: 3/4 + 1/6.",
-            "options": ["11/12", "4/10", "5/6", "7/12"],
+            "options": ["4/10", "11/12", "5/6", "7/12"],  # B
             "ans": "11/12",
             "explanation": "The LCD of 4 and 6 is 12: 9/12 + 2/12 = 11/12.",
             "step_by_step": [
@@ -767,7 +767,7 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
             "topic": "Money & Financial Arithmetic",
             "marks": 2,
             "question": "8– A trader bought 3 books at sh 4,500 each. How much did she pay altogether?",
-            "options": ["sh 12,500", "sh 13,500", "sh 14,500", "sh 7,500"],
+            "options": ["sh 12,500", "sh 14,500", "sh 7,500", "sh 13,500"],  # D
             "ans": "sh 13,500",
             "explanation": "Total cost = 3 × sh 4,500 = sh 13,500.",
             "step_by_step": [
@@ -784,7 +784,7 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
             "topic": "Time & Duration",
             "marks": 2,
             "question": "9– A mathematics lesson started at 8:40 a.m. and lasted 45 minutes. At what time did it end?",
-            "options": ["9:15 a.m.", "9:35 a.m.", "9:25 a.m.", "8:85 a.m."],
+            "options": ["9:15 a.m.", "9:35 a.m.", "9:25 a.m.", "8:85 a.m."],  # C
             "ans": "9:25 a.m.",
             "explanation": "8:40 + 20 minutes = 9:00 a.m., plus 25 minutes = 9:25 a.m.",
             "step_by_step": [
@@ -801,7 +801,7 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
             "topic": "Lines, Angles & Geometric Figures",
             "marks": 2,
             "question": "10– Two angles on a straight line are 65° and x. Find the value of x.",
-            "options": ["25°", "125°", "295°", "115°"],
+            "options": ["115°", "125°", "295°", "25°"],  # A
             "ans": "115°",
             "explanation": "Angles on a straight line add up to 180°: x = 180° - 65° = 115°.",
             "step_by_step": [
@@ -817,7 +817,7 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
             "topic": "Algebra & Equations",
             "marks": 4,
             "question": "11– Simplify: 4k + 3m + 2k - m.",
-            "options": ["6k + 2m", "6k + 4m", "2k + 2m", "8km"],
+            "options": ["6k + 4m", "6k + 2m", "2k + 2m", "8km"],  # B
             "ans": "6k + 2m",
             "explanation": "Collect like terms: (4k + 2k) + (3m - m) = 6k + 2m.",
             "step_by_step": [
@@ -837,7 +837,7 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
                 "12– The diagram below shows how Mr. Okello used his land. He used plot P to keep goats, "
                 "plot Q to keep pigs and R to keep cattle. (i) Work out the total distance round the plot he used to keep pigs."
             ),
-            "options": ["14 m", "18 m", "20 m", "9 m"],
+            "options": ["14 m", "20 m", "9 m", "18 m"],  # D
             "ans": "18 m",
             "explanation": "Plot Q width = 10 m - 4 m = 6 m and height = 3 m, so perimeter = 2 × (6 + 3) = 18 m.",
             "step_by_step": [
@@ -856,7 +856,7 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
                 "12– (ii) Find the size of the land area he has altogether which keeps all his goats, "
                 "pigs and cattle in square metres."
             ),
-            "options": ["50 sq m", "36 sq m", "80 sq m", "68 sq m"],
+            "options": ["50 sq m", "36 sq m", "80 sq m", "68 sq m"],  # C
             "ans": "80 sq m",
             "explanation": "Total width = 10 m and total height = 3 m + 5 m = 8 m, giving 10 m × 8 m = 80 sq m.",
             "step_by_step": [
@@ -875,7 +875,7 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
                 "13– A boy said that they served with some cups of tea such that if a half of their "
                 "total joins them, their sum could be 45. How many boys were they?"
             ),
-            "options": ["22.5", "90", "15", "30"],
+            "options": ["30", "90", "15", "22.5"],  # A
             "ans": "30",
             "explanation": "x + 0.5x = 45 -> 1.5x = 45 -> x = 30 boys.",
             "step_by_step": [
@@ -897,7 +897,7 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
                 "hands whereby if she distributes them in the 7 pits equally, 5 seeds remain and if she "
                 "distributes them in the one of 6 pits, 2 seeds remain. How many seeds was she having?"
             ),
-            "options": ["26", "12", "19", "47"],
+            "options": ["12", "26", "19", "47"],  # B
             "ans": "26",
             "explanation": "26 ÷ 7 = 3 remainder 5, and 26 ÷ 6 = 4 remainder 2.",
             "step_by_step": [
@@ -917,7 +917,7 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
                 "15– The mean mass of 5 boys is 30 kg. When their teacher joins them, the mean mass "
                 "changes to 34 kg. Find the mass of the teacher."
             ),
-            "options": ["48 kg", "54 kg", "204 kg", "150 kg"],
+            "options": ["48 kg", "204 kg", "150 kg", "54 kg"],  # D
             "ans": "54 kg",
             "explanation": "5 boys sum = 5 × 30 = 150 kg; 6 people sum = 6 × 34 = 204 kg; teacher's mass = 204 - 150 = 54 kg.",
             "step_by_step": [
@@ -933,7 +933,7 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
             "topic": "Factors & Multiples",
             "marks": 2,
             "question": "16– (a) List all the factors of 12.",
-            "options": ["12, 24, 36, 48", "2, 3, 4, 6", "1, 2, 3, 4, 6, 12", "1, 3, 4, 12"],
+            "options": ["12, 24, 36, 48", "2, 3, 4, 6", "1, 2, 3, 4, 6, 12", "1, 3, 4, 12"],  # C
             "ans": "1, 2, 3, 4, 6, 12",
             "explanation": "The factors of 12 are 1, 2, 3, 4, 6, and 12.",
             "step_by_step": [
@@ -951,7 +951,7 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
                 "16– (b) What is the least number of sweets that can be shared by either "
                 "6 or 8 boys equally without a remainder?"
             ),
-            "options": ["48", "12", "2", "24"],
+            "options": ["24", "12", "2", "48"],  # A
             "ans": "24",
             "explanation": "The least number divisible by both 6 and 8 is LCM(6, 8) = 24.",
             "step_by_step": [
@@ -969,7 +969,7 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
             "topic": "Whole Numbers & Operations",
             "marks": 1,
             "question": "1– Simplify: 3 × 5.",
-            "options": ["8", "15", "35", "12"],
+            "options": ["8", "15", "35", "12"],  # B
             "ans": "15",
             "explanation": "3 × 5 = 15.",
             "step_by_step": [
@@ -985,7 +985,7 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
             "topic": "Standard Form (Scientific Notation)",
             "marks": 2,
             "question": "2– Write 3.45 in standard form.",
-            "options": ["3.45 × 10¹", "3.45 × 10⁰", "34.5 × 10⁻¹", "3.45 × 10⁻²"],
+            "options": ["3.45 × 10¹", "34.5 × 10⁻¹", "3.45 × 10⁻²", "3.45 × 10⁰"],  # D
             "ans": "3.45 × 10⁰",
             "explanation": "Since 3.45 is already between 1 and 10, moving the decimal point 0 places gives 3.45 × 10⁰.",
             "step_by_step": [
@@ -1001,7 +1001,7 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
             "topic": "Fractions & Direct Proportion",
             "marks": 3,
             "question": "3– Given that 2½ bars of soap cost sh 10,000, find the cost of 8 similar bars of soap.",
-            "options": ["sh 25,000", "sh 32,000", "sh 80,000", "sh 20,000"],
+            "options": ["sh 25,000", "sh 20,000", "sh 32,000", "sh 80,000"],  # C
             "ans": "sh 32,000",
             "explanation": "2½ = 5/2 bars cost sh 10,000 -> 1 bar = sh 10,000 × 2/5 = sh 4,000 -> 8 bars = 8 × sh 4,000 = sh 32,000.",
             "step_by_step": [
@@ -1018,7 +1018,7 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
             "topic": "Lines, Angles & Parallel Lines",
             "marks": 3,
             "question": "4– Given the diagram below, find the value of k.",
-            "options": ["15°", "30°", "50°", "65°"],
+            "options": ["15°", "30°", "50°", "65°"],  # A
             "ans": "15°",
             "explanation": "Isosceles base angles = (180° - 50°)/2 = 65°; alternate interior angle on top parallel line = 65°; adjacent angle to 80° = 100°; so k = 180° - (65° + 100°) = 15°.",
             "step_by_step": [
@@ -1038,7 +1038,7 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
                 "5– In P.6 class, the ratio of boys to girls is 2:3. If there are 600 pupils in the class "
                 "and 2/3 of the boys are in boarding section, find the number of boys in day section."
             ),
-            "options": ["240 boys", "160 boys", "80 boys", "360 boys"],
+            "options": ["240 boys", "80 boys", "160 boys", "360 boys"],  # B
             "ans": "80 boys",
             "explanation": "Total boys = (2/5) × 600 = 240; boarding boys = (2/3) × 240 = 160; day boys = 240 - 160 = 80.",
             "step_by_step": [
@@ -1056,7 +1056,7 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
             "topic": "Integers & Number Lines",
             "marks": 2,
             "question": "6– Work out the additive inverse of the integer which is 3 steps to the left of +1.",
-            "options": ["-2", "+2", "-4", "+4"],
+            "options": ["-2", "-4", "+4", "+2"],  # D
             "ans": "+2",
             "explanation": "Moving 3 steps left from +1 lands on -2; the additive inverse of -2 is +2 since (-2) + (+2) = 0.",
             "step_by_step": [
@@ -1077,7 +1077,7 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
                 "in a maximum same number of fruits in a group without left over. If he had 240 mangoes "
                 "and 180 guava, what is the maximum group size (GCF)?"
             ),
-            "options": ["12", "60", "720", "30"],
+            "options": ["12", "720", "60", "30"],  # C
             "ans": "60",
             "explanation": "GCF(240, 180) = 2 × 2 × 3 × 5 = 60.",
             "step_by_step": [
@@ -1101,7 +1101,7 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
                 "4 mangoes and 3 guavas",
                 "3 mangoes and 4 guavas",
                 "24 mangoes and 18 guavas",
-            ],
+            ],  # B
             "ans": "4 mangoes and 3 guavas",
             "explanation": "240 ÷ 60 = 4 mangoes and 180 ÷ 60 = 3 guavas in each group.",
             "step_by_step": [
@@ -1117,7 +1117,7 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
             "topic": "Statistics & Mean",
             "marks": 3,
             "question": "8– Given that the mean of 2m + 10, 30, 40, 40, and 10 is 30, find the value of m.",
-            "options": ["5", "10", "20", "15"],
+            "options": ["10", "5", "20", "15"],  # A
             "ans": "10",
             "explanation": "Total sum = 5 × 30 = 150; 2m + 130 = 150 -> 2m = 20 -> m = 10.",
             "step_by_step": [
@@ -1137,7 +1137,7 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
                 "9– Use the Venn diagram below to find the number of subsets in set (A ∪ B)' "
                 "if values represented in the Venn diagram show number of elements."
             ),
-            "options": ["8 subsets", "16 subsets", "4,096 subsets", "256 subsets"],
+            "options": ["8 subsets", "4,096 subsets", "256 subsets", "16 subsets"],  # D
             "ans": "16 subsets",
             "explanation": "Correction note: n(A ∪ B) = 4 + 3 + 5 = 12 (not 4), while n((A ∪ B)') = 4, giving 2⁴ = 16 subsets.",
             "step_by_step": [
@@ -1157,7 +1157,7 @@ QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
                 "10– Work out in base five: (131_five) + (2□3_five) = (□2□_five). "
                 "Find the missing digits in order: (middle addend □, leftmost answer □, rightmost answer □)."
             ),
-            "options": ["4, 4, 4", "1, 3, 4", "4, 3, 4", "2, 4, 4"],
+            "options": ["1, 3, 4", "4, 3, 4", "4, 4, 4", "2, 4, 4"],  # C
             "ans": "4, 4, 4",
             "explanation": "In base five: 1 + 3 = 4; 3 + 4 = 7_ten = 12_five (write 2, carry 1); 1 + 2 + 1 = 4 -> digits are 4, 4, 4.",
             "step_by_step": [
